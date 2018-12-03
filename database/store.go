@@ -1,7 +1,6 @@
 package database
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/go-pg/pg"
@@ -18,8 +17,8 @@ func NewStore(db orm.DB) *Store {
 	return &Store{db: db}
 }
 
-// Row stores raw column information
-type Row struct {
+// columnRow stores raw column information
+type columnRow struct {
 	SchemaName string `sql:"schema"`
 	TblName    string `sql:"table"`
 	ColumnName string `sql:"column"`
@@ -33,7 +32,7 @@ type Row struct {
 }
 
 // Column converts row to Table model
-func (r *Row) Table() model.Table {
+func (r *columnRow) Table() model.Table {
 	return model.Table{
 		Schema: r.SchemaName,
 		Name:   r.TblName,
@@ -41,16 +40,37 @@ func (r *Row) Table() model.Table {
 }
 
 // Column converts row to Column model
-func (r *Row) Column() model.Column {
+func (r *columnRow) Column() model.Column {
 	return model.Column{
-		Name: r.ColumnName,
-		Type: r.Type,
-		// TODO dimensions!
+		Name:       r.ColumnName,
+		Type:       r.Type,
 		IsArray:    r.IsArray,
 		Dimensions: r.Dimensions,
 		IsNullable: r.IsNullable,
 		IsPK:       r.IsPK,
 		IsFK:       r.IsFK,
+	}
+}
+
+// columnRow stores raw relation information
+type relationRow struct {
+	Constraint       string `sql:"constraint"`
+	SchemaName       string `sql:"schema"`
+	TblName          string `sql:"table"`
+	ColumnName       string `sql:"column"`
+	TargetSchemaName string `sql:"targetSchema"`
+	TargetTblName    string `sql:"targetTable"`
+	TargetColumnName string `sql:"targetColumn"`
+}
+
+// Column converts row to Column model
+func (r *relationRow) Relation() model.Relation {
+	return model.Relation{
+		Type:         model.HasOne,
+		SourceColumn: r.ColumnName,
+		TargetSchema: r.TargetSchemaName,
+		TargetTable:  r.TargetTblName,
+		TargetColumn: r.TargetColumnName,
 	}
 }
 
@@ -89,86 +109,88 @@ func (s *Store) Tables(schema []string) ([]model.Table, error) {
 		order by 1, 2;
 	`
 
-	rows := make([]Row, 0)
+	rows := make([]columnRow, 0)
 	if _, err := s.db.Query(&rows, query, pg.In(schema)); err != nil {
 		return nil, err
 	}
 
-	var current *model.Table
+	var current = -1
 	tables := make([]model.Table, 0)
 	for _, row := range rows {
-		if current == nil || current.Schema != row.SchemaName || current.Name != row.TblName {
-			tables = append(tables, row.Table())
-			current = &(tables[len(tables)-1])
+		if current == -1 ||
+			tables[current].Schema != row.SchemaName ||
+			tables[current].Name != row.TblName {
+
+			table := row.Table()
+
+			// filling relations for table
+			relations, err := s.Relations(table.Schema, table.Name)
+			if err != nil {
+				return nil, err
+			}
+			table.Relations = relations
+
+			tables = append(tables, table)
+			current = len(tables) - 1
 		}
-		current.Columns = append(current.Columns, row.Column())
+
+		// filling columns for table
+		tables[current].Columns = append(tables[current].Columns, row.Column())
 	}
 
 	return tables, nil
 }
 
 // Relations gets relations of a selected table
-// TODO implement it!
 func (s *Store) Relations(schema, table string) ([]model.Relation, error) {
-	a := `
+	query := `
 		with
-		    foreign_keys as (
-		        select o.conname                                                     as constraint_name,
-		               (select nspname from pg_namespace where oid = m.relnamespace) as table_schema,
-		               m.relname                                                     as table_name,
-		               (select a.attname
-		                from pg_attribute a
-		                where a.attrelid = m.oid
-		                  and a.attnum = o.conkey[1]
-		                  and a.attisdropped = false)                                as column_name,
-		               (select nspname from pg_namespace where oid = f.relnamespace) as target_schema,
-		               f.relname                                                     as target_table,
-		               (select a.attname
-		                from pg_attribute a
-		                where a.attrelid = f.oid
-		                  and a.attnum = o.confkey[1]
-		                  and a.attisdropped = false)                                as target_column
-		        from pg_constraint o
-		        left join pg_class f on f.oid = o.confrelid
-		        left join pg_class m on m.oid = o.conrelid
-		        where o.contype = 'f'
-		          and o.conrelid in (select oid from pg_class c where c.relkind = 'r')
+		    schemas as (
+		        select nspname, oid
+		        from pg_namespace
 		    ),
-		    primary_keys as (
-		        select o.conname                                                     as constraint_name,
-		               (select nspname from pg_namespace where oid = m.relnamespace) as table_schema,
-		               m.relname                                                     as table_name,
-		               (select a.attname
-		                from pg_attribute a
-		                where a.attrelid = m.oid
-		                  and a.attnum = o.conkey[1]
-		                  and a.attisdropped = false)                                as column_name
-		        from pg_constraint o
-		        left join pg_class m on m.oid = o.conrelid
-		        where o.contype = 'p'
+		    tables as (
+		        select oid, relnamespace, relname, relkind
+		        from pg_class
+		    ),
+		    columns as (
+		        select attrelid, attname, attnum
+		        from pg_attribute a
+		        where a.attisdropped = false
 		    )
-		select c."table_name",
-		       c."column_name",
-		       c."is_nullable",
-		       c."data_type",
-		       c."udt_name",
-		       c."character_maximum_length",
-		       c."numeric_precision",
-		       k.constraint_name is not null as "is_pk",
-		       f.constraint_name is not null as "is_fk",
-		       f.target_schema as "foreign_key_target_schema",
-		       f.target_table as "foreign_key_target_table",
-		       f.target_column as "foreign_key_target_columt"
-		from information_schema.columns c
-		left join primary_keys k using (table_name, table_schema, column_name)
-		left join foreign_keys f using (table_name, table_schema, column_name)
-		where c."table_schema" = 'public'
-		  and c."table_name" = 'top3cpc';
-`
+		select co.conname as "constraint",
+		       ss.nspname as "schema",
+		       s.relname  as "table",
+		       sc.attname as "column",
+		       ts.nspname as "targetSchema",
+		       t.relname  as "targetTable",
+		       tc.attname as "targetColumn"
+		from pg_constraint co
+		left join tables s on co.conrelid = s.oid
+		left join schemas ss on s.relnamespace = ss.oid
+		left join columns sc on s.oid = sc.attrelid and co.conkey[1] = sc.attnum
+		left join tables t on co.confrelid = t.oid
+		left join schemas ts on t.relnamespace = ts.oid
+		left join columns tc on t.oid = tc.attrelid and co.confkey[1] = tc.attnum
+		where co.contype = 'f'
+		  and co.conrelid in (select oid from pg_class c where c.relkind = 'r')
+		  and ss.nspname = ?
+		  and s.relname = ?
+	`
 
-	fmt.Print(a)
+	// TODO HasMany relation "or (ts.nspname = ? and t.relname = ?)"
 
-	return nil, nil
+	rows := make([]relationRow, 0)
+	if _, err := s.db.Query(&rows, query, schema, table); err != nil {
+		return nil, err
+	}
+
+	relations := make([]model.Relation, len(rows))
+	for i, row := range rows {
+		relations[i] = row.Relation()
+	}
+
+	return relations, nil
 }
 
 func Schemas(tables []string) (schemas []string) {
