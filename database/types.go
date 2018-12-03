@@ -66,6 +66,15 @@ func GoType(pgType string) types.Type {
 	return nil
 }
 
-func GoSliceType(pgType string) types.Type {
-	return types.NewSlice(GoType(pgType))
+func GoSliceType(pgType string, dimensions int) types.Type {
+	root := types.NewSlice(GoType(pgType))
+	if dimensions < 1 {
+		return root
+	}
+
+	for i := 0; i < dimensions; i++ {
+		root = types.NewSlice(root)
+	}
+
+	return root
 }

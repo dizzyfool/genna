@@ -25,6 +25,7 @@ type Row struct {
 	ColumnName string `sql:"column"`
 	IsNullable bool   `sql:"nullable"`
 	IsArray    bool   `sql:"array"`
+	Dimensions int    `sql:"dims"`
 	Type       string `sql:"type"`
 	Default    string `sql:"default"`
 	IsPK       bool   `sql:"pk"`
@@ -46,6 +47,7 @@ func (r *Row) Column() model.Column {
 		Type: r.Type,
 		// TODO dimensions!
 		IsArray:    r.IsArray,
+		Dimensions: r.Dimensions,
 		IsNullable: r.IsNullable,
 		IsPK:       r.IsPK,
 		IsFK:       r.IsFK,
@@ -55,12 +57,26 @@ func (r *Row) Column() model.Column {
 // Tables get basic tables information among selected schemas
 func (s *Store) Tables(schema []string) ([]model.Table, error) {
 	query := `
+		with
+		    arrays as (
+		        select sch.nspname  as "table_schema",
+		               tb.relname   as "table_name",
+		               col.attname  as "column_name",
+		               col.attndims as "array_dims"
+		        from pg_class tb
+		        left join pg_namespace sch on sch.oid = tb.relnamespace
+		        left join pg_attribute col on col.attrelid = tb.oid
+		        where tb.relname = 'mapping'
+		          and sch.nspname = 'public'
+		          and col.attndims > 0
+		    )
 		select
 		       c."table_schema"                  as "schema",
 		       c."table_name"                    as "table",
 		       c."column_name"                   as "column",
 		       c."is_nullable" = 'YES'           as "nullable",
 		       c."data_type" = 'ARRAY'           as "array",
+		       coalesce(a.array_dims, 0)         as "dims",
 		       ltrim(c."udt_name", '_')          as "type",
 		       c.column_default                  as "default",
 		       f.constraint_type = 'PRIMARY KEY' as "pk",
@@ -68,6 +84,7 @@ func (s *Store) Tables(schema []string) ([]model.Table, error) {
 		from information_schema.columns c
 		left join information_schema.key_column_usage k using (table_name, table_schema, column_name)
 		left join information_schema.table_constraints f using (table_name, table_schema, constraint_name)
+		left join arrays a using (table_name, table_schema, column_name)
 		where c."table_schema" in (?)
 		order by 1, 2;
 	`
