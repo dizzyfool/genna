@@ -21,14 +21,15 @@ func NewAnnotation() *Annotation {
 }
 
 // AddTag ads a tag if not exists, appends a value otherwise
-func (a *Annotation) AddTag(name string, value string) {
+func (a *Annotation) AddTag(name string, value string) *Annotation {
 	for i, tag := range a.tags {
 		if tag.name == name {
 			a.tags[i].values = append(a.tags[i].values, value)
-			return
+			return a
 		}
 	}
 	a.tags = append(a.tags, tag{name, []string{value}})
+	return a
 }
 
 // String prints valid tag

@@ -205,12 +205,8 @@ func ModelName(input string) string {
 	return strings.Join(splitted, "")
 }
 
-func ColumnName(input string) string {
-	camelCased := CamelCased(input)
-
-	if strings.HasSuffix(camelCased, "Id") {
-		camelCased = camelCased[:len(camelCased)-1] + "D"
-	}
+func StructFieldName(input string) string {
+	camelCased := ReplaceSuffix(CamelCased(input), "Id", "ID")
 
 	return strings.Title(camelCased)
 }
@@ -223,4 +219,11 @@ func HasUpper(input string) bool {
 		}
 	}
 	return false
+}
+
+func ReplaceSuffix(input, suffix, replace string) string {
+	if strings.HasSuffix(input, suffix) {
+		input = input[:len(input)-len(suffix)] + replace
+	}
+	return input
 }

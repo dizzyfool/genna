@@ -19,3 +19,20 @@ type Relation struct {
 	// Only for HasMany relation
 	TargetColumn string
 }
+
+// StructFieldName generates field name for struct
+func (r Relation) StructFieldName() string {
+	return ReplaceSuffix(StructFieldName(r.SourceColumn), "ID", "")
+}
+
+// StructFieldType generates field type for struct
+func (r Relation) StructFieldType() string {
+	return "*" + ModelName(r.TargetTable)
+}
+
+// StructFieldTag generates field tag for struct
+func (r Relation) StructFieldTag() string {
+	tags := NewAnnotation()
+
+	return tags.AddTag("sql", "fk:"+r.SourceColumn).String()
+}

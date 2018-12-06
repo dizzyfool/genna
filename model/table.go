@@ -1,8 +1,6 @@
 package model
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // Table stores information about table
 type Table struct {
@@ -14,6 +12,23 @@ type Table struct {
 
 	// All available relations
 	Relations []Relation
+}
+
+// Model returns all imports required by model
+func (t Table) Imports() []string {
+	imports := make([]string, 0)
+	index := make(map[string]struct{})
+
+	for _, column := range t.Columns {
+		if imp := column.Import(); imp != "" {
+			if _, ok := index[imp]; !ok {
+				imports = append(imports, imp)
+				index[imp] = struct{}{}
+			}
+		}
+	}
+
+	return imports
 }
 
 // Model returns model name in camel case and in singular form

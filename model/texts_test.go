@@ -1,6 +1,8 @@
 package model
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestSingular(t *testing.T) {
 	type args struct {
@@ -95,7 +97,7 @@ func TestModelName(t *testing.T) {
 	}
 }
 
-func TestColumnName(t *testing.T) {
+func TestStructFieldName(t *testing.T) {
 	type args struct {
 		input string
 	}
@@ -104,11 +106,35 @@ func TestColumnName(t *testing.T) {
 		args args
 		want string
 	}{
-		// TODO: Add test cases when column generator is ready
+		{
+			name: "Should generate from simple word",
+			args: args{"title"},
+			want: "Title",
+		},
+		{
+			name: "Should generate from underscored",
+			args: args{"short_title"},
+			want: "ShortTitle",
+		},
+		{
+			name: "Should generate from camelCased",
+			args: args{"shortTitle"},
+			want: "ShortTitle",
+		},
+		{
+			name: "Should generate with underscored id",
+			args: args{"location_id"},
+			want: "LocationID",
+		},
+		{
+			name: "Should generate with camelCased id",
+			args: args{"locationId"},
+			want: "LocationID",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ColumnName(tt.args.input); got != tt.want {
+			if got := StructFieldName(tt.args.input); got != tt.want {
 				t.Errorf("ColumnName() = %v, want %v", got, tt.want)
 			}
 		})
@@ -139,6 +165,42 @@ func TestHasUpper(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := HasUpper(tt.args.input); got != tt.want {
 				t.Errorf("HasUpper() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReplaceSuffix(t *testing.T) {
+	type args struct {
+		input   string
+		suffix  string
+		replace string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Should replace suffix",
+			args: args{"locationId", "Id", "ID"},
+			want: "locationID",
+		},
+		{
+			name: "Should not replace if not found",
+			args: args{"location", "Id", "ID"},
+			want: "location",
+		},
+		{
+			name: "Should not replace if not suffix",
+			args: args{"locationIdHere", "Id", "ID"},
+			want: "locationIdHere",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ReplaceSuffix(tt.args.input, tt.args.suffix, tt.args.replace); got != tt.want {
+				t.Errorf("ReplaceSuffix() = %v, want %v", got, tt.want)
 			}
 		})
 	}

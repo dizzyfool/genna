@@ -17,10 +17,12 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dizzyfool/genna/database"
+	"os"
+
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
-	"os"
+
+	"github.com/dizzyfool/genna/database"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -100,11 +102,12 @@ func init() {
 	flags.BoolP("view", "v", false, "use view for selects e.g. getUsers for users table")
 	flags.BoolP("fk", "f", false, "generate models for foreign keys, even if it not listed in tables\n")
 
-	flags.StringSliceP("arrays", "a", []string{}, "pg json fields should be parsed as arrays separated by comma")
-	flags.StringSliceP("maps", "m", []string{}, "pg json fields should be parsed as maps separated by comma")
-	flags.StringToStringP("structs", "s", nil, "pg json fields should be parsed as structs, e.g. -s location=LocationStruct,settings=Settings")
+	// TODO implement that!
+	//flags.StringSliceP("arrays", "a", []string{}, "pg json fields should be parsed as arrays separated by comma")
+	//flags.StringSliceP("maps", "m", []string{}, "pg json fields should be parsed as maps separated by comma")
+	//flags.StringToStringP("structs", "s", nil, "pg json fields should be parsed as structs, e.g. -s location=LocationStruct,settings=Settings")
 
-	flags.BoolP("hooks", "k", false, "generate hooks to fill foreign keys after insert/update\nwarning: may not work with recursive relations")
-	flags.Bool("keep-pk", false, "keep primary key name as is (by default it should be converted to 'ID')\nwarning: may break some go-pg features like many-to-many table relations")
+	//flags.BoolP("hooks", "k", false, "generate hooks to fill foreign keys after insert/update\nwarning: may not work with recursive relations")
+	//flags.Bool("keep-pk", false, "keep primary key name as is (by default it should be converted to 'ID')\nwarning: may break some go-pg features like many-to-many table relations")
 	flags.Bool("no-discard", false, "do not use 'discard_unknown_columns' tag\nwarning: may break incomplete models")
 }

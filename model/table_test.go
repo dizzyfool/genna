@@ -1,6 +1,9 @@
 package model
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestTable_ModelName(t *testing.T) {
 	type fields struct {
@@ -196,6 +199,70 @@ func TestTable_TableNameTag(t *testing.T) {
 			}
 			if got := tbl.TableNameTag(tt.args.noDiscard, tt.args.withView); got != tt.want {
 				t.Errorf("Table.TableNameTag() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestTable_Imports(t *testing.T) {
+	type fields struct {
+		Columns []Column
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   []string
+	}{
+		{
+			name: "Should not generate imports if only simple types",
+			fields: fields{
+				Columns: []Column{
+					{
+						Name: "userId",
+						Type: TypeInt8,
+					},
+					{
+						Name: "locationId",
+						Type: TypeInt8,
+					},
+				},
+			},
+			want: []string{},
+		},
+		{
+			name: "Should not generate imports without duplicates",
+			fields: fields{
+				Columns: []Column{
+					{
+						Name: "userId",
+						Type: TypeInt8,
+					},
+					{
+						Name: "createdAt",
+						Type: TypeTimestamp,
+					},
+					{
+						Name:       "deletedAt",
+						Type:       TypeTimestamp,
+						IsNullable: true,
+					},
+					{
+						Name:       "updatedAt",
+						Type:       TypeTimestamp,
+						IsNullable: true,
+					},
+				},
+			},
+			want: []string{"time", "github.com/go-pg/pg"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tbl := Table{
+				Columns: tt.fields.Columns,
+			}
+			if got := tbl.Imports(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Table.Imports() = %v, want %v", got, tt.want)
 			}
 		})
 	}

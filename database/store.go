@@ -66,6 +66,7 @@ type relationRow struct {
 // Column converts row to Column model
 func (r *relationRow) Relation() model.Relation {
 	return model.Relation{
+		// TODO HasMany relation
 		Type:         model.HasOne,
 		SourceColumn: r.ColumnName,
 		TargetSchema: r.TargetSchemaName,
