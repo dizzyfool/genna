@@ -83,35 +83,52 @@ func IsValid(pgType string, array bool) bool {
 }
 
 // GoImport generates import from pg type
-func GoImport(pgType string, nullable, avoidPointers bool) string {
+func GoImport(pgType string, nullable, array bool, dimensions int, avoidPointers bool) string {
 	// not valid types should not generate import
-	if !IsValid(pgType, false) {
+	if !IsValid(pgType, array) {
 		return ""
 	}
 
-	switch pgType {
-	case TypeInet, TypeCidr:
+	typ, err := GoType(pgType, nullable, array, dimensions, avoidPointers)
+	if err != nil {
+		return ""
+	}
+
+	return GoImportFromType(typ)
+}
+
+// GoImportFromType generates import from go type
+func GoImportFromType(typ types.Type) string {
+	switch typ.(type) {
+	case DateTime, Interval:
+		return "time"
+	case NetIp, NetIpNet:
 		return "net"
-	case TypeInterval:
-		return "time"
-	case TypeJsonb, TypeJson:
+	case JsonType:
 		return "encoding/json"
-	case TypeInt2, TypeInt4, TypeInt8, TypeNumeric, TypeFloat4, TypeFloat8, TypeBool, TypeText, TypeVarchar, TypeBpchar:
-		if nullable && avoidPointers {
-			return "database/sql"
-		}
-	case TypeTimestamp, TypeTimestamptz, TypeDate, TypeTime, TypeTimetz:
-		if nullable {
-			return "github.com/go-pg/pg"
-		}
-		return "time"
+	case PgNullTime:
+		return "github.com/go-pg/pg"
+	case SqlNullInt64, SqlNullFloat64, SqlNullBool, SqlNullString:
+		return "database/sql"
 	}
 
 	return ""
 }
 
-// GoType generates go type from pg type
-func GoType(pgType string) (types.Type, error) {
+// GoSimpleType generates all go types from pg type
+func GoType(pgType string, nullable, array bool, dimensions int, avoidPointers bool) (types.Type, error) {
+	switch {
+	case array:
+		return GoSliceType(pgType, dimensions, nullable)
+	case nullable:
+		return GoNullType(pgType, avoidPointers)
+	default:
+		return GoSimpleType(pgType)
+	}
+}
+
+// GoSimpleType generates simple go type from pg type
+func GoSimpleType(pgType string) (types.Type, error) {
 	if !IsValid(pgType, false) {
 		return nil, fmt.Errorf("type %s not supported", pgType)
 	}
@@ -154,7 +171,7 @@ func GoSliceType(pgType string, dimensions int, nullable bool) (types.Type, erro
 		return nil, fmt.Errorf("type %s not supported for arrays", pgType)
 	}
 
-	typ, err := GoType(pgType)
+	typ, err := GoSimpleType(pgType)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +215,7 @@ func GoNullType(pgType string, avoidPointers bool) (types.Type, error) {
 		return PgNullTime{}, nil
 	default:
 		// adding pointers for simple types
-		if typ, err := GoType(pgType); err != nil {
+		if typ, err := GoSimpleType(pgType); err != nil {
 			return nil, err
 		} else {
 			return types.NewPointer(typ), nil

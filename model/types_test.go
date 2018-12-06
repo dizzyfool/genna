@@ -104,13 +104,13 @@ func TestGoType(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GoType(tt.pgType)
+			got, err := GoSimpleType(tt.pgType)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GoType() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GoSimpleType() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if err == nil && got.String() != tt.want {
-				t.Errorf("GoType() = %v, want %v", got, tt.want)
+				t.Errorf("GoSimpleType() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -452,7 +452,7 @@ func TestGoImport(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			for _, pgType := range tt.args.pgTypes {
-				if got := GoImport(pgType, tt.args.nullable, tt.args.avoidPointers); got != tt.want {
+				if got := GoImport(pgType, tt.args.nullable, false, 0, tt.args.avoidPointers); got != tt.want {
 					t.Errorf("GoImport() = %v, want %v", got, tt.want)
 				}
 			}

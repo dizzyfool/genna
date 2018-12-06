@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"go/types"
 	"regexp"
 	"strings"
 )
@@ -21,7 +20,7 @@ type Column struct {
 
 // Import gets import for column
 func (c Column) Import() string {
-	return GoImport(c.Type, c.IsNullable, false)
+	return GoImport(c.Type, c.IsNullable, c.IsArray, c.Dimensions, false)
 }
 
 // StructFieldName generates field name for struct
@@ -34,20 +33,7 @@ func (c Column) StructFieldName() string {
 
 // StructFieldType generates field type for struct
 func (c Column) StructFieldType() string {
-	var (
-		typ types.Type
-		err error
-	)
-
-	switch {
-	case c.IsArray:
-		typ, err = GoSliceType(c.Type, c.Dimensions, c.IsNullable)
-	case c.IsNullable:
-		typ, err = GoNullType(c.Type, false)
-	default:
-		typ, err = GoType(c.Type)
-	}
-
+	typ, err := GoType(c.Type, c.IsNullable, c.IsArray, c.Dimensions, false)
 	if err != nil {
 		return "interface{}"
 	}
