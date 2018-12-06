@@ -31,7 +31,7 @@ type columnRow struct {
 	IsFK       bool   `sql:"fk"`
 }
 
-// Column converts row to Table model
+// Table converts row to Table model
 func (r *columnRow) Table() model.Table {
 	return model.Table{
 		Schema: r.SchemaName,
@@ -63,7 +63,7 @@ type relationRow struct {
 	TargetColumnName string `sql:"targetColumn"`
 }
 
-// Column converts row to Column model
+// Relation converts row to Relation model
 func (r *relationRow) Relation() model.Relation {
 	return model.Relation{
 		// TODO HasMany relation
@@ -194,6 +194,7 @@ func (s *Store) Relations(schema, table string) ([]model.Relation, error) {
 	return relations, nil
 }
 
+// Schemas get schemas from table names
 func Schemas(tables []string) (schemas []string) {
 	index := map[string]struct{}{}
 	for _, table := range tables {
@@ -204,12 +205,10 @@ func Schemas(tables []string) (schemas []string) {
 			schema = d[0]
 		}
 
-		if _, ok := index[schema]; ok {
-			continue
+		if _, ok := index[schema]; !ok {
+			index[schema] = struct{}{}
+			schemas = append(schemas, schema)
 		}
-
-		index[schema] = struct{}{}
-		schemas = append(schemas, schema)
 	}
 
 	return
