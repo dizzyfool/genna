@@ -267,3 +267,127 @@ func TestTable_Imports(t *testing.T) {
 		})
 	}
 }
+
+func TestTable_Validate(t *testing.T) {
+	pkColumn := Column{
+		Name: "userId",
+		Type: TypeInt8,
+		IsPK: true,
+	}
+
+	fkColumn := Column{
+		Name: "locationId",
+		Type: TypeInt8,
+		IsFK: true,
+	}
+
+	invalidColumn := Column{
+		Name: "locationId",
+		Type: "unknown",
+		IsFK: true,
+	}
+
+	validRelation := Relation{
+		Type: HasOne,
+		// other doesn't matter for now
+	}
+
+	type fields struct {
+		Schema    string
+		Name      string
+		Columns   []Column
+		Relations []Relation
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+
+		{
+			name: "Should not raise error on valid table",
+			fields: fields{
+				Schema:    "valid",
+				Name:      "valid",
+				Columns:   []Column{pkColumn, fkColumn},
+				Relations: []Relation{validRelation},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Should raise error on empty name",
+			fields: fields{
+				Schema:  "valid",
+				Name:    " ",
+				Columns: []Column{pkColumn},
+			},
+			wantErr: true,
+		},
+		{
+			name: "Should raise error on empty schema",
+			fields: fields{
+				Schema:  " ",
+				Name:    "valid",
+				Columns: []Column{pkColumn},
+			},
+			wantErr: true,
+		},
+		{
+			name: "Should raise error on invalid name",
+			fields: fields{
+				Schema:  "valid",
+				Name:    "#test",
+				Columns: []Column{pkColumn},
+			},
+			wantErr: true,
+		},
+		{
+			name: "Should raise error on invalid schema",
+			fields: fields{
+				Schema:  "#test",
+				Name:    "valid",
+				Columns: []Column{pkColumn},
+			},
+			wantErr: true,
+		},
+		{
+			name: "Should raise error on empty columns",
+			fields: fields{
+				Schema: "valid",
+				Name:   "valid",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Should raise error on invalid columns",
+			fields: fields{
+				Schema:  "valid",
+				Name:    "valid",
+				Columns: []Column{invalidColumn},
+			},
+			wantErr: true,
+		},
+		{
+			name: "Should raise error on empty relations with fkey",
+			fields: fields{
+				Schema:  "valid",
+				Name:    "valid",
+				Columns: []Column{fkColumn},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tbl := Table{
+				Schema:    tt.fields.Schema,
+				Name:      tt.fields.Name,
+				Columns:   tt.fields.Columns,
+				Relations: tt.fields.Relations,
+			}
+			if err := tbl.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("Table.Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}

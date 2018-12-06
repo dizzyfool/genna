@@ -1,6 +1,8 @@
 package model
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestColumn_StructFieldName(t *testing.T) {
 	type fields struct {
@@ -224,6 +226,119 @@ func TestColumn_StructFieldTag(t *testing.T) {
 			}
 			if got := c.StructFieldTag(); got != tt.want {
 				t.Errorf("Column.StructFieldTag() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestColumn_Validate(t *testing.T) {
+	type fields struct {
+		Name       string
+		Type       string
+		IsArray    bool
+		Dimensions int
+		IsNullable bool
+		IsPK       bool
+		IsFK       bool
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "Should not raise error on valid column",
+			fields: fields{
+				Name:       "valid",
+				Type:       TypeBool,
+				IsArray:    true,
+				Dimensions: 1,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Should not raise error on valid column 2",
+			fields: fields{
+				Name:       "valid",
+				Type:       TypeInt8,
+				IsPK:       true,
+				Dimensions: 1, // should ignore that
+			},
+			wantErr: false,
+		},
+		{
+			name: "Should not raise error on valid column 3",
+			fields: fields{
+				Name: "valid",
+				Type: TypeHstore,
+			},
+			wantErr: false,
+		},
+		{
+			name: "Should raise error on empty name",
+			fields: fields{
+				Name: "  ",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Should raise error on invalid name",
+			fields: fields{
+				Name: "#test",
+			},
+			wantErr: true,
+		},
+		{
+			name: "Should raise error on nullable pkey",
+			fields: fields{
+				Name:       "valid",
+				IsPK:       true,
+				IsNullable: true,
+			},
+			wantErr: true,
+		},
+		{
+			name: "Should raise error on array of hstores",
+			fields: fields{
+				Name:    "valid",
+				Type:    TypeHstore,
+				IsArray: true,
+			},
+			wantErr: true,
+		},
+		{
+			name: "Should raise error on invalid dimensions",
+			fields: fields{
+				Name:       "valid",
+				Type:       TypeHstore,
+				IsArray:    true,
+				Dimensions: 0,
+			},
+			wantErr: true,
+		},
+		{
+			name: "Should raise error on unsupported type",
+			fields: fields{
+				Name:    "valid",
+				Type:    TypeTimestamp,
+				IsArray: true,
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := Column{
+				Name:       tt.fields.Name,
+				Type:       tt.fields.Type,
+				IsArray:    tt.fields.IsArray,
+				Dimensions: tt.fields.Dimensions,
+				IsNullable: tt.fields.IsNullable,
+				IsPK:       tt.fields.IsPK,
+				IsFK:       tt.fields.IsFK,
+			}
+			if err := c.Validate(); (err != nil) != tt.wantErr {
+				t.Errorf("Column.Validate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}

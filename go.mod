@@ -5,6 +5,7 @@ require (
 	github.com/go-pg/pg v6.15.1+incompatible
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a // indirect
+	github.com/pkg/errors v0.8.0
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3 // indirect
 	go.uber.org/atomic v1.3.2 // indirect

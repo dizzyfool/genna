@@ -1,6 +1,11 @@
 package model
 
-import "go/types"
+import (
+	"fmt"
+	"go/types"
+	"regexp"
+	"strings"
+)
 
 // Columns stores information about column
 // it does not store relation info
@@ -61,7 +66,7 @@ func (c Column) StructFieldTag() string {
 	tags.AddTag("sql", c.Name)
 
 	if c.IsPK {
-		return tags.AddTag("sql", "pk").String()
+		tags.AddTag("sql", "pk")
 	}
 
 	if c.Type == TypeHstore {
@@ -70,9 +75,39 @@ func (c Column) StructFieldTag() string {
 		tags.AddTag("sql", "array")
 	}
 
-	if !c.IsNullable {
+	if !c.IsNullable && !c.IsPK {
 		tags.AddTag("sql", "notnull")
 	}
 
 	return tags.String()
+}
+
+func (c Column) Validate() error {
+	if strings.Trim(c.Name, " ") == "" {
+		return fmt.Errorf("column name is empty")
+	}
+
+	if regexp.MustCompile(`[^\w\d_]+`).Match([]byte(c.Name)) {
+		return fmt.Errorf("column name '%s' contains illegal character(s)", c.Name)
+	}
+
+	if c.IsPK && c.IsNullable {
+		return fmt.Errorf("column can not be pkey and be nullable")
+	}
+
+	if c.IsArray {
+		if c.Type == TypeHstore {
+			return fmt.Errorf("array of hstores is not supported")
+		}
+
+		if c.Dimensions <= 0 {
+			return fmt.Errorf("array column has %d dimesions", c.Dimensions)
+		}
+	}
+
+	if !IsValid(c.Type, c.IsArray) {
+		return fmt.Errorf("unsupported type '%s' (array = %t)", c.Type, c.IsArray)
+	}
+
+	return nil
 }

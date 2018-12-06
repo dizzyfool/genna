@@ -1,6 +1,12 @@
 package model
 
-import "fmt"
+import (
+	"fmt"
+	"regexp"
+	"strings"
+
+	"github.com/pkg/errors"
+)
 
 // Table stores information about table
 type Table struct {
@@ -84,4 +90,38 @@ func (t Table) TableNameTag(noDiscard, withView bool) string {
 	}
 
 	return annotation.String()
+}
+
+func (t Table) Validate() error {
+	if strings.Trim(t.Schema, " ") == "" {
+		return fmt.Errorf("shema name is empty")
+	}
+
+	if strings.Trim(t.Name, " ") == "" {
+		return fmt.Errorf("table name is empty")
+	}
+
+	rgxp := regexp.MustCompile(`[^\w\d_]+`)
+	if rgxp.Match([]byte(t.Schema)) {
+		return fmt.Errorf("shema name '%s' contains illegal character(s)", t.Schema)
+	}
+
+	if rgxp.Match([]byte(t.Name)) {
+		return fmt.Errorf("table name '%s' contains illegal character(s)", t.Name)
+	}
+
+	if len(t.Columns) == 0 {
+		return fmt.Errorf("table has no columns")
+	}
+
+	for _, column := range t.Columns {
+		if err := column.Validate(); err != nil {
+			return errors.Wrap(err, "column '%s' is not valid")
+		}
+		if column.IsFK && len(t.Relations) == 0 {
+			return fmt.Errorf("table has fkey(s) but no relations")
+		}
+	}
+
+	return nil
 }
