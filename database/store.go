@@ -1,8 +1,6 @@
 package database
 
 import (
-	"strings"
-
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
 
@@ -192,24 +190,4 @@ func (s *Store) Relations(schema, table string) ([]model.Relation, error) {
 	}
 
 	return relations, nil
-}
-
-// Schemas get schemas from table names
-func Schemas(tables []string) (schemas []string) {
-	index := map[string]struct{}{}
-	for _, table := range tables {
-		schema := "public"
-
-		d := strings.Split(table, ".")
-		if len(d) >= 2 {
-			schema = d[0]
-		}
-
-		if _, ok := index[schema]; !ok {
-			index[schema] = struct{}{}
-			schemas = append(schemas, schema)
-		}
-	}
-
-	return
 }

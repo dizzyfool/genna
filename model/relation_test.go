@@ -41,55 +41,64 @@ func TestRelation_StructFieldName(t *testing.T) {
 
 func TestRelation_StructFieldType(t *testing.T) {
 	type fields struct {
-		TargetTable string
+		TargetSchema string
+		TargetTable  string
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		want   string
+		name       string
+		fields     fields
+		withSchema bool
+		want       string
 	}{
 		{
 			name:   "Should generate from simple word",
-			fields: fields{"users"},
+			fields: fields{TargetTable: "users"},
 			want:   "*User",
 		},
 		{
 			name:   "Should generate from non-countable",
-			fields: fields{"audio"},
+			fields: fields{TargetTable: "audio"},
 			want:   "*Audio",
 		},
 		{
 			name:   "Should generate from underscored",
-			fields: fields{"user_orders"},
+			fields: fields{TargetTable: "user_orders"},
 			want:   "*UserOrder",
 		},
 		{
 			name:   "Should generate from camelCased",
-			fields: fields{"userOrders"},
+			fields: fields{TargetTable: "userOrders"},
 			want:   "*UserOrder",
 		},
 		{
 			name:   "Should generate from plural in first place",
-			fields: fields{"usersWithOrders"},
+			fields: fields{TargetTable: "usersWithOrders"},
 			want:   "*UserWithOrders",
 		},
 		{
 			name:   "Should generate from plural in last place",
-			fields: fields{"usersWithOrders"},
+			fields: fields{TargetTable: "usersWithOrders"},
 			want:   "*UserWithOrders",
 		},
 		{
 			name:   "Should generate from abracadabra",
-			fields: fields{"abracadabra"},
+			fields: fields{TargetTable: "abracadabra"},
 			want:   "*Abracadabra",
+		},
+		{
+			name:       "Should generate with schema",
+			fields:     fields{TargetSchema: "information_schema", TargetTable: "users"},
+			withSchema: true,
+			want:       "*InformationSchemaUser",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := Relation{
-				TargetTable: tt.fields.TargetTable,
+				TargetSchema: tt.fields.TargetSchema,
+				TargetTable:  tt.fields.TargetTable,
 			}
-			if got := r.StructFieldType(); got != tt.want {
+			if got := r.StructFieldType(tt.withSchema); got != tt.want {
 				t.Errorf("Relation.StructFieldType() = %v, want %v", got, tt.want)
 			}
 		})

@@ -24,8 +24,8 @@ func (c Column) Import() string {
 }
 
 // StructFieldName generates field name for struct
-func (c Column) StructFieldName() string {
-	if c.IsPK {
+func (c Column) StructFieldName(keepPK bool) string {
+	if c.IsPK && !keepPK {
 		return "ID"
 	}
 	return StructFieldName(c.Name)
@@ -73,7 +73,7 @@ func (c Column) Validate() error {
 		return fmt.Errorf("column name is empty")
 	}
 
-	if regexp.MustCompile(`[^\w\d_]+`).Match([]byte(c.Name)) {
+	if regexp.MustCompile(`[^\w\d_]+`).MatchString(c.Name) {
 		return fmt.Errorf("column name '%s' contains illegal character(s)", c.Name)
 	}
 

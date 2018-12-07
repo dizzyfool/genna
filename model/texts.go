@@ -1,6 +1,7 @@
 package model
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/fatih/camelcase"
@@ -191,6 +192,25 @@ func CamelCased(s string) string {
 	return string(r)
 }
 
+// Underscore converts string to under_scored
+// from github.com/go-pg/pg/internal
+func Underscore(s string) string {
+	r := make([]byte, 0, len(s)+5)
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if IsUpper(c) {
+			if i > 0 && i+1 < len(s) && (IsLower(s[i-1]) || IsLower(s[i+1])) {
+				r = append(r, '_', ToLower(c))
+			} else {
+				r = append(r, ToLower(c))
+			}
+		} else {
+			r = append(r, c)
+		}
+	}
+	return string(r)
+}
+
 func ModelName(input string) string {
 	splitted := camelcase.Split(CamelCased(input))
 
@@ -226,4 +246,9 @@ func ReplaceSuffix(input, suffix, replace string) string {
 		input = input[:len(input)-len(suffix)] + replace
 	}
 	return input
+}
+
+func PackageName(input string) string {
+	rgxp := regexp.MustCompile(`[^\w\d]`)
+	return strings.ToLower(rgxp.ReplaceAllString(input, ""))
 }

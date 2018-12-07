@@ -12,6 +12,7 @@ func TestColumn_StructFieldName(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
+		keepPK bool
 		want   string
 	}{
 		{
@@ -30,12 +31,12 @@ func TestColumn_StructFieldName(t *testing.T) {
 			want:   "ShortTitle",
 		},
 		{
-			name:   "Should generate with underscored id",
+			name:   "Should generate with underscored_id",
 			fields: fields{Name: "location_id"},
 			want:   "LocationID",
 		},
 		{
-			name:   "Should generate with camelCased id",
+			name:   "Should generate with camelCasedId",
 			fields: fields{Name: "locationId"},
 			want:   "LocationID",
 		},
@@ -44,6 +45,12 @@ func TestColumn_StructFieldName(t *testing.T) {
 			fields: fields{Name: "locationId", IsPK: true},
 			want:   "ID",
 		},
+		{
+			name:   "Should keep primary key as LocationID",
+			fields: fields{Name: "locationId", IsPK: true},
+			want:   "LocationID",
+			keepPK: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -51,7 +58,7 @@ func TestColumn_StructFieldName(t *testing.T) {
 				Name: tt.fields.Name,
 				IsPK: tt.fields.IsPK,
 			}
-			if got := c.StructFieldName(); got != tt.want {
+			if got := c.StructFieldName(tt.keepPK); got != tt.want {
 				t.Errorf("Column.StructFieldName() = %v, want %v", got, tt.want)
 			}
 		})

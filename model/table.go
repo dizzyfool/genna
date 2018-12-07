@@ -20,6 +20,28 @@ type Table struct {
 	Relations []Relation
 }
 
+// FileName get valid file name for model
+func (t Table) FileName() string {
+	name := Underscore(t.Name)
+	if t.Schema != PublicSchema {
+		name = Underscore(t.Schema) + "_" + name
+	}
+	return name
+}
+
+// PackageName get valid package name for model from schema
+func (t Table) PackageName(withSchema bool, publicAlias string) string {
+	if publicAlias == "" {
+		publicAlias = DefaultPackage
+	}
+
+	if t.Schema == PublicSchema || !withSchema {
+		return publicAlias
+	}
+
+	return PackageName(t.Schema)
+}
+
 // Model returns all imports required by model
 func (t Table) Imports() []string {
 	imports := make([]string, 0)
@@ -38,8 +60,13 @@ func (t Table) Imports() []string {
 }
 
 // Model returns model name in camel case and in singular form
-func (t Table) ModelName() string {
-	return ModelName(t.Name)
+func (t Table) ModelName(withSchema bool) string {
+	name := ModelName(t.Name)
+	if withSchema && t.Schema != PublicSchema {
+		name = CamelCased(t.Schema) + name
+	}
+
+	return name
 }
 
 // TableName returns valid table name with schema and quoted if needed
@@ -49,7 +76,7 @@ func (t Table) TableName() string {
 		table = fmt.Sprintf(`\"%s\"`, table)
 	}
 
-	if t.Schema == "public" {
+	if t.Schema == PublicSchema {
 		return table
 	}
 
@@ -63,7 +90,7 @@ func (t Table) TableName() string {
 
 // ViewName returns view name for table starting with "get"
 func (t Table) ViewName() string {
-	if t.Schema == "public" {
+	if t.Schema == PublicSchema {
 		return fmt.Sprintf(`\"get%s\"`, CamelCased(t.Name))
 	}
 

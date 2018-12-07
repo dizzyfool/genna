@@ -26,8 +26,13 @@ func (r Relation) StructFieldName() string {
 }
 
 // StructFieldType generates field type for struct
-func (r Relation) StructFieldType() string {
-	return "*" + ModelName(r.TargetTable)
+func (r Relation) StructFieldType(withSchema bool) string {
+	name := ModelName(r.TargetTable)
+	if withSchema && r.TargetSchema != PublicSchema {
+		name = CamelCased(r.TargetSchema) + name
+	}
+
+	return "*" + name
 }
 
 // StructFieldTag generates field tag for struct

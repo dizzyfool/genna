@@ -7,55 +7,70 @@ import (
 
 func TestTable_ModelName(t *testing.T) {
 	type fields struct {
-		Name string
+		Name   string
+		Schema string
 	}
 	tests := []struct {
-		name   string
-		fields fields
-		want   string
+		name       string
+		fields     fields
+		withSchema bool
+		want       string
 	}{
 		{
 			name:   "Should generate from simple word",
-			fields: fields{"users"},
+			fields: fields{Name: "users"},
 			want:   "User",
 		},
 		{
 			name:   "Should generate from non-countable",
-			fields: fields{"audio"},
+			fields: fields{Name: "audio"},
 			want:   "Audio",
 		},
 		{
 			name:   "Should generate from underscored",
-			fields: fields{"user_orders"},
+			fields: fields{Name: "user_orders"},
 			want:   "UserOrder",
 		},
 		{
 			name:   "Should generate from camelCased",
-			fields: fields{"userOrders"},
+			fields: fields{Name: "userOrders"},
 			want:   "UserOrder",
 		},
 		{
 			name:   "Should generate from plural in first place",
-			fields: fields{"usersWithOrders"},
+			fields: fields{Name: "usersWithOrders"},
 			want:   "UserWithOrders",
 		},
 		{
 			name:   "Should generate from plural in last place",
-			fields: fields{"usersWithOrders"},
+			fields: fields{Name: "usersWithOrders"},
 			want:   "UserWithOrders",
 		},
 		{
 			name:   "Should generate from abracadabra",
-			fields: fields{"abracadabra"},
+			fields: fields{Name: "abracadabra"},
 			want:   "Abracadabra",
+		},
+		{
+			name:       "Should generate from simple word with public schema",
+			fields:     fields{Name: "users", Schema: "public"},
+			withSchema: true,
+			want:       "User",
+		},
+		{
+			name:       "Should generate from simple word with custom schema",
+			fields:     fields{Name: "users", Schema: "users"},
+			withSchema: true,
+			want:       "UsersUser",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tbl := Table{
-				Name: tt.fields.Name,
+				Name:   tt.fields.Name,
+				Schema: tt.fields.Schema,
 			}
-			if got := tbl.ModelName(); got != tt.want {
+			if got := tbl.ModelName(tt.withSchema); got != tt.want {
 				t.Errorf("Table.ModelName() = %v, want %v", got, tt.want)
 			}
 		})
@@ -74,7 +89,7 @@ func TestTable_TableName(t *testing.T) {
 	}{
 		{
 			name:   "Should generate from public schema and simple table name",
-			fields: fields{"public", "users"},
+			fields: fields{PublicSchema, "users"},
 			want:   "users",
 		},
 		{
@@ -84,7 +99,7 @@ func TestTable_TableName(t *testing.T) {
 		},
 		{
 			name:   "Should generate quoted and escaped from public schema and table name",
-			fields: fields{"public", "userOrders"},
+			fields: fields{PublicSchema, "userOrders"},
 			want:   `\"userOrders\"`,
 		},
 
@@ -119,7 +134,7 @@ func TestTable_ViewName(t *testing.T) {
 	}{
 		{
 			name:   "Should generate from public schema and simple table name",
-			fields: fields{"public", "users"},
+			fields: fields{PublicSchema, "users"},
 			want:   `\"getUsers\"`,
 		},
 		{
@@ -134,7 +149,7 @@ func TestTable_ViewName(t *testing.T) {
 		},
 		{
 			name:   "Should generate from underscored",
-			fields: fields{"public", "users_orders"},
+			fields: fields{PublicSchema, "users_orders"},
 			want:   `\"getUsersOrders\"`,
 		},
 	}
@@ -168,25 +183,25 @@ func TestTable_TableNameTag(t *testing.T) {
 	}{
 		{
 			name:   "Should generate with default params",
-			fields: fields{"public", "users"},
+			fields: fields{PublicSchema, "users"},
 			args:   args{false, false},
 			want:   `sql:"users",pg:",discard_unknown_columns"`,
 		},
 		{
 			name:   "Should generate with view",
-			fields: fields{"public", "users"},
+			fields: fields{PublicSchema, "users"},
 			args:   args{false, true},
 			want:   `sql:"users,select:\"getUsers\"",pg:",discard_unknown_columns"`,
 		},
 		{
 			name:   "Should generate with no discard",
-			fields: fields{"public", "users"},
+			fields: fields{PublicSchema, "users"},
 			args:   args{true, false},
 			want:   `sql:"users"`,
 		},
 		{
 			name:   "Should generate with no discard and view",
-			fields: fields{"public", "users"},
+			fields: fields{PublicSchema, "users"},
 			args:   args{true, true},
 			want:   `sql:"users,select:\"getUsers\""`,
 		},

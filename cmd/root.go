@@ -23,6 +23,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/dizzyfool/genna/database"
+	"github.com/dizzyfool/genna/model"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -65,7 +66,7 @@ to quickly create a models for go-pg https://github.com/go-pg/pg`,
 			panic(err)
 		}
 
-		info, err := store.Tables(database.Schemas(tables))
+		info, err := store.Tables(model.Schemas(tables))
 		if err != nil {
 			panic(err)
 		}
