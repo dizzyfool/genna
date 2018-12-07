@@ -15,15 +15,30 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"go.uber.org/zap"
 
 	"github.com/dizzyfool/genna/database"
+	"github.com/dizzyfool/genna/generator"
 	"github.com/dizzyfool/genna/model"
+)
+
+const (
+	Conn      = "conn"
+	Out       = "out"
+	ImpPath   = "import"
+	Pkg       = "pkg"
+	SchemaPkg = "schema-pkg"
+	MultiFile = "multi-file"
+	Tables    = "tables"
+	View      = "view"
+	FollowFK  = "follow-fk"
+	KeepPK    = "keep-pk"
+	NoDiscard = "no-discard"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -48,7 +63,7 @@ to quickly create a models for go-pg https://github.com/go-pg/pg`,
 			panic(err)
 		}
 
-		url, err := flags.GetString("conn")
+		url, err := flags.GetString(Conn)
 		if err != nil {
 			panic(err)
 		}
@@ -59,20 +74,20 @@ to quickly create a models for go-pg https://github.com/go-pg/pg`,
 		}
 
 		store := database.NewStore(db)
-
-		// TODO move away from here
-		tables, err := flags.GetStringSlice("tables")
+		options, err := flagsToOptions(flags)
 		if err != nil {
 			panic(err)
 		}
 
-		info, err := store.Tables(model.Schemas(tables))
+		tables, err := store.Tables(model.Schemas(options.Tables))
 		if err != nil {
 			panic(err)
 		}
 
-		if b, err := json.MarshalIndent(info, "", "\t"); err == nil {
-			logger.Info(string(b))
+		genna := generator.NewGenerator(options)
+
+		if err := genna.Process(tables); err != nil {
+			panic(err)
 		}
 	},
 }
@@ -91,24 +106,80 @@ func init() {
 
 	flags.SortFlags = false
 
-	flags.StringP("conn", "c", "", "connection string")
-	if err := rootCmd.MarkFlagRequired("conn"); err != nil {
+	flags.StringP(Conn, "c", "", "connection string to your postgres database")
+	if err := rootCmd.MarkFlagRequired(Conn); err != nil {
 		panic(err)
 	}
 
-	flags.StringSliceP("tables", "t", []string{"public.*"}, "table names for model generation separeted by comma\nuse 'schema_name.*' to generate model for every table in model")
+	flags.StringP(Out, "o", "", "output directory for generated files")
+	if err := rootCmd.MarkFlagRequired(Out); err != nil {
+		panic(err)
+	}
 
-	flags.StringP("package", "p", "model", "package for model files")
+	flags.StringSliceP(Tables, "t", []string{"public.*"}, "table names for model generation separeted by comma\nuse 'schema_name.*' to generate model for every table in model")
+	flags.StringP(ImpPath, "i", "", "prefix for imports for generated models")
 
-	flags.BoolP("view", "v", false, "use view for selects e.g. getUsers for users table")
-	flags.BoolP("fk", "f", false, "generate models for foreign keys, even if it not listed in tables\n")
+	flags.StringP(Pkg, "p", model.DefaultPackage, "package for model files. ignored with --multi-file param")
+	flags.BoolP(SchemaPkg, "s", false, "generate every schema as separate package")
+	flags.BoolP(MultiFile, "m", false, `generate one file for package
+schema-pkg | multi-file | result
+true       | false      | each generated package will contain one file
+true       | true       | each generated package will contain several files, one per model
+false      | true       | one package for all models separated to different files
+false      | false      | one big file for all models
+`)
 
-	// TODO implement that!
-	//flags.StringSliceP("arrays", "a", []string{}, "pg json fields should be parsed as arrays separated by comma")
-	//flags.StringSliceP("maps", "m", []string{}, "pg json fields should be parsed as maps separated by comma")
-	//flags.StringToStringP("structs", "s", nil, "pg json fields should be parsed as structs, e.g. -s location=LocationStruct,settings=Settings")
+	flags.BoolP(View, "v", false, "use view for selects e.g. getUsers for users table")
+	flags.BoolP(FollowFK, "f", false, "generate models for foreign keys, even if it not listed in tables\n")
 
-	//flags.BoolP("hooks", "k", false, "generate hooks to fill foreign keys after insert/update\nwarning: may not work with recursive relations")
-	//flags.Bool("keep-pk", false, "keep primary key name as is (by default it should be converted to 'ID')\nwarning: may break some go-pg features like many-to-many table relations")
-	flags.Bool("no-discard", false, "do not use 'discard_unknown_columns' tag\nwarning: may break incomplete models")
+	flags.Bool(KeepPK, false, "keep primary key name as is (by default it should be converted to 'ID')\nwarning: may break some go-pg features like many-to-many table relations")
+	flags.Bool(NoDiscard, false, "do not use 'discard_unknown_columns' tag\nwarning: may break incomplete models")
+}
+
+func flagsToOptions(flags *pflag.FlagSet) (generator.Options, error) {
+	var err error
+
+	options := generator.Options{}
+
+	if options.Output, err = flags.GetString(Out); err != nil {
+		return options, err
+	}
+
+	if options.ImportPath, err = flags.GetString(ImpPath); err != nil {
+		return options, err
+	}
+
+	if options.Package, err = flags.GetString(Pkg); err != nil {
+		return options, err
+	}
+
+	if options.Tables, err = flags.GetStringSlice(Tables); err != nil {
+		return options, err
+	}
+
+	if options.SchemaPackage, err = flags.GetBool(SchemaPkg); err != nil {
+		return options, err
+	}
+
+	if options.MultiFile, err = flags.GetBool(MultiFile); err != nil {
+		return options, err
+	}
+
+	if options.View, err = flags.GetBool(View); err != nil {
+		return options, err
+	}
+
+	if options.FollowFKs, err = flags.GetBool(FollowFK); err != nil {
+		return options, err
+	}
+
+	if options.KeepPK, err = flags.GetBool(KeepPK); err != nil {
+		return options, err
+	}
+
+	if options.NoDiscard, err = flags.GetBool(NoDiscard); err != nil {
+		return options, err
+	}
+
+	return options, nil
 }

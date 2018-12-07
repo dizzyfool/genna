@@ -6,6 +6,7 @@ import ({{range .Imports}}
     "{{.}}"{{end}}
 ){{end}}
 
+{{range .Models}}
 type {{.StructName}} struct {
 	tableName struct{} {{.StructTag}}
 	{{range .Columns}}
@@ -13,4 +14,5 @@ type {{.StructName}} struct {
 	{{range .Relations}}
 	{{.FieldName}} {{.FieldType}} {{.FieldTag}}{{end}}{{end}}
 }
+{{end}}
 `

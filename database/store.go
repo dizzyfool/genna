@@ -66,6 +66,8 @@ func (r *relationRow) Relation() model.Relation {
 	return model.Relation{
 		// TODO HasMany relation
 		Type:         model.HasOne,
+		SourceSchema: r.SchemaName,
+		SourceTable:  r.TblName,
 		SourceColumn: r.ColumnName,
 		TargetSchema: r.TargetSchemaName,
 		TargetTable:  r.TargetTblName,

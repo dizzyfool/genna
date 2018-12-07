@@ -5,153 +5,12 @@ import (
 	"strings"
 
 	"github.com/fatih/camelcase"
+	"github.com/jinzhu/inflection"
 )
 
 // Singular makes singular of plural english word
 func Singular(input string) string {
-	if !IsCountable(input) {
-		return input
-	}
-
-	var singularDictionary = map[string]string{
-		"are":      "is",
-		"analyses": "analysis",
-		"alumni":   "alumnus",
-		"aliases":  "alias",
-		"axes":     "axis",
-		//"alumni": "alumnae", // for female - cannot have duplicate in map
-
-		"genii":       "genius",
-		"data":        "datum",
-		"atlases":     "atlas",
-		"appendices":  "appendix",
-		"barracks":    "barrack",
-		"beefs":       "beef",
-		"buses":       "bus",
-		"brothers":    "brother",
-		"cafes":       "cafe",
-		"corpuses":    "corpus",
-		"campuses":    "campus",
-		"cows":        "cow",
-		"crises":      "crisis",
-		"ganglions":   "ganglion",
-		"genera":      "genus",
-		"graffiti":    "graffito",
-		"loaves":      "loaf",
-		"matrices":    "matrix",
-		"monies":      "money",
-		"mongooses":   "mongoose",
-		"moves":       "move",
-		"movies":      "movie",
-		"mythoi":      "mythos",
-		"lice":        "louse",
-		"niches":      "niche",
-		"numina":      "numen",
-		"octopuses":   "octopus",
-		"opuses":      "opus",
-		"oxen":        "ox",
-		"penises":     "penis",
-		"vaginas":     "vagina",
-		"vertices":    "vertex",
-		"viruses":     "virus",
-		"shoes":       "shoe",
-		"sexes":       "sex",
-		"testes":      "testis",
-		"turfs":       "turf",
-		"teeth":       "tooth",
-		"feet":        "foot",
-		"cacti":       "cactus",
-		"children":    "child",
-		"criteria":    "criterion",
-		"news":        "news",
-		"deer":        "deer",
-		"echoes":      "echo",
-		"elves":       "elf",
-		"embargoes":   "embargo",
-		"foes":        "foe",
-		"foci":        "focus",
-		"fungi":       "fungus",
-		"geese":       "goose",
-		"heroes":      "hero",
-		"hooves":      "hoof",
-		"indices":     "index",
-		"knifes":      "knife",
-		"leaves":      "leaf",
-		"lives":       "life",
-		"men":         "man",
-		"mice":        "mouse",
-		"nuclei":      "nucleus",
-		"people":      "person",
-		"phenomena":   "phenomenon",
-		"potatoes":    "potato",
-		"selves":      "self",
-		"syllabi":     "syllabus",
-		"tomatoes":    "tomato",
-		"torpedoes":   "torpedo",
-		"vetoes":      "veto",
-		"women":       "woman",
-		"zeroes":      "zero",
-		"natives":     "native",
-		"hives":       "hive",
-		"quizzes":     "quiz",
-		"bases":       "basis",
-		"diagnostic":  "diagnosis",
-		"parentheses": "parenthesis",
-		"prognoses":   "prognosis",
-		"synopses":    "synopsis",
-		"theses":      "thesis",
-	}
-
-	if result, ok := singularDictionary[strings.ToLower(input)]; !ok {
-		// to handle words like apples, doors, cats
-		if len(input) > 2 && input[len(input)-1] == 's' {
-			return string(input[:len(input)-1])
-		}
-		return input
-	} else {
-		return result
-	}
-}
-
-// IsCountable check if word can have plural form
-func IsCountable(input string) bool {
-	// dictionary of word that has no plural version
-	var nonCountable = map[string]bool{
-		"audio":        true,
-		"bison":        true,
-		"chassis":      true,
-		"compensation": true,
-		"coreopsis":    true,
-		"data":         true,
-		"deer":         true,
-		"education":    true,
-		"emoji":        true,
-		"equipment":    true,
-		"fish":         true,
-		"furniture":    true,
-		"gold":         true,
-		"information":  true,
-		"knowledge":    true,
-		"love":         true,
-		"rain":         true,
-		"money":        true,
-		"moose":        true,
-		"nutrition":    true,
-		"offspring":    true,
-		"plankton":     true,
-		"pokemon":      true,
-		"police":       true,
-		"rice":         true,
-		"series":       true,
-		"sheep":        true,
-		"species":      true,
-		"swine":        true,
-		"traffic":      true,
-		"wheat":        true,
-	}
-
-	_, ok := nonCountable[strings.ToLower(input)]
-	return !ok
+	return inflection.Singular(input)
 }
 
 func IsUpper(c byte) bool {
@@ -249,6 +108,6 @@ func ReplaceSuffix(input, suffix, replace string) string {
 }
 
 func PackageName(input string) string {
-	rgxp := regexp.MustCompile(`[^\w\d]`)
+	rgxp := regexp.MustCompile(`[^a-zA-Z\d]`)
 	return strings.ToLower(rgxp.ReplaceAllString(input, ""))
 }

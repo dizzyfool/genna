@@ -2,6 +2,7 @@ package model
 
 import (
 	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -219,70 +220,6 @@ func TestTable_TableNameTag(t *testing.T) {
 	}
 }
 
-func TestTable_Imports(t *testing.T) {
-	type fields struct {
-		Columns []Column
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   []string
-	}{
-		{
-			name: "Should not generate imports if only simple types",
-			fields: fields{
-				Columns: []Column{
-					{
-						Name: "userId",
-						Type: TypeInt8,
-					},
-					{
-						Name: "locationId",
-						Type: TypeInt8,
-					},
-				},
-			},
-			want: []string{},
-		},
-		{
-			name: "Should not generate imports without duplicates",
-			fields: fields{
-				Columns: []Column{
-					{
-						Name: "userId",
-						Type: TypeInt8,
-					},
-					{
-						Name: "createdAt",
-						Type: TypeTimestamp,
-					},
-					{
-						Name:       "deletedAt",
-						Type:       TypeTimestamp,
-						IsNullable: true,
-					},
-					{
-						Name:       "updatedAt",
-						Type:       TypeTimestamp,
-						IsNullable: true,
-					},
-				},
-			},
-			want: []string{"time", "github.com/go-pg/pg"},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tbl := Table{
-				Columns: tt.fields.Columns,
-			}
-			if got := tbl.Imports(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Table.Imports() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestTable_Validate(t *testing.T) {
 	pkColumn := Column{
 		Name: "userId",
@@ -402,6 +339,205 @@ func TestTable_Validate(t *testing.T) {
 			}
 			if err := tbl.Validate(); (err != nil) != tt.wantErr {
 				t.Errorf("Table.Validate() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestTable_Imports(t *testing.T) {
+	type fields struct {
+		Schema    string
+		Name      string
+		Columns   []Column
+		Relations []Relation
+	}
+	type args struct {
+		withRelations bool
+		importPath    string
+		publicAlias   string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   []string
+	}{
+		{
+			name: "Should not generate imports if only simple types",
+			fields: fields{
+				Columns: []Column{
+					{
+						Name: "userId",
+						Type: TypeInt8,
+					},
+					{
+						Name: "locationId",
+						Type: TypeInt8,
+					},
+				},
+			},
+			want: []string{},
+		},
+		{
+			name: "Should not generate imports without duplicates",
+			fields: fields{
+				Columns: []Column{
+					{
+						Name: "userId",
+						Type: TypeInt8,
+					},
+					{
+						Name: "createdAt",
+						Type: TypeTimestamp,
+					},
+					{
+						Name:       "deletedAt",
+						Type:       TypeTimestamp,
+						IsNullable: true,
+					},
+					{
+						Name:       "updatedAt",
+						Type:       TypeTimestamp,
+						IsNullable: true,
+					},
+				},
+			},
+			want: []string{"time", "github.com/go-pg/pg"},
+		},
+		{
+			name: "Should not generate imports for foreign keys in same package",
+			fields: fields{
+				Relations: []Relation{
+					{
+						Type:         HasOne,
+						SourceSchema: PublicSchema,
+						TargetSchema: PublicSchema,
+					},
+				},
+			},
+			args: args{
+				withRelations: true,
+			},
+			want: []string{},
+		},
+		{
+			name: "Should not generate imports for foreign keys in different packages",
+			fields: fields{
+				Relations: []Relation{
+					{
+						Type:         HasOne,
+						SourceSchema: PublicSchema,
+						TargetSchema: "geo",
+					},
+					{
+						Type:         HasOne,
+						SourceSchema: PublicSchema,
+						TargetSchema: "geo",
+					},
+				},
+			},
+			args: args{
+				withRelations: true,
+			},
+			want: []string{"geo"},
+		},
+		{
+			name: "Should not generate imports for foreign keys in different not public packages",
+			fields: fields{
+				Relations: []Relation{
+					{
+						Type:         HasOne,
+						SourceSchema: "geo",
+						TargetSchema: PublicSchema,
+					},
+					{
+						Type:         HasOne,
+						SourceSchema: "geo",
+						TargetSchema: "users",
+					},
+					{
+						Type:         HasOne,
+						SourceSchema: "geo",
+						TargetSchema: "geo",
+					},
+				},
+			},
+			args: args{
+				withRelations: true,
+			},
+			want: []string{"model", "users"},
+		},
+		{
+			name: "Should generate imports for foreign keys with custom default package",
+			fields: fields{
+				Relations: []Relation{
+					{
+						Type:         HasOne,
+						SourceSchema: "geo",
+						TargetSchema: PublicSchema,
+					},
+					{
+						Type:         HasOne,
+						SourceSchema: "geo",
+						TargetSchema: "users",
+					},
+					{
+						Type:         HasOne,
+						SourceSchema: "geo",
+						TargetSchema: "geo",
+					},
+				},
+			},
+			args: args{
+				withRelations: true,
+				publicAlias:   "test",
+			},
+			want: []string{"test", "users"},
+		},
+		{
+			name: "Should generate imports for foreign keys with custom package prefix",
+			fields: fields{
+				Relations: []Relation{
+					{
+						Type:         HasOne,
+						SourceSchema: "geo",
+						TargetSchema: PublicSchema,
+					},
+					{
+						Type:         HasOne,
+						SourceSchema: "geo",
+						TargetSchema: "users",
+					},
+					{
+						Type:         HasOne,
+						SourceSchema: "geo",
+						TargetSchema: "geo",
+					},
+				},
+			},
+			args: args{
+				withRelations: true,
+				publicAlias:   "test",
+				importPath:    "src",
+			},
+			want: []string{"src/test", "src/users"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tbl := Table{
+				Schema:    tt.fields.Schema,
+				Name:      tt.fields.Name,
+				Columns:   tt.fields.Columns,
+				Relations: tt.fields.Relations,
+			}
+			got := tbl.Imports(tt.args.withRelations, tt.args.importPath, tt.args.publicAlias)
+
+			sort.Strings(got)
+			sort.Strings(tt.want)
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Table.Imports() = %v, want %v", got, tt.want)
 			}
 		})
 	}

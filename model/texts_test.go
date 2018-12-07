@@ -58,6 +58,16 @@ func TestModelName(t *testing.T) {
 			want: "User",
 		},
 		{
+			name: "Should generate from simple word end with es",
+			args: args{"companies"},
+			want: "Company",
+		},
+		{
+			name: "Should generate from simple word end with es",
+			args: args{"glasses"},
+			want: "Glass",
+		},
+		{
 			name: "Should generate from non-countable",
 			args: args{"audio"},
 			want: "Audio",
@@ -201,6 +211,35 @@ func TestReplaceSuffix(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := ReplaceSuffix(tt.args.input, tt.args.suffix, tt.args.replace); got != tt.want {
 				t.Errorf("ReplaceSuffix() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPackageName(t *testing.T) {
+	type args struct {
+		input string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Should generate valid package name with lower",
+			args: args{"tesT"},
+			want: "test",
+		},
+		{
+			name: "Should generate valid package name with only letters",
+			args: args{"te_sT$"},
+			want: "test",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := PackageName(tt.args.input); got != tt.want {
+				t.Errorf("PackageName() = %v, want %v", got, tt.want)
 			}
 		})
 	}

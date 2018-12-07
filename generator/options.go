@@ -1,32 +1,51 @@
 package generator
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/dizzyfool/genna/model"
+)
 
 type Options struct {
 	// Directory path where files should be saved
 	Output string
 
-	// Package sets package name for model
-	// With SchemaAsPackage = true this param works only for public schema
-	// Default 'model'
-	Package string
-
-	// Generate every schema as separate package
-	SchemaAsPackage bool
-
-	// If SchemaAsPackage is true
-	// PackagePrefix holds prefix for foreign keys
-	PackagePrefix string
-
 	// List of tables to generate
 	// Default []string{"public.*"}
 	Tables []string
 
+	// Prefix for imports
+	ImportPath string
+
+	// Package sets package name for model
+	// Works only with SchemaPackage = false
+	Package string
+
+	// Generate every schema as separate package
+	SchemaPackage bool
+
+	// Generates one file for package
+	// SchemaPackage | MultiFile | Result
+	// true          | true      | each generated package will contain one file
+	// true          | false     | each generated package will contain several files, one per model
+	// false         | false     | one package for all models separated to different files
+	// false         | true      | one big file for all models
+	// TODO Make this param as MODE ?
+	MultiFile bool
+
+	// Generate model for foreign keys,
+	// even if tables not listed in Tables param
+	// will not generate fks if schema not listed
+	FollowFKs bool
+
 	// Generate model with views e.g. getUsers for users table
 	View bool
 
-	// Generate model for foreign keys
-	FollowFKs bool
+	// Do not replace primary key name to ID
+	KeepPK bool
+
+	// Do not generate discard_unknown_columns tag
+	NoDiscard bool
 
 	// Stores json field names as in db and target types for them
 	// TODO implement
@@ -35,17 +54,16 @@ type Options struct {
 	// Generate Hooks
 	// TODO implement
 	UseHooks bool
-
-	// Do not replace primary key name to ID
-	KeepPK bool
-
-	// Do not generate discard_unknown_columns tag
-	NoDiscard bool
 }
 
+// def fills default values of an options
 func (o *Options) def() {
 	if strings.Trim(o.Package, " ") == "" {
-		o.Package = "model"
+		o.Package = model.DefaultPackage
+	}
+
+	if o.SchemaPackage {
+		o.Package = model.DefaultPackage
 	}
 
 	if len(o.Tables) == 0 {

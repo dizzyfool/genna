@@ -1,6 +1,8 @@
 package model
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestRelation_StructFieldName(t *testing.T) {
 	type fields struct {
@@ -39,21 +41,129 @@ func TestRelation_StructFieldName(t *testing.T) {
 	}
 }
 
+func TestRelation_StructFieldTag(t *testing.T) {
+	type fields struct {
+		SourceColumn string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name:   "Should generate simple name",
+			fields: fields{"locationId"},
+			want:   `sql:"fk:locationId"`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := Relation{
+				SourceColumn: tt.fields.SourceColumn,
+			}
+			if got := r.StructFieldTag(); got != tt.want {
+				t.Errorf("Relation.StructFieldTag() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRelation_Import(t *testing.T) {
+	type fields struct {
+		SourceSchema string
+		TargetSchema string
+	}
+	type args struct {
+		importPath  string
+		publicAlias string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   string
+	}{
+		{
+			name: "Should not generate import inside same package",
+			fields: fields{
+				SourceSchema: "geo",
+				TargetSchema: "geo",
+			},
+			args: args{},
+			want: "",
+		},
+		{
+			name: "Should generate import with default name",
+			fields: fields{
+				SourceSchema: "geo",
+				TargetSchema: PublicSchema,
+			},
+			args: args{},
+			want: "model",
+		},
+		{
+			name: "Should generate import with custom name",
+			fields: fields{
+				SourceSchema: "geo",
+				TargetSchema: PublicSchema,
+			},
+			args: args{
+				publicAlias: "test",
+			},
+			want: "test",
+		},
+		{
+			name: "Should generate import with custom name and prefix",
+			fields: fields{
+				SourceSchema: "geo",
+				TargetSchema: PublicSchema,
+			},
+			args: args{
+				publicAlias: "test",
+				importPath:  "model",
+			},
+			want: "model/test",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := Relation{
+				SourceSchema: tt.fields.SourceSchema,
+				TargetSchema: tt.fields.TargetSchema,
+			}
+			if got := r.Import(tt.args.importPath, tt.args.publicAlias); got != tt.want {
+				t.Errorf("Relation.Import() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestRelation_StructFieldType(t *testing.T) {
 	type fields struct {
+		Type         int
+		SourceSchema string
 		TargetSchema string
 		TargetTable  string
 	}
+	type args struct {
+		withSchema  bool
+		publicAlias string
+	}
 	tests := []struct {
-		name       string
-		fields     fields
-		withSchema bool
-		want       string
+		name   string
+		fields fields
+		args   args
+		want   string
 	}{
 		{
-			name:   "Should generate from simple word",
-			fields: fields{TargetTable: "users"},
-			want:   "*User",
+			name: "Should generate from simple word",
+			fields: fields{
+				SourceSchema: PublicSchema,
+				TargetSchema: PublicSchema,
+				TargetTable:  "users",
+			},
+			args: args{},
+			want: "*User",
 		},
 		{
 			name:   "Should generate from non-countable",
@@ -86,47 +196,82 @@ func TestRelation_StructFieldType(t *testing.T) {
 			want:   "*Abracadabra",
 		},
 		{
-			name:       "Should generate with schema",
-			fields:     fields{TargetSchema: "information_schema", TargetTable: "users"},
-			withSchema: true,
-			want:       "*InformationSchemaUser",
+			name: "Should generate without package",
+			fields: fields{
+				SourceSchema: PublicSchema,
+				TargetSchema: "information_schema",
+				TargetTable:  "users",
+			},
+			want: "*informationschema.User",
+		},
+		{
+			name: "Should generate with schema",
+			fields: fields{
+				SourceSchema: PublicSchema,
+				TargetSchema: "information_schema",
+				TargetTable:  "users",
+			},
+			args: args{
+				withSchema: true,
+			},
+			want: "*InformationSchemaUser",
+		},
+		{
+			name: "Should generate without schema",
+			fields: fields{
+				SourceSchema: "information_schema",
+				TargetSchema: PublicSchema,
+				TargetTable:  "users",
+			},
+			args: args{
+				withSchema: true,
+			},
+			want: "*User",
+		},
+		{
+			name: "Should generate with package",
+			fields: fields{
+				SourceSchema: "information_schema",
+				TargetSchema: PublicSchema,
+				TargetTable:  "users",
+			},
+			want: "*model.User",
+		},
+		{
+			name: "Should generate with package alias",
+			fields: fields{
+				SourceSchema: "information_schema",
+				TargetSchema: PublicSchema,
+				TargetTable:  "users",
+			},
+			args: args{
+				publicAlias: "geo",
+			},
+			want: "*geo.User",
+		},
+		{
+			name: "Should generate with ignored package alias",
+			fields: fields{
+				SourceSchema: PublicSchema,
+				TargetSchema: "information_schema",
+				TargetTable:  "users",
+			},
+			args: args{
+				publicAlias: "ignored",
+			},
+			want: "*informationschema.User",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := Relation{
+				Type:         tt.fields.Type,
+				SourceSchema: tt.fields.SourceSchema,
 				TargetSchema: tt.fields.TargetSchema,
 				TargetTable:  tt.fields.TargetTable,
 			}
-			if got := r.StructFieldType(tt.withSchema); got != tt.want {
+			if got := r.StructFieldType(tt.args.withSchema, tt.args.publicAlias); got != tt.want {
 				t.Errorf("Relation.StructFieldType() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestRelation_StructFieldTag(t *testing.T) {
-	type fields struct {
-		SourceColumn string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   string
-	}{
-		{
-			name:   "Should generate simple name",
-			fields: fields{"locationId"},
-			want:   `sql:"fk:locationId"`,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := Relation{
-				SourceColumn: tt.fields.SourceColumn,
-			}
-			if got := r.StructFieldTag(); got != tt.want {
-				t.Errorf("Relation.StructFieldTag() = %v, want %v", got, tt.want)
 			}
 		})
 	}

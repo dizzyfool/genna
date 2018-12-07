@@ -43,7 +43,7 @@ func (t Table) PackageName(withSchema bool, publicAlias string) string {
 }
 
 // Model returns all imports required by model
-func (t Table) Imports() []string {
+func (t Table) Imports(withRelations bool, importPath, publicAlias string) []string {
 	imports := make([]string, 0)
 	index := make(map[string]struct{})
 
@@ -52,6 +52,21 @@ func (t Table) Imports() []string {
 			if _, ok := index[imp]; !ok {
 				imports = append(imports, imp)
 				index[imp] = struct{}{}
+			}
+		}
+	}
+
+	if withRelations {
+		for _, relation := range t.Relations {
+			if relation.TargetSchema == t.Schema {
+				continue
+			}
+
+			if imp := relation.Import(importPath, publicAlias); imp != "" {
+				if _, ok := index[imp]; !ok {
+					imports = append(imports, imp)
+					index[imp] = struct{}{}
+				}
 			}
 		}
 	}

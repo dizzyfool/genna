@@ -26,7 +26,13 @@ func TestDo(t *testing.T) {
 				IsNullable: true,
 			},
 			{
-				Name: "locationId",
+				Name:       "locationId",
+				Type:       model.TypeInt8,
+				IsNullable: false,
+				IsFK:       true,
+			},
+			{
+				Name: "companyId",
 				Type: model.TypeInt8,
 				IsFK: true,
 			},
@@ -38,10 +44,39 @@ func TestDo(t *testing.T) {
 		Relations: []model.Relation{
 			{
 				Type:         model.HasOne,
+				SourceSchema: model.PublicSchema,
+				SourceTable:  "users",
 				SourceColumn: "locationId",
 				TargetSchema: "geo",
 				TargetTable:  "locations",
 				TargetColumn: "locationId",
+			},
+			{
+				Type:         model.HasOne,
+				SourceSchema: model.PublicSchema,
+				SourceTable:  "users",
+				SourceColumn: "companyId",
+				TargetSchema: model.PublicSchema,
+				TargetTable:  "companies",
+				TargetColumn: "companyId",
+			},
+		},
+	}
+
+	company := model.Table{
+		Schema: model.PublicSchema,
+		Name:   "companies",
+		Columns: []model.Column{
+			{
+				Name:       "companyId",
+				Type:       model.TypeInt8,
+				IsPK:       true,
+				IsNullable: false,
+			},
+			{
+				Name:       "title",
+				Type:       model.TypeVarchar,
+				IsNullable: true,
 			},
 		},
 	}
@@ -64,18 +99,57 @@ func TestDo(t *testing.T) {
 		},
 	}
 
+	lang := model.Table{
+		Schema: "geo",
+		Name:   "languages",
+		Columns: []model.Column{
+			{
+				Name:       "languageId",
+				Type:       model.TypeInt8,
+				IsPK:       true,
+				IsNullable: false,
+			},
+			{
+				Name:       "title",
+				Type:       model.TypeVarchar,
+				IsNullable: true,
+			},
+		},
+	}
+
+	unused := model.Table{
+		Schema: model.PublicSchema,
+		Name:   "unused",
+		Columns: []model.Column{
+			{
+				Name:       "unusedId",
+				Type:       model.TypeInt8,
+				IsPK:       true,
+				IsNullable: false,
+			},
+			{
+				Name:       "title",
+				Type:       model.TypeVarchar,
+				IsNullable: true,
+			},
+		},
+	}
+
 	_, filename, _, _ := runtime.Caller(0)
 
+	// just for test
 	generator := NewGenerator(Options{
-		Package:         "test", // try model
-		Tables:          []string{"*"},
-		FollowFKs:       true, // TODO false is not working because need to ignore some relations
-		Output:          path.Dir(filename) + "/../",
-		SchemaAsPackage: false, // TODO true is not working because of invalid imports
-		KeepPK:          false, // try true
-		NoDiscard:       false, // try true
+		Package:       "test", // model.DefaultPackage,
+		Tables:        []string{"public.users", "geo.*"},
+		FollowFKs:     true,
+		Output:        path.Dir(filename) + "/../test/",
+		SchemaPackage: true,
+		MultiFile:     true,
+		ImportPath:    "github.com/dizzyfool/genna/test",
+		KeepPK:        false, // try true
+		NoDiscard:     false, // try true
 	})
 
-	err := generator.Process([]model.Table{user, location})
+	err := generator.Process([]model.Table{unused, user, company, location, lang})
 	fmt.Print(err)
 }

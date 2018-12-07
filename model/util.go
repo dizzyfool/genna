@@ -35,7 +35,7 @@ func Schemas(tables []string) (schemas []string) {
 }
 
 // DiscloseSchemas discloses "*" in schemas
-func DiscloseSchemas(userInput []string, tables []Table) []string {
+func DiscloseSchemas(tables []Table, userInput []string) []string {
 	index := map[string]struct{}{}
 
 	for _, t := range userInput {
@@ -65,7 +65,7 @@ func DiscloseSchemas(userInput []string, tables []Table) []string {
 }
 
 // FollowFKs resolves foreign keys & adds tables in to generate list
-func FollowFKs(disclosed []string, tables []Table) []string {
+func FollowFKs(tables []Table, disclosed []string) []string {
 	iTables := map[string]struct{}{}
 	for _, d := range disclosed {
 		iTables[d] = struct{}{}
@@ -95,4 +95,41 @@ func FollowFKs(disclosed []string, tables []Table) []string {
 	}
 
 	return disclosed
+}
+
+// FilterFKs filters fks that not presented
+func FilterFKs(tables []Table, disclosed []string) []Table {
+	iTables := map[string]struct{}{}
+	for _, d := range disclosed {
+		iTables[d] = struct{}{}
+	}
+
+	for i := range tables {
+		filtered := make([]Relation, 0)
+
+		for _, relation := range tables[i].Relations {
+			relTable := Join(relation.TargetSchema, relation.TargetTable)
+			if _, ok := iTables[relTable]; ok {
+				filtered = append(filtered, relation)
+			}
+		}
+
+		tables[i].Relations = filtered
+	}
+
+	return tables
+}
+
+// UniqStrings filter non-unique values
+func UniqStrings(input []string) (output []string) {
+	index := map[string]struct{}{}
+
+	for _, v := range input {
+		if _, ok := index[v]; !ok {
+			output = append(output, v)
+			index[v] = struct{}{}
+		}
+	}
+
+	return output
 }
