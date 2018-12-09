@@ -28,6 +28,7 @@ func newMultiPackage(packageName string, tables []model.Table, options Options) 
 		imports = append(imports, table.Imports(options.SchemaPackage, options.ImportPath, options.Package)...)
 
 		models[i] = newTemplateTable(table, options)
+		models[i].uniqualizeFields()
 	}
 
 	imports = model.UniqStrings(imports)
@@ -49,6 +50,9 @@ func newMultiPackage(packageName string, tables []model.Table, options Options) 
 
 // newSinglePackage creates a package with simple model
 func newSinglePackage(table model.Table, options Options) *templatePackage {
+	tt := newTemplateTable(table, options)
+	tt.uniqualizeFields()
+
 	imports := table.Imports(options.SchemaPackage, options.ImportPath, options.Package)
 
 	return &templatePackage{
@@ -62,7 +66,7 @@ func newSinglePackage(table model.Table, options Options) *templatePackage {
 		HasImports: len(imports) > 0,
 		Imports:    imports,
 
-		Models: []templateTable{newTemplateTable(table, options)},
+		Models: []templateTable{tt},
 	}
 }
 
@@ -78,6 +82,10 @@ type templateTable struct {
 }
 
 func newTemplateTable(table model.Table, options Options) templateTable {
+	if table.HasMultiplePKs() {
+		options.KeepPK = true
+	}
+
 	columns := make([]templateColumn, len(table.Columns))
 	for i, column := range table.Columns {
 		columns[i] = newTemplateColumn(column, options)
@@ -110,7 +118,7 @@ func newTemplateColumn(column model.Column, options Options) templateColumn {
 	return templateColumn{
 		FieldName: column.StructFieldName(options.KeepPK),
 		FieldType: column.StructFieldType(),
-		FieldTag:  template.HTML(fmt.Sprintf("`%v`", column.StructFieldTag())),
+		FieldTag:  template.HTML(fmt.Sprintf("`%s`", column.StructFieldTag())),
 	}
 }
 
@@ -126,5 +134,70 @@ func newTemplateRelation(relation model.Relation, options Options) templateRelat
 		FieldName: relation.StructFieldName(),
 		FieldType: relation.StructFieldType(!options.SchemaPackage, options.Package),
 		FieldTag:  template.HTML(fmt.Sprintf("`%s`", relation.StructFieldTag())),
+	}
+}
+
+func (t templateTable) uniqualizeFields() {
+	index := map[string]bool{}
+
+	for i, column := range t.Columns {
+		fieldName := column.FieldName
+
+		if _, ok := index[fieldName]; !ok {
+			index[fieldName] = true
+			continue
+		}
+
+		suffix := 1
+	couter:
+		for {
+			fieldName = fmt.Sprintf("%s%d", column.FieldName, suffix)
+
+			for _, col := range t.Columns {
+				if col.FieldName == fieldName {
+					suffix += 1
+					continue couter
+				}
+			}
+			t.Columns[i].FieldName = fieldName
+			break
+		}
+	}
+
+	for i, relation := range t.Relations {
+		fieldName := relation.FieldName
+
+		if _, ok := index[fieldName]; !ok {
+			index[fieldName] = true
+			continue
+		}
+
+		suffix := 0
+
+	router:
+		for {
+			if suffix == 0 {
+				fieldName = fmt.Sprintf("%sRel", relation.FieldName)
+			} else {
+				fieldName = fmt.Sprintf("%sRel%d", relation.FieldName, suffix)
+			}
+
+			for _, col := range t.Columns {
+				if col.FieldName == fieldName {
+					suffix += 1
+					continue router
+				}
+			}
+
+			for _, rel := range t.Relations {
+				if rel.FieldName == fieldName {
+					suffix += 1
+					continue router
+				}
+			}
+
+			t.Relations[i].FieldName = fieldName
+			break
+		}
 	}
 }

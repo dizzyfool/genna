@@ -57,8 +57,10 @@ to quickly create a models for go-pg https://github.com/go-pg/pg`,
 
 		flags := cmd.Flags()
 
-		// TODO dig container
-		logger, err := zap.NewDevelopment()
+		config := zap.NewProductionConfig()
+		config.OutputPaths = []string{"stdout"}
+		config.Encoding = "console"
+		logger, err := config.Build()
 		if err != nil {
 			panic(err)
 		}

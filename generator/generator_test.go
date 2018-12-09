@@ -6,6 +6,9 @@ import (
 	"runtime"
 	"testing"
 
+	"go.uber.org/zap"
+
+	"github.com/dizzyfool/genna/database"
 	"github.com/dizzyfool/genna/model"
 )
 
@@ -152,4 +155,43 @@ func TestDo(t *testing.T) {
 
 	err := generator.Process([]model.Table{unused, user, company, location, lang})
 	fmt.Print(err)
+}
+
+func TestLive(t *testing.T) {
+	_, filename, _, _ := runtime.Caller(0)
+
+	url := `postgres://genna:genna@localhost:5432/genna_kwt?sslmode=disable`
+	options := Options{
+		Package:       model.DefaultPackage,
+		Tables:        []string{"public.*"},
+		FollowFKs:     true,
+		Output:        path.Dir(filename) + "/../test/",
+		SchemaPackage: true,
+		MultiFile:     false,
+		ImportPath:    "github.com/dizzyfool/genna/test",
+		KeepPK:        false, // try true
+		NoDiscard:     false, // try true
+	}
+
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		panic(err)
+	}
+
+	db, err := database.NewDatabase(url, logger)
+	if err != nil {
+		panic(err)
+	}
+
+	store := database.NewStore(db)
+	tables, err := store.Tables(model.Schemas(options.Tables))
+	if err != nil {
+		panic(err)
+	}
+
+	genna := NewGenerator(options)
+
+	if err := genna.Process(tables); err != nil {
+		panic(err)
+	}
 }

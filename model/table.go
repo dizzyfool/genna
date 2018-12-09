@@ -134,6 +134,20 @@ func (t Table) TableNameTag(noDiscard, withView bool) string {
 	return annotation.String()
 }
 
+func (t Table) HasMultiplePKs() bool {
+	count := 0
+	for _, column := range t.Columns {
+		if column.IsPK {
+			count++
+			if count >= 2 {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func (t Table) Validate() error {
 	if strings.Trim(t.Schema, " ") == "" {
 		return fmt.Errorf("shema name is empty")

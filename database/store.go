@@ -79,6 +79,16 @@ func (r *relationRow) Relation() model.Relation {
 func (s *Store) Tables(schema []string) ([]model.Table, error) {
 	query := `
 		with
+		    enums as (
+		        select distinct true        as "is_enum",
+		                        sch.nspname as "table_schema",
+		                        tb.relname  as "table_name",
+		                        col.attname as "column_name"
+		        from pg_class tb
+		        left join pg_namespace sch on sch.oid = tb.relnamespace
+		        left join pg_attribute col on col.attrelid = tb.oid
+		        inner join pg_enum e on e.enumtypid = col.atttypid
+		    ),
 		    arrays as (
 		        select sch.nspname  as "table_schema",
 		               tb.relname   as "table_name",
@@ -87,27 +97,36 @@ func (s *Store) Tables(schema []string) ([]model.Table, error) {
 		        from pg_class tb
 		        left join pg_namespace sch on sch.oid = tb.relnamespace
 		        left join pg_attribute col on col.attrelid = tb.oid
-		        where tb.relname = 'mapping'
-		          and sch.nspname = 'public'
-		          and col.attndims > 0
+		        where col.attndims > 0
 		    )
-		select
-		       c."table_schema"                  as "schema",
-		       c."table_name"                    as "table",
-		       c."column_name"                   as "column",
-		       c."is_nullable" = 'YES'           as "nullable",
-		       c."data_type" = 'ARRAY'           as "array",
-		       coalesce(a.array_dims, 0)         as "dims",
-		       ltrim(c."udt_name", '_')          as "type",
-		       c.column_default                  as "default",
-		       f.constraint_type = 'PRIMARY KEY' as "pk",
-		       f.constraint_type = 'FOREIGN KEY' as "fk"
-		from information_schema.columns c
+		select distinct c."table_schema"                  as "schema",
+		                c."table_name"                    as "table",
+		                c."column_name"                   as "column",
+		                case
+		                when f.constraint_type is null
+		                then false
+		                else f.constraint_type = 'PRIMARY KEY'
+		                end                               as "pk",
+		                f.constraint_type = 'FOREIGN KEY' as "fk",
+		                c."is_nullable" = 'YES'           as "nullable",
+		                c."data_type" = 'ARRAY'           as "array",
+		                coalesce(a.array_dims, 0)         as "dims",
+		                case
+		                when e.is_enum = true
+		                then 'varchar'
+		                else ltrim(c."udt_name", '_')
+		                end                               as "type",
+		                c.column_default                  as "default"
+		from information_schema.tables t
+		left join information_schema.columns c using (table_name, table_schema)
 		left join information_schema.key_column_usage k using (table_name, table_schema, column_name)
 		left join information_schema.table_constraints f using (table_name, table_schema, constraint_name)
 		left join arrays a using (table_name, table_schema, column_name)
-		where c."table_schema" in (?)
-		order by 1, 2;
+		left join enums e using (table_name, table_schema, column_name)
+		where t."table_schema" in (?)
+		  and t.table_type = 'BASE TABLE'
+		  and (f.constraint_type in ('PRIMARY KEY', 'FOREIGN KEY') or f.constraint_type is null)
+		order by 1, 2, 4 desc nulls last;
 	`
 
 	rows := make([]columnRow, 0)
@@ -169,12 +188,13 @@ func (s *Store) Relations(schema, table string) ([]model.Relation, error) {
 		from pg_constraint co
 		left join tables s on co.conrelid = s.oid
 		left join schemas ss on s.relnamespace = ss.oid
-		left join columns sc on s.oid = sc.attrelid and co.conkey[1] = sc.attnum
+		left join columns sc on s.oid = sc.attrelid and sc.attnum = ANY (co.conkey)
 		left join tables t on co.confrelid = t.oid
 		left join schemas ts on t.relnamespace = ts.oid
-		left join columns tc on t.oid = tc.attrelid and co.confkey[1] = tc.attnum
+		left join columns tc on t.oid = tc.attrelid and tc.attnum = ANY (co.confkey)
 		where co.contype = 'f'
 		  and co.conrelid in (select oid from pg_class c where c.relkind = 'r')
+		  and array_position(co.conkey, sc.attnum) = array_position(co.confkey, tc.attnum)
 		  and ss.nspname = ?
 		  and s.relname = ?
 	`

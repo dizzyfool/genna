@@ -99,16 +99,20 @@ func GoImport(pgType string, nullable, array bool, dimensions int, avoidPointers
 
 // GoImportFromType generates import from go type
 func GoImportFromType(typ types.Type) string {
-	switch typ.(type) {
-	case DateTime, Interval:
+	switch v := typ.(type) {
+	case *types.Pointer:
+		return GoImportFromType(v.Elem())
+	case DateTime, Interval, *DateTime, *Interval:
 		return "time"
-	case NetIp, NetIpNet:
+	case NetIp, NetIpNet, *NetIp, *NetIpNet:
 		return "net"
-	case JsonType:
+	case JsonType, *JsonType:
 		return "encoding/json"
-	case PgNullTime:
+	case PgNullTime, *PgNullTime:
 		return "github.com/go-pg/pg"
 	case SqlNullInt64, SqlNullFloat64, SqlNullBool, SqlNullString:
+		return "database/sql"
+	case *SqlNullInt64, *SqlNullFloat64, *SqlNullBool, *SqlNullString:
 		return "database/sql"
 	}
 
