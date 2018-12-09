@@ -106,8 +106,8 @@ func GoImportFromType(typ types.Type) string {
 		return "time"
 	case NetIp, NetIpNet, *NetIp, *NetIpNet:
 		return "net"
-	case JsonType, *JsonType:
-		return "encoding/json"
+	//case JsonType, *JsonType:
+	//	return "encoding/json"
 	case PgNullTime, *PgNullTime:
 		return "github.com/go-pg/pg"
 	case SqlNullInt64, SqlNullFloat64, SqlNullBool, SqlNullString:
@@ -157,7 +157,7 @@ func GoSimpleType(pgType string) (types.Type, error) {
 	case TypeInterval:
 		return Interval{}, nil
 	case TypeJsonb, TypeJson:
-		return JsonType{}, nil
+		return types.NewMap(types.Typ[types.String], Interface{}), nil
 	case TypeHstore:
 		return types.NewMap(types.Typ[types.String], types.Typ[types.String]), nil
 	case TypeInet:
@@ -337,4 +337,14 @@ func (SqlNullBool) String() string {
 
 func (SqlNullBool) Underlying() types.Type {
 	return nil
+}
+
+type Interface struct{}
+
+func (Interface) String() string {
+	return "interface{}"
+}
+
+func (Interface) Underlying() types.Type {
+	return &types.Interface{}
 }
