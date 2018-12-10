@@ -134,8 +134,8 @@ false      | false      | one big file for all models
 	flags.BoolP(View, "v", false, "use view for selects e.g. getUsers for users table")
 	flags.BoolP(FollowFK, "f", false, "generate models for foreign keys, even if it not listed in tables\n")
 
-	flags.Bool(KeepPK, false, "keep primary key name as is (by default it should be converted to 'ID')\nwarning: may break some go-pg features like many-to-many table relations")
-	flags.Bool(NoDiscard, false, "do not use 'discard_unknown_columns' tag\nwarning: may break incomplete models")
+	flags.Bool(KeepPK, false, "keep primary key name as is (by default it should be converted to 'ID') \n")
+	flags.Bool(NoDiscard, false, "do not use 'discard_unknown_columns' tag")
 }
 
 func flagsToOptions(flags *pflag.FlagSet) (generator.Options, error) {
