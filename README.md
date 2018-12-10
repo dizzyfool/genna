@@ -1,5 +1,7 @@
 # Genna - cli tool for generating go-pg models
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/dizzyfool/genna)](https://goreportcard.com/report/github.com/dizzyfool/genna)
+
 Requirements:
 - [go-pg](https://github.com/go-pg/pg)
 - your PostgreSQL database
