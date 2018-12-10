@@ -3,10 +3,14 @@ package model
 import "strings"
 
 const (
-	PublicSchema   = "public"
+	// PublicSchema is a default postgresql schema
+	PublicSchema = "public"
+
+	// DefaultPackage is a default package name
 	DefaultPackage = "model"
 )
 
+// Split splits full table name in schema and table name
 func Split(input string) (string, string) {
 	d := strings.Split(input, ".")
 	if len(d) < 2 {
@@ -16,6 +20,7 @@ func Split(input string) (string, string) {
 	return d[0], d[1]
 }
 
+// Join joins table name and schema to full name
 func Join(schema, table string) string {
 	return schema + "." + table
 }

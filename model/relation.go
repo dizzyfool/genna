@@ -5,8 +5,11 @@ import (
 )
 
 const (
+	// HasOne is has one relation
 	HasOne int = iota
+	// HasMany is has many relation
 	HasMany
+	// ManyToMany is many to many relation
 	ManyToMany
 )
 

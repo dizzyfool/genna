@@ -12,30 +12,52 @@ import (
 )
 
 const (
+	// Unknown represents unknown type
 	Unknown = "unknown"
-
-	TypeInt2        = "int2"
-	TypeInt4        = "int4"
-	TypeInt8        = "int8"
-	TypeNumeric     = "numeric"
-	TypeFloat4      = "float4"
-	TypeFloat8      = "float8"
-	TypeText        = "text"
-	TypeVarchar     = "varchar"
-	TypeBpchar      = "bpchar"
-	TypeBytea       = "bytea"
-	TypeBool        = "bool"
-	TypeTimestamp   = "timestamp"
+	// TypeInt2 is a postgres type
+	TypeInt2 = "int2"
+	// TypeInt4 is a postgres type
+	TypeInt4 = "int4"
+	// TypeInt8 is a postgres type
+	TypeInt8 = "int8"
+	// TypeNumeric is a postgres type
+	TypeNumeric = "numeric"
+	// TypeFloat4 is a postgres type
+	TypeFloat4 = "float4"
+	// TypeFloat8 is a postgres type
+	TypeFloat8 = "float8"
+	// TypeText is a postgres type
+	TypeText = "text"
+	// TypeVarchar is a postgres type
+	TypeVarchar = "varchar"
+	// TypeBpchar is a postgres type
+	TypeBpchar = "bpchar"
+	// TypeBytea is a postgres type
+	TypeBytea = "bytea"
+	// TypeBool is a postgres type
+	TypeBool = "bool"
+	// TypeTimestamp is a postgres type
+	TypeTimestamp = "timestamp"
+	// TypeTimestamptz is a postgres type
 	TypeTimestamptz = "timestamptz"
-	TypeDate        = "date"
-	TypeTime        = "time"
-	TypeTimetz      = "timetz"
-	TypeInterval    = "interval"
-	TypeJsonb       = "jsonb"
-	TypeJson        = "json"
-	TypeHstore      = "hstore"
-	TypeInet        = "inet"
-	TypeCidr        = "cidr"
+	// TypeDate is a postgres type
+	TypeDate = "date"
+	// TypeTime is a postgres type
+	TypeTime = "time"
+	// TypeTimetz is a postgres type
+	TypeTimetz = "timetz"
+	// TypeInterval is a postgres type
+	TypeInterval = "interval"
+	// TypeJSONB is a postgres type
+	TypeJSONB = "jsonb"
+	// TypeJSON is a postgres type
+	TypeJSON = "json"
+	// TypeHstore is a postgres type
+	TypeHstore = "hstore"
+	// TypeInet is a postgres type
+	TypeInet = "inet"
+	// TypeCidr is a postgres type
+	TypeCidr = "cidr"
 )
 
 var typeMapping = map[string]bool{
@@ -56,8 +78,8 @@ var typeMapping = map[string]bool{
 	TypeTime:        true,
 	TypeTimetz:      true,
 	TypeInterval:    true,
-	TypeJsonb:       true,
-	TypeJson:        true,
+	TypeJSONB:       true,
+	TypeJSON:        true,
 	TypeHstore:      true,
 	TypeInet:        true,
 	TypeCidr:        true,
@@ -74,7 +96,7 @@ func IsValid(pgType string, array bool) bool {
 	if array {
 		switch pgType {
 		case TypeTimestamp, TypeTimestamptz, TypeDate, TypeTime, TypeTimetz,
-			TypeInterval, TypeJsonb, TypeJson, TypeHstore, TypeInet, TypeCidr:
+			TypeInterval, TypeJSONB, TypeJSON, TypeHstore, TypeInet, TypeCidr:
 			return false
 		}
 	}
@@ -102,24 +124,24 @@ func GoImportFromType(typ types.Type) string {
 	switch v := typ.(type) {
 	case *types.Pointer:
 		return GoImportFromType(v.Elem())
-	case DateTime, Interval, *DateTime, *Interval:
+	case dateTime, interval, *dateTime, *interval:
 		return "time"
-	case NetIp, NetIpNet, *NetIp, *NetIpNet:
+	case netIP, netIPNet, *netIP, *netIPNet:
 		return "net"
-	//case JsonType, *JsonType:
+	//case jsonType, *jsonType:
 	//	return "encoding/json"
-	case PgNullTime, *PgNullTime:
+	case pgNullTime, *pgNullTime:
 		return "github.com/go-pg/pg"
-	case SqlNullInt64, SqlNullFloat64, SqlNullBool, SqlNullString:
+	case sqlNullInt64, sqlNullFloat64, sqlNullBool, sqlNullString:
 		return "database/sql"
-	case *SqlNullInt64, *SqlNullFloat64, *SqlNullBool, *SqlNullString:
+	case *sqlNullInt64, *sqlNullFloat64, *sqlNullBool, *sqlNullString:
 		return "database/sql"
 	}
 
 	return ""
 }
 
-// GoSimpleType generates all go types from pg type
+// GoType generates all go types from pg type
 func GoType(pgType string, nullable, array bool, dimensions int, avoidPointers bool) (types.Type, error) {
 	switch {
 	case array:
@@ -149,21 +171,21 @@ func GoSimpleType(pgType string) (types.Type, error) {
 	case TypeText, TypeVarchar, TypeBpchar:
 		return types.Typ[types.String], nil
 	case TypeBytea:
-		return Bytea{}, nil
+		return bytea{}, nil
 	case TypeBool:
 		return types.Typ[types.Bool], nil
 	case TypeTimestamp, TypeTimestamptz, TypeDate, TypeTime, TypeTimetz:
-		return DateTime{}, nil
+		return dateTime{}, nil
 	case TypeInterval:
-		return Interval{}, nil
-	case TypeJsonb, TypeJson:
-		return types.NewMap(types.Typ[types.String], Interface{}), nil
+		return interval{}, nil
+	case TypeJSONB, TypeJSON:
+		return types.NewMap(types.Typ[types.String], intrfce{}), nil
 	case TypeHstore:
 		return types.NewMap(types.Typ[types.String], types.Typ[types.String]), nil
 	case TypeInet:
-		return NetIp{}, nil
+		return netIP{}, nil
 	case TypeCidr:
-		return NetIpNet{}, nil
+		return netIPNet{}, nil
 	}
 
 	return nil, fmt.Errorf("type %s not supported", pgType)
@@ -204,147 +226,147 @@ func GoNullType(pgType string, avoidPointers bool) (types.Type, error) {
 	if avoidPointers {
 		switch pgType {
 		case TypeInt2, TypeInt4, TypeInt8:
-			return SqlNullInt64{}, nil
+			return sqlNullInt64{}, nil
 		case TypeNumeric, TypeFloat4, TypeFloat8:
-			return SqlNullFloat64{}, nil
+			return sqlNullFloat64{}, nil
 		case TypeBool:
-			return SqlNullBool{}, nil
+			return sqlNullBool{}, nil
 		case TypeText, TypeVarchar, TypeBpchar:
-			return SqlNullString{}, nil
+			return sqlNullString{}, nil
 		}
 	}
 
 	switch pgType {
 	case TypeTimestamp, TypeTimestamptz, TypeDate, TypeTime, TypeTimetz:
-		return PgNullTime{}, nil
+		return pgNullTime{}, nil
 	default:
 		// adding pointers for simple types
-		if typ, err := GoSimpleType(pgType); err != nil {
+		typ, err := GoSimpleType(pgType)
+		if err != nil {
 			return nil, err
-		} else {
-			return types.NewPointer(typ), nil
 		}
+		return types.NewPointer(typ), nil
 	}
 }
 
 // Custom types goes here
 
-type DateTime time.Time
+type dateTime time.Time
 
-func (DateTime) Underlying() types.Type {
+func (dateTime) Underlying() types.Type {
 	return nil
 }
 
-func (DateTime) String() string {
+func (dateTime) String() string {
 	return "time.Time"
 }
 
-type Interval struct{}
+type interval struct{}
 
-func (Interval) Underlying() types.Type {
+func (interval) Underlying() types.Type {
 	return types.Typ[types.Int64]
 }
 
-func (Interval) String() string {
+func (interval) String() string {
 	return "time.Duration"
 }
 
-type JsonType json.RawMessage
+type jsonType json.RawMessage
 
-func (JsonType) Underlying() types.Type {
+func (jsonType) Underlying() types.Type {
 	return types.NewSlice(types.Typ[types.Int8])
 }
 
-func (JsonType) String() string {
+func (jsonType) String() string {
 	return "json.RawMessage"
 }
 
-type NetIp net.IP
+type netIP net.IP
 
-func (NetIp) Underlying() types.Type {
+func (netIP) Underlying() types.Type {
 	return types.NewSlice(types.Typ[types.Int8])
 }
 
-func (NetIp) String() string {
+func (netIP) String() string {
 	return "net.IP"
 }
 
-type NetIpNet net.IPNet
+type netIPNet net.IPNet
 
-func (NetIpNet) Underlying() types.Type {
+func (netIPNet) Underlying() types.Type {
 	return nil
 }
 
-func (NetIpNet) String() string {
+func (netIPNet) String() string {
 	return "net.IPNet"
 }
 
-type PgNullTime pg.NullTime
+type pgNullTime pg.NullTime
 
-func (PgNullTime) Underlying() types.Type {
+func (pgNullTime) Underlying() types.Type {
 	return nil
 }
 
-func (PgNullTime) String() string {
+func (pgNullTime) String() string {
 	return "pg.NullTime"
 }
 
-type Bytea []byte
+type bytea []byte
 
-func (Bytea) Underlying() types.Type {
+func (bytea) Underlying() types.Type {
 	return types.NewSlice(types.Typ[types.Byte])
 }
 
-func (Bytea) String() string {
+func (bytea) String() string {
 	return "[]byte"
 }
 
-type SqlNullInt64 sql.NullInt64
+type sqlNullInt64 sql.NullInt64
 
-func (SqlNullInt64) String() string {
+func (sqlNullInt64) String() string {
 	return "sql.NullInt64"
 }
 
-func (SqlNullInt64) Underlying() types.Type {
+func (sqlNullInt64) Underlying() types.Type {
 	return nil
 }
 
-type SqlNullFloat64 sql.NullFloat64
+type sqlNullFloat64 sql.NullFloat64
 
-func (SqlNullFloat64) String() string {
+func (sqlNullFloat64) String() string {
 	return "sql.NullFloat64"
 }
 
-func (SqlNullFloat64) Underlying() types.Type {
+func (sqlNullFloat64) Underlying() types.Type {
 	return nil
 }
 
-type SqlNullString struct{}
+type sqlNullString struct{}
 
-func (SqlNullString) String() string {
+func (sqlNullString) String() string {
 	return "sql.NullString"
 }
 
-func (SqlNullString) Underlying() types.Type {
+func (sqlNullString) Underlying() types.Type {
 	return nil
 }
 
-type SqlNullBool sql.NullBool
+type sqlNullBool sql.NullBool
 
-func (SqlNullBool) String() string {
+func (sqlNullBool) String() string {
 	return "sql.NullBool"
 }
 
-func (SqlNullBool) Underlying() types.Type {
+func (sqlNullBool) Underlying() types.Type {
 	return nil
 }
 
-type Interface struct{}
+type intrfce struct{}
 
-func (Interface) String() string {
+func (intrfce) String() string {
 	return "interface{}"
 }
 
-func (Interface) Underlying() types.Type {
+func (intrfce) Underlying() types.Type {
 	return &types.Interface{}
 }

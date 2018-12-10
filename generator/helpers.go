@@ -20,7 +20,7 @@ type templatePackage struct {
 }
 
 // newMultiPackage creates a package with multiple models
-func newMultiPackage(packageName string, tables []model.Table, options Options) *templatePackage {
+func newMultiPackage(packageName string, tables []model.Table, options Options) templatePackage {
 	imports := make([]string, 0)
 
 	models := make([]templateTable, len(tables))
@@ -33,7 +33,7 @@ func newMultiPackage(packageName string, tables []model.Table, options Options) 
 
 	imports = model.UniqStrings(imports)
 
-	return &templatePackage{
+	return templatePackage{
 		FileName: path.Join(
 			options.Output,
 			tables[0].PackageName(options.SchemaPackage, options.Package),
@@ -49,13 +49,13 @@ func newMultiPackage(packageName string, tables []model.Table, options Options) 
 }
 
 // newSinglePackage creates a package with simple model
-func newSinglePackage(table model.Table, options Options) *templatePackage {
+func newSinglePackage(table model.Table, options Options) templatePackage {
 	tt := newTemplateTable(table, options)
 	tt.uniqualizeFields()
 
 	imports := table.Imports(options.SchemaPackage, options.ImportPath, options.Package)
 
-	return &templatePackage{
+	return templatePackage{
 		FileName: path.Join(
 			options.Output,
 			table.PackageName(options.SchemaPackage, options.Package),
@@ -155,7 +155,7 @@ func (t templateTable) uniqualizeFields() {
 
 			for _, col := range t.Columns {
 				if col.FieldName == fieldName {
-					suffix += 1
+					suffix++
 					continue couter
 				}
 			}
@@ -184,14 +184,14 @@ func (t templateTable) uniqualizeFields() {
 
 			for _, col := range t.Columns {
 				if col.FieldName == fieldName {
-					suffix += 1
+					suffix++
 					continue router
 				}
 			}
 
 			for _, rel := range t.Relations {
 				if rel.FieldName == fieldName {
-					suffix += 1
+					suffix++
 					continue router
 				}
 			}

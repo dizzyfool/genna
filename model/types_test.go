@@ -78,8 +78,8 @@ func TestGoType(t *testing.T) {
 		},
 		{
 			name:   "Should generate json type",
-			pgType: TypeJson,
-			want:   "json.RawMessage",
+			pgType: TypeJSON,
+			want:   "map[string]interface{}",
 		},
 		{
 			name:   "Should generate hstore type",
@@ -293,8 +293,8 @@ func TestGoNullType(t *testing.T) {
 		},
 		{
 			name:   "Should generate json type",
-			pgType: TypeJson,
-			want:   "*json.RawMessage",
+			pgType: TypeJSON,
+			want:   "*map[string]interface{}",
 		},
 		{
 			name:   "Should generate hstore type",
@@ -402,10 +402,10 @@ func TestGoImport(t *testing.T) {
 			name: "Should generate net import for json types",
 			args: args{
 				pgTypes: []string{
-					TypeJsonb, TypeJson,
+					TypeJSONB, TypeJSON,
 				},
 			},
-			want: "encoding/json",
+			want: "",
 		},
 		{
 			name: "Should generate sql import for nullable simple types avoiding pointer",

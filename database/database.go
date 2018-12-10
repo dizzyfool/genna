@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// NewDatabase creates database connection
 func NewDatabase(url string, logger *zap.Logger) (orm.DB, error) {
 	options, err := pg.ParseURL(url)
 	if err != nil {

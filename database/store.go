@@ -7,10 +7,12 @@ import (
 	"github.com/dizzyfool/genna/model"
 )
 
+// Store is database helper
 type Store struct {
 	db orm.DB
 }
 
+// NewStore creates store
 func NewStore(db orm.DB) *Store {
 	return &Store{db: db}
 }

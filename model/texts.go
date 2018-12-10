@@ -13,18 +13,22 @@ func Singular(input string) string {
 	return inflection.Singular(input)
 }
 
+// IsUpper check rune for upper case
 func IsUpper(c byte) bool {
 	return c >= 'A' && c <= 'Z'
 }
 
+// IsLower check rune for lower case
 func IsLower(c byte) bool {
 	return c >= 'a' && c <= 'z'
 }
 
+// ToUpper converts rune to upper
 func ToUpper(c byte) byte {
 	return c - 32
 }
 
+// ToLower converts rune to lower
 func ToLower(c byte) byte {
 	return c + 32
 }
@@ -70,6 +74,7 @@ func Underscore(s string) string {
 	return string(r)
 }
 
+// ModelName gets string usable as struct name
 func ModelName(input string) string {
 	splitted := camelcase.Split(CamelCased(input))
 
@@ -84,12 +89,14 @@ func ModelName(input string) string {
 	return strings.Join(splitted, "")
 }
 
+// StructFieldName gets string usable as struct field name
 func StructFieldName(input string) string {
 	camelCased := ReplaceSuffix(CamelCased(input), "Id", "ID")
 
 	return strings.Title(camelCased)
 }
 
+// HasUpper checks if string contains upper case
 func HasUpper(input string) bool {
 	for i := 0; i < len(input); i++ {
 		c := input[i]
@@ -100,6 +107,7 @@ func HasUpper(input string) bool {
 	return false
 }
 
+// ReplaceSuffix replaces substirng on the end of string
 func ReplaceSuffix(input, suffix, replace string) string {
 	if strings.HasSuffix(input, suffix) {
 		input = input[:len(input)-len(suffix)] + replace
@@ -107,6 +115,7 @@ func ReplaceSuffix(input, suffix, replace string) string {
 	return input
 }
 
+// PackageName gets string usable as package name
 func PackageName(input string) string {
 	rgxp := regexp.MustCompile(`[^a-zA-Z\d]`)
 	return strings.ToLower(rgxp.ReplaceAllString(input, ""))

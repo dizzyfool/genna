@@ -42,7 +42,7 @@ func (t Table) PackageName(withSchema bool, publicAlias string) string {
 	return PackageName(t.Schema)
 }
 
-// Model returns all imports required by model
+// Imports returns all imports required by model
 func (t Table) Imports(withRelations bool, importPath, publicAlias string) []string {
 	imports := make([]string, 0)
 	index := make(map[string]struct{})
@@ -74,7 +74,7 @@ func (t Table) Imports(withRelations bool, importPath, publicAlias string) []str
 	return imports
 }
 
-// Model returns model name in camel case and in singular form
+// ModelName returns model name in camel case and in singular form
 func (t Table) ModelName(withSchema bool) string {
 	name := ModelName(t.Name)
 	if withSchema && t.Schema != PublicSchema {
@@ -134,6 +134,8 @@ func (t Table) TableNameTag(noDiscard, withView bool) string {
 	return annotation.String()
 }
 
+// HasMultiplePKs returns true if model have several PKs
+// can disable convertin PK's name to ID
 func (t Table) HasMultiplePKs() bool {
 	count := 0
 	for _, column := range t.Columns {
@@ -148,6 +150,7 @@ func (t Table) HasMultiplePKs() bool {
 	return false
 }
 
+// Validate checks current table for problems
 func (t Table) Validate() error {
 	if strings.Trim(t.Schema, " ") == "" {
 		return fmt.Errorf("shema name is empty")

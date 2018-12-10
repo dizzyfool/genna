@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Columns stores information about column
+// Column stores information about column
 // it does not store relation info
 type Column struct {
 	Name       string
@@ -68,6 +68,7 @@ func (c Column) StructFieldTag() string {
 	return tags.String()
 }
 
+// Validate checks current column for problems
 func (c Column) Validate() error {
 	if strings.Trim(c.Name, " ") == "" {
 		return fmt.Errorf("column name is empty")

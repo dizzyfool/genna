@@ -1,6 +1,6 @@
 package generator
 
-const TemplateModel = `package {{.Package}}{{if .HasImports}}
+const templateModel = `package {{.Package}}{{if .HasImports}}
 
 import ({{range .Imports}}
     "{{.}}"{{end}}

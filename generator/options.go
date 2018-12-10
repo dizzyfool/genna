@@ -6,6 +6,7 @@ import (
 	"github.com/dizzyfool/genna/model"
 )
 
+// Options for generator
 type Options struct {
 	// Directory path where files should be saved
 	Output string
@@ -49,7 +50,7 @@ type Options struct {
 
 	// Stores json field names as in db and target types for them
 	// TODO implement
-	JsonTypes map[string]string
+	JSONTypes map[string]string
 
 	// Generate Hooks
 	// TODO implement

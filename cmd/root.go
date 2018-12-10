@@ -28,17 +28,17 @@ import (
 )
 
 const (
-	Conn      = "conn"
-	Out       = "out"
-	ImpPath   = "import"
-	Pkg       = "pkg"
-	SchemaPkg = "schema-pkg"
-	MultiFile = "multi-file"
-	Tables    = "tables"
-	View      = "view"
-	FollowFK  = "follow-fk"
-	KeepPK    = "keep-pk"
-	NoDiscard = "no-discard"
+	conn      = "conn"
+	out       = "out"
+	impPath   = "import"
+	pkg       = "pkg"
+	schemaPkg = "schema-pkg"
+	multiFile = "multi-file"
+	tables    = "tables"
+	view      = "view"
+	followFK  = "follow-fk"
+	keepPK    = "keep-pk"
+	noDiscard = "no-discard"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -65,7 +65,7 @@ to quickly create a models for go-pg https://github.com/go-pg/pg`,
 			panic(err)
 		}
 
-		url, err := flags.GetString(Conn)
+		url, err := flags.GetString(conn)
 		if err != nil {
 			panic(err)
 		}
@@ -108,22 +108,22 @@ func init() {
 
 	flags.SortFlags = false
 
-	flags.StringP(Conn, "c", "", "connection string to your postgres database")
-	if err := rootCmd.MarkFlagRequired(Conn); err != nil {
+	flags.StringP(conn, "c", "", "connection string to your postgres database")
+	if err := rootCmd.MarkFlagRequired(conn); err != nil {
 		panic(err)
 	}
 
-	flags.StringP(Out, "o", "", "output directory for generated files")
-	if err := rootCmd.MarkFlagRequired(Out); err != nil {
+	flags.StringP(out, "o", "", "output directory for generated files")
+	if err := rootCmd.MarkFlagRequired(out); err != nil {
 		panic(err)
 	}
 
-	flags.StringSliceP(Tables, "t", []string{"public.*"}, "table names for model generation separeted by comma\nuse 'schema_name.*' to generate model for every table in model")
-	flags.StringP(ImpPath, "i", "", "prefix for imports for generated models")
+	flags.StringSliceP(tables, "t", []string{"public.*"}, "table names for model generation separeted by comma\nuse 'schema_name.*' to generate model for every table in model")
+	flags.StringP(impPath, "i", "", "prefix for imports for generated models")
 
-	flags.StringP(Pkg, "p", model.DefaultPackage, "package for model files. ignored with --multi-file param")
-	flags.BoolP(SchemaPkg, "s", false, "generate every schema as separate package")
-	flags.BoolP(MultiFile, "m", false, `generate one file for package
+	flags.StringP(pkg, "p", model.DefaultPackage, "package for model files. ignored with --multi-file param")
+	flags.BoolP(schemaPkg, "s", false, "generate every schema as separate package")
+	flags.BoolP(multiFile, "m", false, `generate one file for package
 schema-pkg | multi-file | result
 true       | false      | each generated package will contain one file
 true       | true       | each generated package will contain several files, one per model
@@ -131,11 +131,11 @@ false      | true       | one package for all models separated to different file
 false      | false      | one big file for all models
 `)
 
-	flags.BoolP(View, "v", false, "use view for selects e.g. getUsers for users table")
-	flags.BoolP(FollowFK, "f", false, "generate models for foreign keys, even if it not listed in tables\n")
+	flags.BoolP(view, "v", false, "use view for selects e.g. getUsers for users table")
+	flags.BoolP(followFK, "f", false, "generate models for foreign keys, even if it not listed in tables\n")
 
-	flags.Bool(KeepPK, false, "keep primary key name as is (by default it should be converted to 'ID') \n")
-	flags.Bool(NoDiscard, false, "do not use 'discard_unknown_columns' tag")
+	flags.Bool(keepPK, false, "keep primary key name as is (by default it should be converted to 'ID') \n")
+	flags.Bool(noDiscard, false, "do not use 'discard_unknown_columns' tag")
 }
 
 func flagsToOptions(flags *pflag.FlagSet) (generator.Options, error) {
@@ -143,43 +143,43 @@ func flagsToOptions(flags *pflag.FlagSet) (generator.Options, error) {
 
 	options := generator.Options{}
 
-	if options.Output, err = flags.GetString(Out); err != nil {
+	if options.Output, err = flags.GetString(out); err != nil {
 		return options, err
 	}
 
-	if options.ImportPath, err = flags.GetString(ImpPath); err != nil {
+	if options.ImportPath, err = flags.GetString(impPath); err != nil {
 		return options, err
 	}
 
-	if options.Package, err = flags.GetString(Pkg); err != nil {
+	if options.Package, err = flags.GetString(pkg); err != nil {
 		return options, err
 	}
 
-	if options.Tables, err = flags.GetStringSlice(Tables); err != nil {
+	if options.Tables, err = flags.GetStringSlice(tables); err != nil {
 		return options, err
 	}
 
-	if options.SchemaPackage, err = flags.GetBool(SchemaPkg); err != nil {
+	if options.SchemaPackage, err = flags.GetBool(schemaPkg); err != nil {
 		return options, err
 	}
 
-	if options.MultiFile, err = flags.GetBool(MultiFile); err != nil {
+	if options.MultiFile, err = flags.GetBool(multiFile); err != nil {
 		return options, err
 	}
 
-	if options.View, err = flags.GetBool(View); err != nil {
+	if options.View, err = flags.GetBool(view); err != nil {
 		return options, err
 	}
 
-	if options.FollowFKs, err = flags.GetBool(FollowFK); err != nil {
+	if options.FollowFKs, err = flags.GetBool(followFK); err != nil {
 		return options, err
 	}
 
-	if options.KeepPK, err = flags.GetBool(KeepPK); err != nil {
+	if options.KeepPK, err = flags.GetBool(keepPK); err != nil {
 		return options, err
 	}
 
-	if options.NoDiscard, err = flags.GetBool(NoDiscard); err != nil {
+	if options.NoDiscard, err = flags.GetBool(noDiscard); err != nil {
 		return options, err
 	}
 

@@ -9,10 +9,12 @@ import (
 	"path"
 )
 
+// Generator is a model files generator
 type Generator struct {
 	options Options
 }
 
+// NewGenerator creates generator
 func NewGenerator(options Options) *Generator {
 	options.def()
 	return &Generator{
@@ -20,7 +22,7 @@ func NewGenerator(options Options) *Generator {
 	}
 }
 
-// Processing all tables
+// Process processing all tables
 func (g Generator) Process(tables []model.Table) error {
 	// disclosing asterisks
 	toGenerate := model.DiscloseSchemas(tables, g.options.Tables)
@@ -33,7 +35,7 @@ func (g Generator) Process(tables []model.Table) error {
 		tables = model.FilterFKs(tables, toGenerate)
 	}
 
-	tmpl, err := template.New(model.DefaultPackage).Parse(TemplateModel)
+	tmpl, err := template.New(model.DefaultPackage).Parse(templateModel)
 	if err != nil {
 		return err
 	}
@@ -68,7 +70,7 @@ func (g Generator) Process(tables []model.Table) error {
 	return nil
 }
 
-// Schemas get schemas from table names
+// SchemasWithTables gets schemas from table names
 func SchemasWithTables(tables []string) map[string][]string {
 	schemas := map[string][]string{}
 	for _, t := range tables {
@@ -86,7 +88,7 @@ func SchemasWithTables(tables []string) map[string][]string {
 // Packages makes intermediate structs for templates
 // tables - all tables in database
 // toGenerate - tables with schemas need to generate, e.g. public.users
-func (g Generator) Packages(tables []model.Table, toGenerate []string) []*templatePackage {
+func (g Generator) Packages(tables []model.Table, toGenerate []string) []templatePackage {
 	// index for quick access to model
 	index := map[string]int{}
 	for i, t := range tables {
@@ -103,10 +105,10 @@ func (g Generator) Packages(tables []model.Table, toGenerate []string) []*templa
 			}
 		}
 
-		return []*templatePackage{newMultiPackage(g.options.Package, toTemplate, g.options)}
+		return []templatePackage{newMultiPackage(g.options.Package, toTemplate, g.options)}
 	}
 
-	result := make([]*templatePackage, 0)
+	result := make([]templatePackage, 0)
 
 	// single file for each package
 	if g.options.SchemaPackage && !g.options.MultiFile {
