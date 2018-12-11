@@ -1,10 +1,11 @@
 package database
 
 import (
+	"github.com/dizzyfool/genna/model"
+
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
-
-	"github.com/dizzyfool/genna/model"
+	"github.com/pkg/errors"
 )
 
 // Store is database helper
@@ -133,7 +134,7 @@ func (s *Store) Tables(schema []string) ([]model.Table, error) {
 
 	rows := make([]columnRow, 0)
 	if _, err := s.db.Query(&rows, query, pg.In(schema)); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "getting table info error")
 	}
 
 	var current = -1
@@ -180,7 +181,8 @@ func (s *Store) Relations(schema, table string) ([]model.Relation, error) {
 		        from pg_attribute a
 		        where a.attisdropped = false
 		    )
-		select co.conname as "constraint",
+		select distinct 
+		       -- co.conname as "constraint",
 		       ss.nspname as "schema",
 		       s.relname  as "table",
 		       sc.attname as "column",
@@ -205,7 +207,7 @@ func (s *Store) Relations(schema, table string) ([]model.Relation, error) {
 
 	rows := make([]relationRow, 0)
 	if _, err := s.db.Query(&rows, query, schema, table); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "getting relations info error")
 	}
 
 	relations := make([]model.Relation, len(rows))

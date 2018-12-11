@@ -140,6 +140,14 @@ func TestDo(t *testing.T) {
 
 	_, filename, _, _ := runtime.Caller(0)
 
+	config := zap.NewProductionConfig()
+	config.OutputPaths = []string{"stdout"}
+	config.Encoding = "console"
+	logger, err := config.Build()
+	if err != nil {
+		panic(err)
+	}
+
 	// just for test
 	generator := NewGenerator(Options{
 		Package:       "test", // model.DefaultPackage,
@@ -151,16 +159,16 @@ func TestDo(t *testing.T) {
 		ImportPath:    "github.com/dizzyfool/genna/test",
 		KeepPK:        false, // try true
 		NoDiscard:     false, // try true
-	})
+	}, logger)
 
-	err := generator.Process([]model.Table{unused, user, company, location, lang})
+	_, err = generator.Process([]model.Table{unused, user, company, location, lang})
 	fmt.Print(err)
 }
 
 func TestLive(t *testing.T) {
 	_, filename, _, _ := runtime.Caller(0)
 
-	url := `postgres://genna:genna@localhost:5432/genna_kwt?sslmode=disable`
+	url := `postgres://genna:genna@localhost:5432/genna?sslmode=disable`
 	options := Options{
 		Package:       model.DefaultPackage,
 		Tables:        []string{"public.*"},
@@ -173,7 +181,10 @@ func TestLive(t *testing.T) {
 		NoDiscard:     false, // try true
 	}
 
-	logger, err := zap.NewDevelopment()
+	config := zap.NewProductionConfig()
+	config.OutputPaths = []string{"stdout"}
+	config.Encoding = "console"
+	logger, err := config.Build()
 	if err != nil {
 		panic(err)
 	}
@@ -189,9 +200,9 @@ func TestLive(t *testing.T) {
 		panic(err)
 	}
 
-	genna := NewGenerator(options)
+	genna := NewGenerator(options, logger)
 
-	if err := genna.Process(tables); err != nil {
+	if _, err := genna.Process(tables); err != nil {
 		panic(err)
 	}
 }

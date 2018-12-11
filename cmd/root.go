@@ -18,13 +18,13 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
-	"go.uber.org/zap"
-
 	"github.com/dizzyfool/genna/database"
 	"github.com/dizzyfool/genna/generator"
 	"github.com/dizzyfool/genna/model"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	"go.uber.org/zap"
 )
 
 const (
@@ -81,16 +81,21 @@ to quickly create a models for go-pg https://github.com/go-pg/pg`,
 			panic(err)
 		}
 
+		fmt.Println("getting info from database ...")
 		tables, err := store.Tables(model.Schemas(options.Tables))
 		if err != nil {
 			panic(err)
 		}
 
-		genna := generator.NewGenerator(options)
-
-		if err := genna.Process(tables); err != nil {
+		fmt.Println("running generator ...")
+		result, err := generator.NewGenerator(options, logger).Process(tables)
+		if err != nil {
 			panic(err)
 		}
+
+		fmt.Printf("generated %d models from %d tables in total. saved in %d packages in %d files\n",
+			result.GeneratedModels, result.TotalTables, result.GeneratedPackages, result.GeneratedFiles,
+		)
 	},
 }
 

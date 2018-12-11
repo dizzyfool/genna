@@ -2,28 +2,42 @@ package generator
 
 import (
 	"bytes"
-	"github.com/dizzyfool/genna/model"
 	"go/format"
 	"html/template"
 	"os"
 	"path"
+
+	"github.com/dizzyfool/genna/model"
+
+	"go.uber.org/zap"
 )
 
 // Generator is a model files generator
 type Generator struct {
+	logger  *zap.Logger
 	options Options
 }
 
+// Result stores result of generator
+type Result struct {
+	TotalTables       int
+	GeneratedModels   int
+	GeneratedFiles    int
+	GeneratedPackages int
+}
+
 // NewGenerator creates generator
-func NewGenerator(options Options) *Generator {
+func NewGenerator(options Options, logger *zap.Logger) *Generator {
 	options.def()
 	return &Generator{
+		logger:  logger,
 		options: options,
 	}
 }
 
 // Process processing all tables
-func (g Generator) Process(tables []model.Table) error {
+func (g Generator) Process(tables []model.Table) (*Result, error) {
+
 	// disclosing asterisks
 	toGenerate := model.DiscloseSchemas(tables, g.options.Tables)
 
@@ -37,37 +51,49 @@ func (g Generator) Process(tables []model.Table) error {
 
 	tmpl, err := template.New(model.DefaultPackage).Parse(templateModel)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// making intermediate structs for templates
 	packages := g.Packages(tables, toGenerate)
+	index := map[string]struct{}{}
 
 	for _, pkg := range packages {
+		if _, ok := index[pkg.Package]; !ok {
+			g.logger.Debug("generating", zap.String("package", pkg.Package))
+			index[pkg.Package] = struct{}{}
+		}
+
 		var buffer bytes.Buffer
 
 		err := tmpl.ExecuteTemplate(&buffer, model.DefaultPackage, pkg)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		// formatting by go-fmt
 		content, err := format.Source(buffer.Bytes())
 		if err != nil {
-			return err
+			return nil, err
 		}
 
+		g.logger.Debug("saving", zap.String("file", pkg.FileName))
 		file, err := g.File(pkg.FileName)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		if _, err := file.Write(content); err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	return &Result{
+		TotalTables:       len(tables),
+		GeneratedModels:   len(toGenerate),
+		GeneratedFiles:    len(packages),
+		GeneratedPackages: len(index),
+	}, nil
 }
 
 // SchemasWithTables gets schemas from table names
