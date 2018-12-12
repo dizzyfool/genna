@@ -117,6 +117,7 @@ func (t Table) ViewName() string {
 	return fmt.Sprintf(`%s.\"get%s\"`, schema, CamelCased(t.Name))
 }
 
+// Alias generates alias name for table
 func (t Table) Alias() string {
 	alias := strings.ToLower(t.Name)
 	if t.Schema != PublicSchema {
