@@ -63,7 +63,7 @@ func (r Relation) StructFieldType(withSchema bool, publicAlias string) string {
 func (r Relation) StructFieldTag() string {
 	tags := NewAnnotation()
 
-	return tags.AddTag("sql", "fk:"+r.SourceColumn).String()
+	return tags.AddTag("pg", "fk:"+r.SourceColumn).String()
 }
 
 // Import gets import for relation
