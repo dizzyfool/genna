@@ -120,7 +120,6 @@ func TestGoSliceType(t *testing.T) {
 	type args struct {
 		pgType     string
 		dimensions int
-		nullable   bool
 	}
 	tests := []struct {
 		name    string
@@ -130,83 +129,78 @@ func TestGoSliceType(t *testing.T) {
 	}{
 		{
 			name: "Should generate multi-dimension array",
-			args: args{TypeInt4, 3, false},
+			args: args{TypeInt4, 3},
 			want: "[][][]int",
 		},
 		{
-			name: "Should generate nullable array",
-			args: args{TypeInt4, 2, true},
-			want: "*[][]int",
-		},
-		{
 			name: "Should generate int2 array",
-			args: args{TypeInt2, 1, false},
+			args: args{TypeInt2, 1},
 			want: "[]int",
 		},
 		{
 			name: "Should generate int4 array",
-			args: args{TypeInt4, 1, false},
+			args: args{TypeInt4, 1},
 			want: "[]int",
 		},
 		{
 			name: "Should generate int8 array",
-			args: args{TypeInt8, 1, false},
+			args: args{TypeInt8, 1},
 			want: "[]int64",
 		},
 		{
 			name: "Should generate numeric array",
-			args: args{TypeNumeric, 1, false},
+			args: args{TypeNumeric, 1},
 			want: "[]float32",
 		},
 		{
 			name: "Should generate float4 array",
-			args: args{TypeFloat4, 1, false},
+			args: args{TypeFloat4, 1},
 			want: "[]float32",
 		},
 		{
 			name: "Should generate float8 array",
-			args: args{TypeFloat8, 1, false},
+			args: args{TypeFloat8, 1},
 			want: "[]float64",
 		},
 		{
 			name: "Should generate text array",
-			args: args{TypeText, 1, false},
+			args: args{TypeText, 1},
 			want: "[]string",
 		},
 		{
 			name: "Should generate varchar array",
-			args: args{TypeVarchar, 1, false},
+			args: args{TypeVarchar, 1},
 			want: "[]string",
 		},
 		{
 			name: "Should generate char array",
-			args: args{TypeBpchar, 1, false},
+			args: args{TypeBpchar, 1},
 			want: "[]string",
 		},
 		{
 			name: "Should generate bytea array",
-			args: args{TypeBytea, 1, false},
+			args: args{TypeBytea, 1},
 			want: "[][]byte",
 		},
 		{
 			name: "Should generate bool array",
-			args: args{TypeBool, 1, false},
+			args: args{TypeBool, 1},
 			want: "[]bool",
 		},
 		{
 			name:    "Should not generate not supported type array",
-			args:    args{TypeTimetz, 1, false},
+			args:    args{TypeTimetz, 1},
 			wantErr: true,
 		},
 		{
 			name:    "Should not generate unknown type array",
-			args:    args{"unknown", 1, false},
+			args:    args{"unknown", 1},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GoSliceType(tt.args.pgType, tt.args.dimensions, tt.args.nullable)
+			got, err := GoSliceType(tt.args.pgType, tt.args.dimensions)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GoSliceType() error = %v, wantErr %v", err, tt.wantErr)
 				return

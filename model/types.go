@@ -145,7 +145,7 @@ func GoImportFromType(typ types.Type) string {
 func GoType(pgType string, nullable, array bool, dimensions int, avoidPointers bool) (types.Type, error) {
 	switch {
 	case array:
-		return GoSliceType(pgType, dimensions, nullable)
+		return GoSliceType(pgType, dimensions)
 	case nullable:
 		return GoNullType(pgType, avoidPointers)
 	default:
@@ -192,7 +192,7 @@ func GoSimpleType(pgType string) (types.Type, error) {
 }
 
 // GoSliceType generates go slice type from pg array
-func GoSliceType(pgType string, dimensions int, nullable bool) (types.Type, error) {
+func GoSliceType(pgType string, dimensions int) (types.Type, error) {
 	if !IsValid(pgType, true) {
 		return nil, fmt.Errorf("type %s not supported for arrays", pgType)
 	}
@@ -210,11 +210,6 @@ func GoSliceType(pgType string, dimensions int, nullable bool) (types.Type, erro
 
 	for i := 1; i < dimensions; i++ {
 		root = types.NewSlice(root)
-	}
-
-	// adding pointer if nullable
-	if nullable {
-		return types.NewPointer(root), nil
 	}
 
 	return root, nil
