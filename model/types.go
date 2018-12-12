@@ -234,6 +234,9 @@ func GoNullType(pgType string, avoidPointers bool) (types.Type, error) {
 	switch pgType {
 	case TypeTimestamp, TypeTimestamptz, TypeDate, TypeTime, TypeTimetz:
 		return pgNullTime{}, nil
+	case TypeHstore, TypeJSON, TypeJSONB:
+		// hstore & jason types without pointers
+		return GoSimpleType(pgType)
 	default:
 		// adding pointers for simple types
 		typ, err := GoSimpleType(pgType)

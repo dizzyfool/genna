@@ -288,12 +288,12 @@ func TestGoNullType(t *testing.T) {
 		{
 			name:   "Should generate json type",
 			pgType: TypeJSON,
-			want:   "*map[string]interface{}",
+			want:   "map[string]interface{}",
 		},
 		{
 			name:   "Should generate hstore type",
 			pgType: TypeHstore,
-			want:   "*map[string]string",
+			want:   "map[string]string",
 		},
 		{
 			name:   "Should generate ip type",
