@@ -48,6 +48,9 @@ type Options struct {
 	// Do not generate discard_unknown_columns tag
 	NoDiscard bool
 
+	// Do not generate alias tag
+	NoAlias bool
+
 	// Stores json field names as in db and target types for them
 	// TODO implement
 	JSONTypes map[string]string

@@ -173,8 +173,9 @@ func TestTable_TableNameTag(t *testing.T) {
 		Name   string
 	}
 	type args struct {
-		noDiscard bool
 		withView  bool
+		noDiscard bool
+		noAlias   bool
 	}
 	tests := []struct {
 		name   string
@@ -185,25 +186,31 @@ func TestTable_TableNameTag(t *testing.T) {
 		{
 			name:   "Should generate with default params",
 			fields: fields{PublicSchema, "users"},
-			args:   args{false, false},
+			args:   args{false, false, false},
+			want:   `sql:"users,alias:users",pg:",discard_unknown_columns"`,
+		},
+		{
+			name:   "Should generate without alias",
+			fields: fields{PublicSchema, "users"},
+			args:   args{false, false, true},
 			want:   `sql:"users",pg:",discard_unknown_columns"`,
 		},
 		{
 			name:   "Should generate with view",
 			fields: fields{PublicSchema, "users"},
-			args:   args{false, true},
-			want:   `sql:"users,select:\"getUsers\"",pg:",discard_unknown_columns"`,
+			args:   args{true, false, false},
+			want:   `sql:"users,select:\"getUsers\",alias:users",pg:",discard_unknown_columns"`,
 		},
 		{
-			name:   "Should generate with no discard",
+			name:   "Should generate with no discard and alias",
 			fields: fields{PublicSchema, "users"},
-			args:   args{true, false},
+			args:   args{false, true, true},
 			want:   `sql:"users"`,
 		},
 		{
-			name:   "Should generate with no discard and view",
+			name:   "Should generate with no discard and view and alias",
 			fields: fields{PublicSchema, "users"},
-			args:   args{true, true},
+			args:   args{true, true, true},
 			want:   `sql:"users,select:\"getUsers\""`,
 		},
 	}
@@ -213,7 +220,7 @@ func TestTable_TableNameTag(t *testing.T) {
 				Schema: tt.fields.Schema,
 				Name:   tt.fields.Name,
 			}
-			if got := tbl.TableNameTag(tt.args.noDiscard, tt.args.withView); got != tt.want {
+			if got := tbl.TableNameTag(tt.args.withView, tt.args.noDiscard, tt.args.noAlias); got != tt.want {
 				t.Errorf("Table.TableNameTag() = %v, want %v", got, tt.want)
 			}
 		})

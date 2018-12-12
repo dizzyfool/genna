@@ -98,7 +98,7 @@ func newTemplateTable(table model.Table, options Options) templateTable {
 
 	return templateTable{
 		StructName: table.ModelName(!options.SchemaPackage),
-		StructTag:  template.HTML(fmt.Sprintf("`%s`", table.TableNameTag(options.NoDiscard, options.View))),
+		StructTag:  template.HTML(fmt.Sprintf("`%s`", table.TableNameTag(options.View, options.NoAlias, options.NoDiscard))),
 
 		Columns: columns,
 

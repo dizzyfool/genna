@@ -39,6 +39,7 @@ const (
 	followFK  = "follow-fk"
 	keepPK    = "keep-pk"
 	noDiscard = "no-discard"
+	noAlias   = "no-alias"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -140,6 +141,7 @@ false      | false      | one big file for all models
 	flags.BoolP(followFK, "f", false, "generate models for foreign keys, even if it not listed in tables\n")
 
 	flags.Bool(keepPK, false, "keep primary key name as is (by default it should be converted to 'ID') \n")
+	flags.Bool(noAlias, false, "do not use 'alias' tag")
 	flags.Bool(noDiscard, false, "do not use 'discard_unknown_columns' tag")
 }
 
@@ -185,6 +187,10 @@ func flagsToOptions(flags *pflag.FlagSet) (generator.Options, error) {
 	}
 
 	if options.NoDiscard, err = flags.GetBool(noDiscard); err != nil {
+		return options, err
+	}
+
+	if options.NoAlias, err = flags.GetBool(noAlias); err != nil {
 		return options, err
 	}
 

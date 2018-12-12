@@ -117,13 +117,26 @@ func (t Table) ViewName() string {
 	return fmt.Sprintf(`%s.\"get%s\"`, schema, CamelCased(t.Name))
 }
 
+func (t Table) Alias() string {
+	alias := strings.ToLower(t.Name)
+	if t.Schema != PublicSchema {
+		alias = fmt.Sprintf(`%s_%s`, strings.ToLower(t.Schema), alias)
+	}
+
+	return alias
+}
+
 // TableNameTag returns tag for tableName property
-func (t Table) TableNameTag(noDiscard, withView bool) string {
+func (t Table) TableNameTag(withView, noDiscard, noAlias bool) string {
 	annotation := NewAnnotation()
 
 	annotation.AddTag("sql", t.TableName())
 	if withView {
 		annotation.AddTag("sql", fmt.Sprintf("select:%s", t.ViewName()))
+	}
+
+	if !noAlias {
+		annotation.AddTag("sql", fmt.Sprintf("alias:%s", t.Alias()))
 	}
 
 	if !noDiscard {
