@@ -65,7 +65,7 @@ func TestAnnotation_String(t *testing.T) {
 				{"tag2", []string{"valueB"}},
 				{"tag3", []string{"valueC"}},
 			}},
-			want: `tag1:"valueA",tag2:"valueB",tag3:"valueC"`,
+			want: `tag1:"valueA" tag2:"valueB" tag3:"valueC"`,
 		},
 		{
 			name: "Should print several tags with several values",
@@ -73,7 +73,7 @@ func TestAnnotation_String(t *testing.T) {
 				{"tag1", []string{"valueA"}},
 				{"tag2", []string{"valueB", "valueC"}},
 			}},
-			want: `tag1:"valueA",tag2:"valueB,valueC"`,
+			want: `tag1:"valueA" tag2:"valueB,valueC"`,
 		},
 	}
 	for _, tt := range tests {

@@ -39,5 +39,5 @@ func (a *Annotation) String() string {
 		result = append(result, fmt.Sprintf(`%s:"%s"`, tag.name, strings.Join(tag.values, ",")))
 	}
 
-	return strings.Join(result, ",")
+	return strings.Join(result, " ")
 }

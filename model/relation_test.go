@@ -53,7 +53,7 @@ func TestRelation_StructFieldTag(t *testing.T) {
 		{
 			name:   "Should generate simple name",
 			fields: fields{"locationId"},
-			want:   `sql:"fk:locationId"`,
+			want:   `pg:"fk:locationId"`,
 		},
 	}
 	for _, tt := range tests {

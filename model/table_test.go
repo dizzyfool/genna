@@ -187,19 +187,19 @@ func TestTable_TableNameTag(t *testing.T) {
 			name:   "Should generate with default params",
 			fields: fields{PublicSchema, "users"},
 			args:   args{false, false, false},
-			want:   `sql:"users,alias:users",pg:",discard_unknown_columns"`,
+			want:   `sql:"users,alias:users" pg:",discard_unknown_columns"`,
 		},
 		{
 			name:   "Should generate without alias",
 			fields: fields{PublicSchema, "users"},
 			args:   args{false, false, true},
-			want:   `sql:"users",pg:",discard_unknown_columns"`,
+			want:   `sql:"users" pg:",discard_unknown_columns"`,
 		},
 		{
 			name:   "Should generate with view",
 			fields: fields{PublicSchema, "users"},
 			args:   args{true, false, false},
-			want:   `sql:"users,select:\"getUsers\",alias:users",pg:",discard_unknown_columns"`,
+			want:   `sql:"users,select:\"getUsers\",alias:users" pg:",discard_unknown_columns"`,
 		},
 		{
 			name:   "Should generate with no discard and alias",

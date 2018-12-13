@@ -2,7 +2,6 @@ package model
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"go/types"
 	"net"
@@ -269,6 +268,7 @@ func (interval) String() string {
 	return "time.Duration"
 }
 
+/*
 type jsonType json.RawMessage
 
 func (jsonType) Underlying() types.Type {
@@ -278,6 +278,7 @@ func (jsonType) Underlying() types.Type {
 func (jsonType) String() string {
 	return "json.RawMessage"
 }
+*/
 
 type netIP net.IP
 

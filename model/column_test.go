@@ -106,7 +106,7 @@ func TestColumn_StructFieldType(t *testing.T) {
 				Dimensions: 2,
 				IsNullable: true,
 			},
-			want: "*[][]int",
+			want: "[][]int",
 		},
 		{
 			name: "Should generate struct type",
