@@ -154,13 +154,45 @@ func (g Generator) Packages(tables []model.Table, toGenerate []string) []templat
 		return result
 	}
 
-	// many files for each model
-	if g.options.MultiFile {
-		for _, t := range toGenerate {
-			if i, ok := index[t]; ok {
-				result = append(result, newSinglePackage(tables[i], g.options))
+	// many files for each model separated by packages
+	if g.options.SchemaPackage && g.options.MultiFile {
+		swt := SchemasWithTables(toGenerate)
+		for _, tbls := range swt {
+			toColumns := make([]model.Table, 0)
+			for _, t := range tbls {
+				if i, ok := index[t]; ok {
+					toColumns = append(toColumns, tables[i])
+
+					result = append(result, newSinglePackage(tables[i], g.options))
+				}
+			}
+
+			result = append(result, newColumnsPackage(
+				toColumns[0].PackageName(true, g.options.Package), toColumns, g.options,
+			))
+		}
+
+		return result
+	}
+
+	// many files for each model in one package
+	if !g.options.SchemaPackage && g.options.MultiFile {
+		swt := SchemasWithTables(toGenerate)
+		toColumns := make([]model.Table, 0)
+		for _, tbls := range swt {
+			for _, t := range tbls {
+				if i, ok := index[t]; ok {
+					toColumns = append(toColumns, tables[i])
+
+					result = append(result, newSinglePackage(tables[i], g.options))
+				}
 			}
 		}
+
+		result = append(result, newColumnsPackage(
+			g.options.Package, toColumns, g.options,
+		))
+
 		return result
 	}
 

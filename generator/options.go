@@ -27,10 +27,10 @@ type Options struct {
 
 	// Generates one file for package
 	// SchemaPackage | MultiFile | Result
-	// true          | true      | each generated package will contain one file
-	// true          | false     | each generated package will contain several files, one per model
-	// false         | false     | one package for all models separated to different files
-	// false         | true      | one big file for all models
+	// true          | true      | each generated package will contain several files, one per model
+	// true          | false     | each generated package will contain one file
+	// false         | false     | one big file for all models
+	// false         | true      | one package for all models separated to different files
 	// TODO Make this param as MODE ?
 	MultiFile bool
 

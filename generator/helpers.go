@@ -2,19 +2,20 @@ package generator
 
 import (
 	"fmt"
+	"github.com/dizzyfool/genna/model"
 	"html/template"
 	"path"
-
-	"github.com/dizzyfool/genna/model"
 )
 
 // Stores package info
 type templatePackage struct {
 	FileName string
 
-	Package    string
-	HasImports bool
-	Imports    []string
+	Package     string
+	HasImports  bool
+	WithModel   bool
+	WithColumns bool
+	Imports     []string
 
 	Models []templateTable
 }
@@ -40,9 +41,11 @@ func newMultiPackage(packageName string, tables []model.Table, options Options) 
 			packageName+".go",
 		),
 
-		Package:    packageName,
-		HasImports: len(imports) > 0,
-		Imports:    imports,
+		Package:     packageName,
+		HasImports:  len(imports) > 0,
+		WithModel:   true,
+		WithColumns: true,
+		Imports:     imports,
 
 		Models: models,
 	}
@@ -64,10 +67,21 @@ func newSinglePackage(table model.Table, options Options) templatePackage {
 
 		Package:    table.PackageName(options.SchemaPackage, options.Package),
 		HasImports: len(imports) > 0,
+		WithModel:  true,
 		Imports:    imports,
 
 		Models: []templateTable{tt},
 	}
+}
+
+func newColumnsPackage(packageName string, tables []model.Table, options Options) templatePackage {
+	pack := newMultiPackage(packageName, tables, options)
+
+	pack.WithColumns = true
+	pack.WithModel = false
+	pack.FileName = model.ReplaceSuffix(pack.FileName, ".go", "_columns.go")
+
+	return pack
 }
 
 // stores struct info
@@ -109,16 +123,18 @@ func newTemplateTable(table model.Table, options Options) templateTable {
 
 // stores column info
 type templateColumn struct {
-	FieldName string
-	FieldType string
-	FieldTag  template.HTML
+	FieldName   string
+	FieldDBName string
+	FieldType   string
+	FieldTag    template.HTML
 }
 
 func newTemplateColumn(column model.Column, options Options) templateColumn {
 	return templateColumn{
-		FieldName: column.StructFieldName(options.KeepPK),
-		FieldType: column.StructFieldType(),
-		FieldTag:  template.HTML(fmt.Sprintf("`%s`", column.StructFieldTag())),
+		FieldName:   column.StructFieldName(options.KeepPK),
+		FieldDBName: column.Name,
+		FieldType:   column.StructFieldType(),
+		FieldTag:    template.HTML(fmt.Sprintf("`%s`", column.StructFieldTag())),
 	}
 }
 

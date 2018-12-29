@@ -119,12 +119,15 @@ func (t Table) ViewName() string {
 
 // Alias generates alias name for table
 func (t Table) Alias() string {
-	alias := strings.ToLower(t.Name)
-	if t.Schema != PublicSchema {
-		alias = fmt.Sprintf(`%s_%s`, strings.ToLower(t.Schema), alias)
-	}
+	// default alias is "t" for filters
+	return "t"
 
-	return alias
+	//alias := strings.ToLower(t.Name)
+	//if t.Schema != PublicSchema {
+	//	alias = fmt.Sprintf(`%s_%s`, strings.ToLower(t.Schema), alias)
+	//}
+	//
+	//return alias
 }
 
 // TableNameTag returns tag for tableName property
