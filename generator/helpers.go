@@ -88,7 +88,9 @@ func newColumnsPackage(packageName string, tables []model.Table, options Options
 type templateTable struct {
 	StructName string
 	StructTag  template.HTML
-	JoinAlias  string
+
+	JoinAlias string
+	TableName string
 
 	Columns []templateColumn
 
@@ -114,7 +116,9 @@ func newTemplateTable(table model.Table, options Options) templateTable {
 	return templateTable{
 		StructName: table.ModelName(!options.SchemaPackage),
 		StructTag:  template.HTML(fmt.Sprintf("`%s`", table.TableNameTag(options.View, options.NoAlias, options.NoDiscard))),
-		JoinAlias:  table.JoinAlias(),
+
+		JoinAlias: table.JoinAlias(),
+		TableName: table.Name,
 
 		Columns: columns,
 

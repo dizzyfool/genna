@@ -18,16 +18,17 @@ var Columns = struct { {{range .Models}}
 	},{{end}}
 }
 
-var Relations = struct { {{range .Models}}
+var Tables = struct { {{range .Models}}
 	{{.StructName}} struct {
-		Model, Join string
+		Model, Join, Table string
 	}{{end}}
 }{ {{range .Models}}
 	{{.StructName}}: struct {
-		Model, Join string
+		Model, Join, Table string
 	}{ 
 		Model: "{{.StructName}}", 
 		Join: "{{.JoinAlias}}",
+		Table: "{{.TableName}}",
 	},{{end}}
 }{{end}}{{if .WithModel}}
 {{range .Models}}
