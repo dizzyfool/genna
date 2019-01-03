@@ -8,27 +8,31 @@ import ({{range .Imports}}
 
 var Columns = struct { {{range .Models}}
 	{{.StructName}} struct{ 
-		{{range $i, $e := .Columns}}{{if $i}}, {{end}}{{.FieldName}}{{end}} string 
+		{{range $i, $e := .Columns}}{{if $i}}, {{end}}{{.FieldName}}{{end}} string{{if .HasRelations}}
+
+		{{range $i, $e := .Relations}}{{if $i}}, {{end}}{{.FieldName}}{{end}} string{{end}}
 	}{{end}}
 }{ {{range .Models}}
 	{{.StructName}}: struct { 
-		{{range $i, $e := .Columns}}{{if $i}}, {{end}}{{.FieldName}}{{end}} string 
+		{{range $i, $e := .Columns}}{{if $i}}, {{end}}{{.FieldName}}{{end}} string{{if .HasRelations}}
+
+		{{range $i, $e := .Relations}}{{if $i}}, {{end}}{{.FieldName}}{{end}} string{{end}}
 	}{ {{range .Columns}}
-		{{.FieldName}}: "{{.FieldDBName}}",{{end}}
+		{{.FieldName}}: "{{.FieldDBName}}",{{end}}{{if .HasRelations}}
+		{{range .Relations}}
+		{{.FieldName}}: "{{.FieldName}}",{{end}}{{end}}
 	},{{end}}
 }
 
 var Tables = struct { {{range .Models}}
 	{{.StructName}} struct {
-		Model, Join, Table string
+		Name string
 	}{{end}}
 }{ {{range .Models}}
 	{{.StructName}}: struct {
-		Model, Join, Table string
+		Name string
 	}{ 
-		Model: "{{.StructName}}", 
-		Join: "{{.JoinAlias}}",
-		Table: "{{.TableName}}",
+		Name: "{{.TableName}}",
 	},{{end}}
 }{{end}}{{if .WithModel}}
 {{range .Models}}

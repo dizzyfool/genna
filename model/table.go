@@ -168,8 +168,8 @@ func (t Table) HasMultiplePKs() bool {
 }
 
 // JoinAlias used in raws relations
-func (t Table) JoinAlias() string {
-	return Underscore(t.Name)
+func (t Table) JoinAlias(withSchema bool) string {
+	return Underscore(t.ModelName(withSchema))
 }
 
 // Validate checks current table for problems

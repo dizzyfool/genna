@@ -117,7 +117,7 @@ func newTemplateTable(table model.Table, options Options) templateTable {
 		StructName: table.ModelName(!options.SchemaPackage),
 		StructTag:  template.HTML(fmt.Sprintf("`%s`", table.TableNameTag(options.View, options.NoAlias, options.NoDiscard))),
 
-		JoinAlias: table.JoinAlias(),
+		JoinAlias: table.JoinAlias(!options.SchemaPackage),
 		TableName: table.Name,
 
 		Columns: columns,
