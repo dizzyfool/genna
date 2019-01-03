@@ -11,10 +11,23 @@ var Columns = struct { {{range .Models}}
 		{{range $i, $e := .Columns}}{{if $i}}, {{end}}{{.FieldName}}{{end}} string 
 	}{{end}}
 }{ {{range .Models}}
-	{{.StructName}}: struct{ 
+	{{.StructName}}: struct { 
 		{{range $i, $e := .Columns}}{{if $i}}, {{end}}{{.FieldName}}{{end}} string 
 	}{ {{range .Columns}}
 		{{.FieldName}}: "{{.FieldDBName}}",{{end}}
+	},{{end}}
+}
+
+var Relations = struct { {{range .Models}}
+	{{.StructName}} struct {
+		Model, Join string
+	}{{end}}
+}{ {{range .Models}}
+	{{.StructName}}: struct {
+		Model, Join string
+	}{ 
+		Model: "{{.StructName}}", 
+		Join: "{{.JoinAlias}}",
 	},{{end}}
 }{{end}}{{if .WithModel}}
 {{range .Models}}

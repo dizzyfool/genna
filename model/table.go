@@ -167,6 +167,11 @@ func (t Table) HasMultiplePKs() bool {
 	return false
 }
 
+// JoinAlias used in raws relations
+func (t Table) JoinAlias() string {
+	return Underscore(t.Name)
+}
+
 // Validate checks current table for problems
 func (t Table) Validate() error {
 	if strings.Trim(t.Schema, " ") == "" {
