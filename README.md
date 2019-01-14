@@ -58,7 +58,7 @@ package model
 var Columns = struct {
 	User struct {
 		ID, Activated, CountryID, Email, Name string
-		
+
 		Country string
 	}
 	GeoCountry struct {
@@ -66,25 +66,25 @@ var Columns = struct {
 	}
 }{
 	User: struct {
-        ID, Activated, CountryID, Email, Name string
-        
-        Country string
-    }{
-        ID:        "userId",
-        Activated: "activated,notnull",
-        CountryID: "countryId",
-        Email:     "email",
-        Name:      "name",
-    
-        Country: "Country",	
-    },
-    GeoCountry: struct {
-        ID, Code, Coords string
-    }{
-        ID:     "countryId", 
-        Code:   "code", 
-        Coords: "coords",	
-    },
+		ID, Activated, CountryID, Email, Name string
+
+		Country string
+	}{
+		ID:        "userId",
+		Activated: "activated,notnull",
+		CountryID: "countryId",
+		Email:     "email",
+		Name:      "name",
+
+		Country: "Country",
+	},
+	GeoCountry: struct {
+		ID, Code, Coords string
+	}{
+		ID:     "countryId",
+		Code:   "code",
+		Coords: "coords",
+	},
 }
 
 var Tables = struct {
@@ -92,19 +92,19 @@ var Tables = struct {
 		Name string
 	}
 	GeoCountry struct {
-        Name string
-    }
+		Name string
+	}
 }{
 	User: struct {
-        Name string
-    }{
-    	Name: "users",
-    },
-    GeoCountry: struct {
-        Name string
-    }{
-    	Name: "geo.countries",
-    },
+		Name string
+	}{
+		Name: "users",
+	},
+	GeoCountry: struct {
+		Name string
+	}{
+		Name: "geo.countries",
+	},
 }
 
 type User struct {
@@ -145,10 +145,6 @@ func Test() {
 	// connecting to db
 	options, _ := pg.ParseURL("postgres://user:password@localhost:5432/yourdb")
 	db := pg.Connect(options)
-	db.OnQueryProcessed(func(event *pg.QueryProcessedEvent) {
-		query, _ := event.FormattedQuery()
-		fmt.Println(query)
-	})
 
 	if _, err := db.Exec(`truncate table users; truncate table geo.countries cascade;`); err != nil {
 		panic(err)
@@ -198,7 +194,7 @@ func Test() {
 	m := db.Model(&user).
 		Column(AllColumns, Columns.User.Country).
 		Where(`? = ?`, pg.F(Columns.User.Email), "test@gmail.com")
-	
+
 	if err := m.Select(); err != nil {
 		panic(err)
 	}
@@ -207,6 +203,7 @@ func Test() {
 	fmt.Printf("%#v\n", user.Country)
 
 }
+
 ```
 
  

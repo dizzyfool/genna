@@ -78,7 +78,7 @@ func Underscore(s string) string {
 func ModelName(input string) string {
 	splitted := camelcase.Split(CamelCased(input))
 
-	ln := len(splitted)-1
+	ln := len(splitted) - 1
 	for i := ln; i >= 0; i-- {
 		split := splitted[i]
 		singular := Singular(split)
