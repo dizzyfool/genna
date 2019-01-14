@@ -1,14 +1,42 @@
 package database
 
 import (
-	"fmt"
-	"path/filepath"
 	"time"
 
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
 	"go.uber.org/zap"
 )
+
+type QueryLogger struct {
+	logger *zap.Logger
+}
+
+func NewQueryLogger(logger *zap.Logger) QueryLogger {
+	return QueryLogger{logger: logger}
+}
+
+func (ql QueryLogger) BeforeQuery(event *pg.QueryEvent) {
+	event.Data["startedAt"] = time.Now()
+}
+
+func (ql QueryLogger) AfterQuery(event *pg.QueryEvent) {
+	query, err := event.FormattedQuery()
+	if err != nil {
+		ql.logger.Error("formatted query error", zap.Error(err))
+	}
+
+	var since time.Duration
+	if event.Data != nil {
+		if v, ok := event.Data["startedAt"]; ok {
+			if startAt, ok := v.(time.Time); ok {
+				since = time.Since(startAt)
+			}
+		}
+	}
+
+	ql.logger.Debug(query, zap.Duration("duration", since))
+}
 
 // NewDatabase creates database connection
 func NewDatabase(url string, logger *zap.Logger) (orm.DB, error) {
@@ -18,22 +46,7 @@ func NewDatabase(url string, logger *zap.Logger) (orm.DB, error) {
 	}
 
 	client := pg.Connect(options)
-	client.OnQueryProcessed(func(event *pg.QueryProcessedEvent) {
-		query, err := event.FormattedQuery()
-		if err != nil {
-			logger.Error("formatted query error", zap.Error(err))
-		}
-
-		logger.Debug(query,
-			zap.String("caller", caller(event)),
-			zap.Duration("duration", time.Since(event.StartTime)),
-		)
-	})
+	client.AddQueryHook(NewQueryLogger(logger))
 
 	return client, nil
-}
-
-func caller(event *pg.QueryProcessedEvent) string {
-	dir, file := filepath.Split(event.File)
-	return fmt.Sprintf("%s:%d", filepath.Join(filepath.Base(dir), file), event.Line)
 }
