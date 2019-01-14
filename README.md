@@ -55,8 +55,60 @@ You should get following models on model package:
 ```go
 package model
 
+var Columns = struct {
+	User struct {
+		ID, Activated, CountryID, Email, Name string
+		
+		Country string
+	}
+	GeoCountry struct {
+		ID, Code, Coords string
+	}
+}{
+	User: struct {
+        ID, Activated, CountryID, Email, Name string
+        
+        Country string
+    }{
+        ID:        "userId",
+        Activated: "activated,notnull",
+        CountryID: "countryId",
+        Email:     "email",
+        Name:      "name",
+    
+        Country: "Country",	
+    },
+    GeoCountry: struct {
+        ID, Code, Coords string
+    }{
+        ID:     "countryId", 
+        Code:   "code", 
+        Coords: "coords",	
+    },
+}
+
+var Tables = struct {
+	User struct {
+		Name string
+	}
+	GeoCountry struct {
+        Name string
+    }
+}{
+	User: struct {
+        Name string
+    }{
+    	Name: "users",
+    },
+    GeoCountry: struct {
+        Name string
+    }{
+    	Name: "geo.countries",
+    },
+}
+
 type User struct {
-	tableName struct{} `sql:"users,alias:users",pg:",discard_unknown_columns"`
+	tableName struct{} `sql:"users,alias:t" pg:",discard_unknown_columns"`
 
 	ID        int     `sql:"userId,pk"`
 	Activated bool    `sql:"activated,notnull"`
@@ -68,7 +120,7 @@ type User struct {
 }
 
 type GeoCountry struct {
-	tableName struct{} `sql:"geo.countries,alias:geo_countries",pg:",discard_unknown_columns"`
+	tableName struct{} `sql:"geo.countries,alias:t" pg:",discard_unknown_columns"`
 
 	ID     int    `sql:"countryId,pk"`
 	Code   string `sql:"code,notnull"`
@@ -86,6 +138,8 @@ import (
 
 	"github.com/go-pg/pg"
 )
+
+const AllColumns = "t.*"
 
 func Test() {
 	// connecting to db
@@ -141,7 +195,11 @@ func Test() {
 	user := User{
 		ID: newUser.ID,
 	}
-	if err := db.Model(&user).Column("users.*", "Country").Select(); err != nil {
+	m := db.Model(&user).
+		Column(AllColumns, Columns.User.Country).
+		Where(`? = ?`, pg.F(Columns.User.Email), "test@gmail.com")
+	
+	if err := m.Select(); err != nil {
 		panic(err)
 	}
 
