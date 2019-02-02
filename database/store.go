@@ -128,7 +128,7 @@ func (s *Store) Tables(schema []string) ([]model.Table, error) {
 		left join enums e using (table_name, table_schema, column_name)
 		where t."table_schema" in (?)
 		  and t.table_type = 'BASE TABLE'
-		  and (f.constraint_type in ('PRIMARY KEY', 'FOREIGN KEY') or f.constraint_type is null)
+		  and (f.constraint_type in ('PRIMARY KEY', 'FOREIGN KEY', 'UNIQUE') or f.constraint_type is null)
 		order by 1, 2, 4 desc nulls last;
 	`
 
