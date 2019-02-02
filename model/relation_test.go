@@ -181,19 +181,24 @@ func TestRelation_StructFieldType(t *testing.T) {
 			want:   "*UserOrder",
 		},
 		{
-			name:   "Should generate from plural in first place",
-			fields: fields{TargetTable: "usersWithOrders"},
-			want:   "*UserWithOrders",
-		},
-		{
 			name:   "Should generate from plural in last place",
 			fields: fields{TargetTable: "usersWithOrders"},
-			want:   "*UserWithOrders",
+			want:   "*UsersWithOrder",
 		},
 		{
 			name:   "Should generate from abracadabra",
 			fields: fields{TargetTable: "abracadabra"},
 			want:   "*Abracadabra",
+		},
+		{
+			name:   "Should generate from numbers in first place",
+			fields: fields{TargetTable: "123-abc"},
+			want:   "*T123Abc",
+		},
+		{
+			name:   "Should generate from name with dash & underscore",
+			fields: fields{TargetTable: "abc-123_abc"},
+			want:   "*Abc123Abc",
 		},
 		{
 			name: "Should generate without package",
@@ -202,7 +207,7 @@ func TestRelation_StructFieldType(t *testing.T) {
 				TargetSchema: "information_schema",
 				TargetTable:  "users",
 			},
-			want: "*informationschema.User",
+			want: "*information_schema.User",
 		},
 		{
 			name: "Should generate with schema",
@@ -259,7 +264,7 @@ func TestRelation_StructFieldType(t *testing.T) {
 			args: args{
 				publicAlias: "ignored",
 			},
-			want: "*informationschema.User",
+			want: "*information_schema.User",
 		},
 	}
 	for _, tt := range tests {

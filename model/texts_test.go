@@ -83,14 +83,9 @@ func TestModelName(t *testing.T) {
 			want: "UserOrder",
 		},
 		{
-			name: "Should generate from plural in first place",
-			args: args{"usersWithOrders"},
-			want: "UserWithOrders",
-		},
-		{
 			name: "Should generate from plural in last place",
 			args: args{"usersWithOrders"},
-			want: "UserWithOrders",
+			want: "UsersWithOrder",
 		},
 		{
 			name: "Should generate from abracadabra",
@@ -233,7 +228,7 @@ func TestPackageName(t *testing.T) {
 		{
 			name: "Should generate valid package name with only letters",
 			args: args{"te_sT$"},
-			want: "test",
+			want: "te_st",
 		},
 	}
 	for _, tt := range tests {
