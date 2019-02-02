@@ -11,10 +11,10 @@ const (
 )
 
 // Split splits full table name in schema and table name
-func Split(input string) (string, string) {
-	d := strings.Split(input, ".")
+func Split(s string) (string, string) {
+	d := strings.Split(s, ".")
 	if len(d) < 2 {
-		return PublicSchema, input
+		return PublicSchema, s
 	}
 
 	return d[0], d[1]
@@ -40,20 +40,20 @@ func Schemas(tables []string) (schemas []string) {
 }
 
 // DiscloseSchemas discloses "*" in schemas
-func DiscloseSchemas(tables []Table, userInput []string) []string {
+func DiscloseSchemas(allTables []Table, selected []string) []string {
 	index := map[string]struct{}{}
 
-	for _, t := range userInput {
+	for _, t := range selected {
 		schema, table := Split(t)
 
 		if table == "*" {
-			for _, m := range tables {
+			for _, m := range allTables {
 				if m.Schema == schema {
 					index[Join(m.Schema, m.Name)] = struct{}{}
 				}
 			}
 		} else {
-			for _, m := range tables {
+			for _, m := range allTables {
 				if m.Schema == schema && m.Name == table {
 					index[Join(m.Schema, m.Name)] = struct{}{}
 				}

@@ -9,8 +9,8 @@ import (
 )
 
 // Singular makes singular of plural english word
-func Singular(input string) string {
-	return inflection.Singular(input)
+func Singular(s string) string {
+	return inflection.Singular(s)
 }
 
 // IsUpper check rune for upper case
@@ -74,9 +74,21 @@ func Underscore(s string) string {
 	return string(r)
 }
 
+// Sanitize makes string suitable for golang var, const, field, type name
+func Sanitize(s string) string {
+	rgxp := regexp.MustCompile(`[^a-zA-Z\d\-_]`)
+	sanitized := strings.Replace(rgxp.ReplaceAllString(s, ""), "-", "_", -1)
+
+	if len(sanitized) != 0 && ((sanitized[0] >= '0' && sanitized[0] <= '9') || sanitized[0] == '_') {
+		sanitized = "T" + sanitized
+	}
+
+	return sanitized
+}
+
 // ModelName gets string usable as struct name
-func ModelName(input string) string {
-	splitted := camelcase.Split(CamelCased(input))
+func ModelName(s string) string {
+	splitted := camelcase.Split(CamelCased(Sanitize(s)))
 
 	ln := len(splitted) - 1
 	for i := ln; i >= 0; i-- {
@@ -92,16 +104,16 @@ func ModelName(input string) string {
 }
 
 // StructFieldName gets string usable as struct field name
-func StructFieldName(input string) string {
-	camelCased := ReplaceSuffix(CamelCased(input), "Id", "ID")
+func StructFieldName(s string) string {
+	camelCased := ReplaceSuffix(CamelCased(Sanitize(s)), "Id", "ID")
 
 	return strings.Title(camelCased)
 }
 
 // HasUpper checks if string contains upper case
-func HasUpper(input string) bool {
-	for i := 0; i < len(input); i++ {
-		c := input[i]
+func HasUpper(s string) bool {
+	for i := 0; i < len(s); i++ {
+		c := s[i]
 		if IsUpper(c) {
 			return true
 		}
@@ -110,15 +122,14 @@ func HasUpper(input string) bool {
 }
 
 // ReplaceSuffix replaces substirng on the end of string
-func ReplaceSuffix(input, suffix, replace string) string {
-	if strings.HasSuffix(input, suffix) {
-		input = input[:len(input)-len(suffix)] + replace
+func ReplaceSuffix(in, suffix, replace string) string {
+	if strings.HasSuffix(in, suffix) {
+		in = in[:len(in)-len(suffix)] + replace
 	}
-	return input
+	return in
 }
 
 // PackageName gets string usable as package name
-func PackageName(input string) string {
-	rgxp := regexp.MustCompile(`[^a-zA-Z\d]`)
-	return strings.ToLower(rgxp.ReplaceAllString(input, ""))
+func PackageName(s string) string {
+	return strings.ToLower(Sanitize(s))
 }

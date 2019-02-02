@@ -9,6 +9,7 @@ import (
 
 	"github.com/dizzyfool/genna/model"
 
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -51,7 +52,7 @@ func (g Generator) Process(tables []model.Table) (*Result, error) {
 
 	tmpl, err := template.New(model.DefaultPackage).Parse(templateModel)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "parsing template error")
 	}
 
 	// making intermediate structs for templates
@@ -68,23 +69,26 @@ func (g Generator) Process(tables []model.Table) (*Result, error) {
 
 		err := tmpl.ExecuteTemplate(&buffer, model.DefaultPackage, pkg)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "processing model template error")
 		}
 
+		unformatted := buffer.Bytes()
 		// formatting by go-fmt
-		content, err := format.Source(buffer.Bytes())
+		content, err := format.Source(unformatted)
 		if err != nil {
-			return nil, err
+			g.logger.Info("formatting file error", zap.Error(err), zap.String("file", pkg.FileName))
+			// saving file even if there is fmt errors
+			content = unformatted
 		}
 
 		g.logger.Debug("saving", zap.String("file", pkg.FileName))
 		file, err := g.File(pkg.FileName)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "open model file error")
 		}
 
 		if _, err := file.Write(content); err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "writing content to file error")
 		}
 	}
 

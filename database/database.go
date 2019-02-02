@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -42,7 +43,7 @@ func (ql QueryLogger) AfterQuery(event *pg.QueryEvent) {
 func NewDatabase(url string, logger *zap.Logger) (orm.DB, error) {
 	options, err := pg.ParseURL(url)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "parsing connection url error")
 	}
 
 	client := pg.Connect(options)

@@ -244,3 +244,44 @@ func TestPackageName(t *testing.T) {
 		})
 	}
 }
+
+func TestSanitize(t *testing.T) {
+	tests := []struct {
+		name string
+		s    string
+		want string
+	}{
+		{
+			name: "should sanitize string contains special chars",
+			s:    "te$t-Str1ng0§",
+			want: "tet_Str1ng0",
+		},
+		{
+			name: "should keep letters and numbers and dash",
+			s:    "abcdef_12345-67890",
+			want: "abcdef_12345_67890",
+		},
+		{
+			name: "should add prefix if starting with number",
+			s:    "1234abcdef",
+			want: "T1234abcdef",
+		},
+		{
+			name: "should add prefix if starting with number after sanitize",
+			s:    "#1234abcdef",
+			want: "T1234abcdef",
+		},
+		{
+			name: "should add prefix if starting with dash",
+			s:    "#-1234abcdef",
+			want: "T_1234abcdef",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Sanitize(tt.s); got != tt.want {
+				t.Errorf("Sanitize() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
