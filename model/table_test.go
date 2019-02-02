@@ -38,14 +38,9 @@ func TestTable_ModelName(t *testing.T) {
 			want:   "UserOrder",
 		},
 		{
-			name:   "Should generate from plural in first place",
-			fields: fields{Name: "usersWithOrders"},
-			want:   "UserWithOrders",
-		},
-		{
 			name:   "Should generate from plural in last place",
 			fields: fields{Name: "usersWithOrders"},
-			want:   "UserWithOrders",
+			want:   "UsersWithOrder",
 		},
 		{
 			name:   "Should generate from abracadabra",
