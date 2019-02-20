@@ -108,7 +108,7 @@ func (s *Store) queryTables(schema []string) ([]columnRow, error) {
 					kcu.table_name   as "table_name",
 					kcu.column_name  as "column_name",
 					array_agg((
-						select constraint_type 
+						select constraint_type::text 
 						from information_schema.table_constraints tc 
 						where tc.constraint_name = kcu.constraint_name 
 							and tc.constraint_schema = kcu.constraint_schema 
