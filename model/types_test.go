@@ -52,6 +52,11 @@ func TestGoType(t *testing.T) {
 			want:   "string",
 		},
 		{
+			name:   "Should generate uuid type",
+			pgType: TypeUuid,
+			want:   "string",
+		},
+		{
 			name:   "Should generate char type",
 			pgType: TypeBpchar,
 			want:   "string",
@@ -173,6 +178,11 @@ func TestGoSliceType(t *testing.T) {
 			want: "[]string",
 		},
 		{
+			name: "Should generate uuid array",
+			args: args{TypeUuid, 1},
+			want: "[]string",
+		},
+		{
 			name: "Should generate char array",
 			args: args{TypeBpchar, 1},
 			want: "[]string",
@@ -261,6 +271,11 @@ func TestGoNullType(t *testing.T) {
 			want:   "*string",
 		},
 		{
+			name:   "Should generate uuid type",
+			pgType: TypeUuid,
+			want:   "*string",
+		},
+		{
 			name:   "Should generate char type",
 			pgType: TypeBpchar,
 			want:   "*string",
@@ -323,6 +338,12 @@ func TestGoNullType(t *testing.T) {
 			want:          "sql.NullString",
 		},
 		{
+			name:          "Should generate uuid type avoiding pointers to sql.NullInt64",
+			pgType:        TypeUuid,
+			avoidPointers: true,
+			want:          "sql.NullString",
+		},
+		{
 			name:          "Should generate bool type avoiding pointers to sql.NullBool",
 			pgType:        TypeBool,
 			avoidPointers: true,
@@ -364,7 +385,7 @@ func TestGoImport(t *testing.T) {
 			name: "Should not generate import for simple type",
 			args: args{
 				pgTypes: []string{
-					TypeInt2, TypeInt4, TypeInt8, TypeNumeric, TypeFloat4, TypeFloat8, TypeBool, TypeText, TypeVarchar, TypeBpchar,
+					TypeInt2, TypeInt4, TypeInt8, TypeNumeric, TypeFloat4, TypeFloat8, TypeBool, TypeText, TypeVarchar, TypeUuid, TypeBpchar,
 				},
 			},
 			want: "",
@@ -405,7 +426,7 @@ func TestGoImport(t *testing.T) {
 			name: "Should generate sql import for nullable simple types avoiding pointer",
 			args: args{
 				pgTypes: []string{
-					TypeInt2, TypeInt4, TypeInt8, TypeNumeric, TypeFloat4, TypeFloat8, TypeBool, TypeText, TypeVarchar, TypeBpchar,
+					TypeInt2, TypeInt4, TypeInt8, TypeNumeric, TypeFloat4, TypeFloat8, TypeBool, TypeText, TypeVarchar, TypeUuid, TypeBpchar,
 				},
 				nullable:      true,
 				avoidPointers: true,
@@ -416,7 +437,7 @@ func TestGoImport(t *testing.T) {
 			name: "Should not generate sql import for nullable simple types",
 			args: args{
 				pgTypes: []string{
-					TypeInt2, TypeInt4, TypeInt8, TypeNumeric, TypeFloat4, TypeFloat8, TypeBool, TypeText, TypeVarchar, TypeBpchar,
+					TypeInt2, TypeInt4, TypeInt8, TypeNumeric, TypeFloat4, TypeFloat8, TypeBool, TypeText, TypeVarchar, TypeUuid, TypeBpchar,
 				},
 				nullable:      true,
 				avoidPointers: false,
