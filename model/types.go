@@ -29,6 +29,8 @@ const (
 	TypeText = "text"
 	// TypeVarchar is a postgres type
 	TypeVarchar = "varchar"
+	// TypeUuid is a postgres type
+	TypeUuid = "uuid"
 	// TypeBpchar is a postgres type
 	TypeBpchar = "bpchar"
 	// TypeBytea is a postgres type
@@ -68,6 +70,7 @@ var typeMapping = map[string]bool{
 	TypeFloat8:      true,
 	TypeText:        true,
 	TypeVarchar:     true,
+	TypeUuid:        true,
 	TypeBpchar:      true,
 	TypeBytea:       true,
 	TypeBool:        true,
@@ -167,7 +170,7 @@ func GoSimpleType(pgType string) (types.Type, error) {
 		return types.Typ[types.Float32], nil
 	case TypeFloat8:
 		return types.Typ[types.Float64], nil
-	case TypeText, TypeVarchar, TypeBpchar:
+	case TypeText, TypeVarchar, TypeUuid, TypeBpchar:
 		return types.Typ[types.String], nil
 	case TypeBytea:
 		return bytea{}, nil
@@ -225,7 +228,7 @@ func GoNullType(pgType string, avoidPointers bool) (types.Type, error) {
 			return sqlNullFloat64{}, nil
 		case TypeBool:
 			return sqlNullBool{}, nil
-		case TypeText, TypeVarchar, TypeBpchar:
+		case TypeText, TypeVarchar, TypeUuid, TypeBpchar:
 			return sqlNullString{}, nil
 		}
 	}
