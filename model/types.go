@@ -98,7 +98,7 @@ func IsValid(pgType string, array bool) bool {
 	if array {
 		switch pgType {
 		case TypeTimestamp, TypeTimestamptz, TypeDate, TypeTime, TypeTimetz,
-			TypeInterval, TypeJSONB, TypeJSON, TypeHstore, TypeInet, TypeCidr:
+			TypeInterval, TypeHstore, TypeInet, TypeCidr:
 			return false
 		}
 	}
