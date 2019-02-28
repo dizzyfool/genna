@@ -87,6 +87,11 @@ func TestGoType(t *testing.T) {
 			want:   "map[string]interface{}",
 		},
 		{
+			name:   "Should generate jsonb type",
+			pgType: TypeJSONB,
+			want:   "map[string]interface{}",
+		},
+		{
 			name:   "Should generate hstore type",
 			pgType: TypeHstore,
 			want:   "map[string]string",
@@ -196,6 +201,16 @@ func TestGoSliceType(t *testing.T) {
 			name: "Should generate bool array",
 			args: args{TypeBool, 1},
 			want: "[]bool",
+		},
+		{
+			name: "Should generate json array",
+			args: args{TypeJSON, 1},
+			want: "[]map[string]interface{}",
+		},
+		{
+			name: "Should generate jsonb array",
+			args: args{TypeJSONB, 1},
+			want: "[]map[string]interface{}",
 		},
 		{
 			name:    "Should not generate not supported type array",
