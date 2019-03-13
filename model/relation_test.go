@@ -6,7 +6,7 @@ import (
 
 func TestRelation_StructFieldName(t *testing.T) {
 	type fields struct {
-		SourceColumn string
+		SourceColumns []string
 		TargetTable  string
 	}
 	tests := []struct {
@@ -16,14 +16,19 @@ func TestRelation_StructFieldName(t *testing.T) {
 	}{
 		{
 			name:   "Should generate simple name",
-			fields: fields{"locationId", "locations"},
+			fields: fields{[]string{"locationId"}, "locations"},
 			want:   "Location",
+		},
+		{
+			name:   "Should generate multiple name",
+			fields: fields{[]string{"cityId", "locationId"}, "locations"},
+			want:   "CityLocation",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := Relation{
-				SourceColumns: []string{tt.fields.SourceColumn},
+				SourceColumns: tt.fields.SourceColumns,
 				TargetTable:   tt.fields.TargetTable,
 			}
 			if got := r.StructFieldName(); got != tt.want {

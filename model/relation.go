@@ -33,7 +33,12 @@ type Relation struct {
 
 // StructFieldName generates field name for struct
 func (r Relation) StructFieldName() string {
-	return StructFieldName(Singular(r.TargetTable))
+	names := make([]string, len(r.SourceColumns))
+	for i, name := range r.SourceColumns {
+		names[i] = ReplaceSuffix(StructFieldName(name), "ID", "")
+	}
+
+	return strings.Join(names, "")
 }
 
 // StructFieldType generates field type for struct
