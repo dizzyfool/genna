@@ -7,6 +7,7 @@ import (
 func TestRelation_StructFieldName(t *testing.T) {
 	type fields struct {
 		SourceColumn string
+		TargetTable  string
 	}
 	tests := []struct {
 		name   string
@@ -15,24 +16,15 @@ func TestRelation_StructFieldName(t *testing.T) {
 	}{
 		{
 			name:   "Should generate simple name",
-			fields: fields{"location"},
-			want:   "Location",
-		},
-		{
-			name:   "Should generate simple name with Id",
-			fields: fields{"locationId"},
-			want:   "Location",
-		},
-		{
-			name:   "Should generate from underscored",
-			fields: fields{"location_id"},
+			fields: fields{"locationId", "locations"},
 			want:   "Location",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := Relation{
-				SourceColumn: tt.fields.SourceColumn,
+				SourceColumns: []string{tt.fields.SourceColumn},
+				TargetTable:   tt.fields.TargetTable,
 			}
 			if got := r.StructFieldName(); got != tt.want {
 				t.Errorf("Relation.StructFieldName() = %v, want %v", got, tt.want)
@@ -59,7 +51,7 @@ func TestRelation_StructFieldTag(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := Relation{
-				SourceColumn: tt.fields.SourceColumn,
+				SourceColumns: []string{tt.fields.SourceColumn},
 			}
 			if got := r.StructFieldTag(); got != tt.want {
 				t.Errorf("Relation.StructFieldTag() = %v, want %v", got, tt.want)

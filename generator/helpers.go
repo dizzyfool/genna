@@ -129,33 +129,37 @@ func newTemplateTable(table model.Table, options Options) templateTable {
 
 // stores column info
 type templateColumn struct {
-	FieldName   string
-	FieldDBName string
-	FieldType   string
-	FieldTag    template.HTML
+	FieldName    string
+	FieldDBName  string
+	FieldType    string
+	FieldTag     template.HTML
+	FieldComment template.HTML
 }
 
 func newTemplateColumn(column model.Column, options Options) templateColumn {
 	return templateColumn{
-		FieldName:   column.StructFieldName(options.KeepPK),
-		FieldDBName: column.Name,
-		FieldType:   column.StructFieldType(),
-		FieldTag:    template.HTML(fmt.Sprintf("`%s`", column.StructFieldTag())),
+		FieldName:    column.StructFieldName(options.KeepPK),
+		FieldDBName:  column.Name,
+		FieldType:    column.StructFieldType(),
+		FieldTag:     template.HTML(fmt.Sprintf("`%s`", column.StructFieldTag())),
+		FieldComment: template.HTML(column.Comment()),
 	}
 }
 
 // stores relation info
 type templateRelation struct {
-	FieldName string
-	FieldType string
-	FieldTag  template.HTML
+	FieldName    string
+	FieldType    string
+	FieldTag     template.HTML
+	FieldComment template.HTML
 }
 
 func newTemplateRelation(relation model.Relation, options Options) templateRelation {
 	return templateRelation{
-		FieldName: relation.StructFieldName(),
-		FieldType: relation.StructFieldType(!options.SchemaPackage, options.Package),
-		FieldTag:  template.HTML(fmt.Sprintf("`%s`", relation.StructFieldTag())),
+		FieldName:    relation.StructFieldName(),
+		FieldType:    relation.StructFieldType(!options.SchemaPackage, options.Package),
+		FieldTag:     template.HTML(fmt.Sprintf("`%s`", relation.StructFieldTag())),
+		FieldComment: template.HTML(relation.Comment()),
 	}
 }
 

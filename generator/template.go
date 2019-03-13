@@ -39,9 +39,9 @@ var Tables = struct { {{range .Models}}
 type {{.StructName}} struct {
 	tableName struct{} {{.StructTag}}
 	{{range .Columns}}
-	{{.FieldName}} {{.FieldType}} {{.FieldTag}}{{end}}{{if .HasRelations}}
+	{{.FieldName}} {{.FieldType}} {{.FieldTag}} {{.FieldComment}}{{end}}{{if .HasRelations}}
 	{{range .Relations}}
-	{{.FieldName}} {{.FieldType}} {{.FieldTag}}{{end}}{{end}}
+	{{.FieldName}} {{.FieldType}} {{.FieldTag}} {{.FieldComment}}{{end}}{{end}}
 }
 {{end}}{{end}}
 `

@@ -68,6 +68,15 @@ func (c Column) StructFieldTag() string {
 	return tags.String()
 }
 
+// Comment generates commentary for column
+func (c Column) Comment() string {
+	if _, err := GoType(c.Type, c.IsNullable, c.IsArray, c.Dimensions, false); err != nil {
+		return fmt.Sprintf("// type %s not supported", c.Type)
+	}
+
+	return ""
+}
+
 // Validate checks current column for problems
 func (c Column) Validate() error {
 	if strings.Trim(c.Name, " ") == "" {

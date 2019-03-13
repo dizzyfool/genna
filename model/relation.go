@@ -2,6 +2,7 @@ package model
 
 import (
 	"path"
+	"strings"
 )
 
 const (
@@ -21,18 +22,18 @@ type Relation struct {
 	SourceTable  string
 
 	// Only for HasOne relation
-	SourceColumn string
+	SourceColumns []string
 
 	TargetSchema string
 	TargetTable  string
 
 	// Only for HasMany relation
-	TargetColumn string
+	TargetColumns []string
 }
 
 // StructFieldName generates field name for struct
 func (r Relation) StructFieldName() string {
-	return ReplaceSuffix(StructFieldName(r.SourceColumn), "ID", "")
+	return StructFieldName(Singular(r.TargetTable))
 }
 
 // StructFieldType generates field type for struct
@@ -61,9 +62,20 @@ func (r Relation) StructFieldType(withSchema bool, publicAlias string) string {
 
 // StructFieldTag generates field tag for struct
 func (r Relation) StructFieldTag() string {
-	tags := NewAnnotation()
+	tags := NewAnnotation().AddTag("pg", "fk:"+strings.Join(r.SourceColumns, ","))
+	if len(r.SourceColumns) > 1 {
+		tags.AddTag("sql", "-")
+	}
 
-	return tags.AddTag("pg", "fk:"+r.SourceColumn).String()
+	return tags.String()
+}
+
+// Comment generates commentary for relation
+func (r Relation) Comment() string {
+	if len(r.SourceColumns) > 1 {
+		return "// multiple fields relations not supported by go-pg"
+	}
+	return ""
 }
 
 // Import gets import for relation

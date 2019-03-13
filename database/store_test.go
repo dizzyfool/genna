@@ -31,7 +31,7 @@ func TestLive(t *testing.T) {
 	})
 
 	t.Run("Should not duplicate columns", func(t *testing.T) {
-		if got := isThereDuplicates(rows); got != false {
+		if got := isThereDuplicates(rows); got {
 			t.Error("Duplicated columns detected")
 		}
 	})
@@ -40,7 +40,7 @@ func TestLive(t *testing.T) {
 
 // Create table with complex constraints for testing
 func createTestTable(store *Store) {
-	store.db.Model().Exec(`
+	_, _ = store.db.Model().Exec(`
 	drop table if exists contracts;
 	drop table if exists employees;
 
@@ -67,7 +67,7 @@ func createTestTable(store *Store) {
 func isThereDuplicates(rows []columnRow) bool {
 	encountered := map[string]bool{}
 	for _, v := range rows {
-		if encountered[v.TblName+v.ColumnName] == true {
+		if encountered[v.TblName+v.ColumnName] {
 			return true
 		} else {
 			encountered[v.TblName+v.ColumnName] = true

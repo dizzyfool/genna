@@ -55,26 +55,26 @@ func (r *columnRow) Column() model.Column {
 
 // columnRow stores raw relation information
 type relationRow struct {
-	Constraint       string `sql:"constraint"`
-	SchemaName       string `sql:"schema"`
-	TblName          string `sql:"table"`
-	ColumnName       string `sql:"column"`
-	TargetSchemaName string `sql:"targetSchema"`
-	TargetTblName    string `sql:"targetTable"`
-	TargetColumnName string `sql:"targetColumn"`
+	Constraint        string   `sql:"constraint"`
+	SchemaName        string   `sql:"schema"`
+	TblName           string   `sql:"table"`
+	ColumnsName       []string `sql:"columns,array"`
+	TargetSchemaName  string   `sql:"targetSchema"`
+	TargetTblName     string   `sql:"targetTable"`
+	TargetColumnsName []string `sql:"targetColumns,array"`
 }
 
 // Relation converts row to Relation model
 func (r *relationRow) Relation() model.Relation {
 	return model.Relation{
 		// TODO HasMany relation
-		Type:         model.HasOne,
-		SourceSchema: r.SchemaName,
-		SourceTable:  r.TblName,
-		SourceColumn: r.ColumnName,
-		TargetSchema: r.TargetSchemaName,
-		TargetTable:  r.TargetTblName,
-		TargetColumn: r.TargetColumnName,
+		Type:          model.HasOne,
+		SourceSchema:  r.SchemaName,
+		SourceTable:   r.TblName,
+		SourceColumns: r.ColumnsName,
+		TargetSchema:  r.TargetSchemaName,
+		TargetTable:   r.TargetTblName,
+		TargetColumns: r.TargetColumnsName,
 	}
 }
 
@@ -117,24 +117,24 @@ func (s *Store) queryTables(schema []string) ([]columnRow, error) {
 				from information_schema.key_column_usage kcu
 				group by kcu.table_schema, kcu.table_name, kcu.column_name
 		    )
-		select distinct c."table_schema"                  as "schema",
-		                c."table_name"                    as "table",
-		                c."column_name"                   as "column",
+		select distinct c."table_schema"                       as "schema",
+		                c."table_name"                         as "table",
+		                c."column_name"                        as "column",
 		                case
 		                when i.constraint_types is null
 		                then false
-		                else 'PRIMARY KEY'=ANY(i.constraint_types)
-		                end                                   as "pk",
-		                'FOREIGN KEY'=ANY(i.constraint_types) as "fk",
-		                c."is_nullable" = 'YES'               as "nullable",
-		                c."data_type" = 'ARRAY'               as "array",
-		                coalesce(a.array_dims, 0)             as "dims",
+		                else 'PRIMARY KEY'=any (i.constraint_types)
+		                end                                    as "pk",
+		                'FOREIGN KEY'=any (i.constraint_types) as "fk",
+		                c."is_nullable" = 'YES'                as "nullable",
+		                c."data_type" = 'ARRAY'                as "array",
+		                coalesce(a.array_dims, 0)              as "dims",
 		                case
 		                when e.is_enum = true
 		                then 'varchar'
 		                else ltrim(c."udt_name", '_')
-		                end                               as "type",
-		                c.column_default                  as "default"
+		                end                                    as "type",
+		                c.column_default                       as "default"
 		from information_schema.tables t
 		left join information_schema.columns c using (table_name, table_schema)
 		left join info i using (table_name, table_schema, column_name)
@@ -203,25 +203,26 @@ func (s *Store) Relations(schema, table string) ([]model.Relation, error) {
 		        where a.attisdropped = false
 		    )
 		select distinct 
-		       -- co.conname as "constraint",
-		       ss.nspname as "schema",
-		       s.relname  as "table",
-		       sc.attname as "column",
-		       ts.nspname as "targetSchema",
-		       t.relname  as "targetTable",
-		       tc.attname as "targetColumn"
+		       co.conname            as "constraint",
+		       ss.nspname            as "schema",
+		       s.relname             as "table",
+		       array_agg(sc.attname) as "columns",
+		       ts.nspname            as "targetSchema",
+		       t.relname             as "targetTable",
+		       array_agg(tc.attname) as "targetColumns"
 		from pg_constraint co
 		left join tables s on co.conrelid = s.oid
 		left join schemas ss on s.relnamespace = ss.oid
-		left join columns sc on s.oid = sc.attrelid and sc.attnum = ANY (co.conkey)
+		left join columns sc on s.oid = sc.attrelid and sc.attnum = any (co.conkey)
 		left join tables t on co.confrelid = t.oid
 		left join schemas ts on t.relnamespace = ts.oid
-		left join columns tc on t.oid = tc.attrelid and tc.attnum = ANY (co.confkey)
+		left join columns tc on t.oid = tc.attrelid and tc.attnum = any (co.confkey)
 		where co.contype = 'f'
 		  and co.conrelid in (select oid from pg_class c where c.relkind = 'r')
 		  and array_position(co.conkey, sc.attnum) = array_position(co.confkey, tc.attnum)
 		  and ss.nspname = ?
 		  and s.relname = ?
+		group by "constraint", schema, "table", "targetSchema", "targetTable"
 	`
 
 	// TODO HasMany relation "or (ts.nspname = ? and t.relname = ?)"
