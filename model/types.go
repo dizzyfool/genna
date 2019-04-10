@@ -59,6 +59,8 @@ const (
 	TypeInet = "inet"
 	// TypeCidr is a postgres type
 	TypeCidr = "cidr"
+	// TypeCidr is a postgres type
+	TypePoint = "point"
 )
 
 var typeMapping = map[string]bool{
@@ -85,6 +87,7 @@ var typeMapping = map[string]bool{
 	TypeHstore:      true,
 	TypeInet:        true,
 	TypeCidr:        true,
+	TypePoint:       true,
 }
 
 // IsValid checks type
@@ -170,7 +173,7 @@ func GoSimpleType(pgType string) (types.Type, error) {
 		return types.Typ[types.Float32], nil
 	case TypeFloat8:
 		return types.Typ[types.Float64], nil
-	case TypeText, TypeVarchar, TypeUuid, TypeBpchar:
+	case TypeText, TypeVarchar, TypeUuid, TypeBpchar, TypePoint:
 		return types.Typ[types.String], nil
 	case TypeBytea:
 		return bytea{}, nil
@@ -228,7 +231,7 @@ func GoNullType(pgType string, avoidPointers bool) (types.Type, error) {
 			return sqlNullFloat64{}, nil
 		case TypeBool:
 			return sqlNullBool{}, nil
-		case TypeText, TypeVarchar, TypeUuid, TypeBpchar:
+		case TypeText, TypeVarchar, TypeUuid, TypeBpchar, TypePoint:
 			return sqlNullString{}, nil
 		}
 	}

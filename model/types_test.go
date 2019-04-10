@@ -107,6 +107,11 @@ func TestGoType(t *testing.T) {
 			want:   "net.IPNet",
 		},
 		{
+			name:   "Should generate point type",
+			pgType: TypePoint,
+			want:   "string",
+		},
+		{
 			name:    "Should not generate unknown type",
 			pgType:  "unknown",
 			wantErr: true,
@@ -211,6 +216,11 @@ func TestGoSliceType(t *testing.T) {
 			name: "Should generate jsonb array",
 			args: args{TypeJSONB, 1},
 			want: "[]map[string]interface{}",
+		},
+		{
+			name: "Should generate point array",
+			args: args{TypePoint, 1},
+			want: "[]string",
 		},
 		{
 			name:    "Should not generate not supported type array",
@@ -334,6 +344,11 @@ func TestGoNullType(t *testing.T) {
 			name:   "Should generate cidr type",
 			pgType: TypeCidr,
 			want:   "*net.IPNet",
+		},
+		{
+			name:   "Should generate point type",
+			pgType: TypePoint,
+			want:   "*string",
 		},
 		{
 			name:    "Should not generate unknown type",
