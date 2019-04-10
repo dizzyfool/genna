@@ -1,6 +1,7 @@
 package generator
 
-const templateModel = `package {{.Package}}{{if and .HasImports .WithModel}}
+const templateModel = `//lint:ignore U1000 ignore unused code, it's generated
+package {{.Package}}{{if and .HasImports .WithModel}}
 
 import ({{range .Imports}}
     "{{.}}"{{end}}
