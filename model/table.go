@@ -20,30 +20,8 @@ type Table struct {
 	Relations []Relation
 }
 
-// FileName get valid file name for model
-func (t Table) FileName() string {
-	name := Underscore(t.Name)
-	if t.Schema != PublicSchema {
-		name = Underscore(t.Schema) + "_" + name
-	}
-	return name
-}
-
-// PackageName get valid package name for model from schema
-func (t Table) PackageName(withSchema bool, publicAlias string) string {
-	if publicAlias == "" {
-		publicAlias = DefaultPackage
-	}
-
-	if t.Schema == PublicSchema || !withSchema {
-		return publicAlias
-	}
-
-	return PackageName(t.Schema)
-}
-
 // Imports returns all imports required by model
-func (t Table) Imports(withRelations bool, importPath, publicAlias string) []string {
+func (t Table) Imports() []string {
 	imports := make([]string, 0)
 	index := make(map[string]struct{})
 
@@ -56,28 +34,13 @@ func (t Table) Imports(withRelations bool, importPath, publicAlias string) []str
 		}
 	}
 
-	if withRelations {
-		for _, relation := range t.Relations {
-			if relation.TargetSchema == t.Schema {
-				continue
-			}
-
-			if imp := relation.Import(importPath, publicAlias); imp != "" {
-				if _, ok := index[imp]; !ok {
-					imports = append(imports, imp)
-					index[imp] = struct{}{}
-				}
-			}
-		}
-	}
-
 	return imports
 }
 
 // ModelName returns model name in camel case and in singular form
-func (t Table) ModelName(withSchema bool) string {
+func (t Table) ModelName() string {
 	name := ModelName(t.Name)
-	if withSchema && t.Schema != PublicSchema {
+	if t.Schema != PublicSchema {
 		name = CamelCased(t.Schema) + name
 	}
 
@@ -168,8 +131,8 @@ func (t Table) HasMultiplePKs() bool {
 }
 
 // JoinAlias used in raws relations
-func (t Table) JoinAlias(withSchema bool) string {
-	return Underscore(t.ModelName(withSchema))
+func (t Table) JoinAlias() string {
+	return Underscore(t.ModelName())
 }
 
 // Validate checks current table for problems

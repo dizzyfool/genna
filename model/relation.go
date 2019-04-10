@@ -1,7 +1,6 @@
 package model
 
 import (
-	"path"
 	"strings"
 )
 
@@ -42,24 +41,10 @@ func (r Relation) StructFieldName() string {
 }
 
 // StructFieldType generates field type for struct
-// withSchema adds schema to filed name
-// publicAlias rewrites public schema name
-func (r Relation) StructFieldType(withSchema bool, publicAlias string) string {
-	if publicAlias == "" {
-		publicAlias = DefaultPackage
-	}
-
+func (r Relation) StructFieldType() string {
 	name := ModelName(r.TargetTable)
-	if withSchema && r.TargetSchema != PublicSchema {
+	if r.TargetSchema != PublicSchema {
 		name = CamelCased(r.TargetSchema) + name
-	}
-
-	if !withSchema && r.TargetSchema != r.SourceSchema {
-		if r.TargetSchema == PublicSchema {
-			name = publicAlias + "." + name
-		} else {
-			name = PackageName(r.TargetSchema) + "." + name
-		}
 	}
 
 	return "*" + name
@@ -81,22 +66,4 @@ func (r Relation) Comment() string {
 		return "// multiple fields relations not supported by go-pg"
 	}
 	return ""
-}
-
-// Import gets import for relation
-// importPath adds prefix to import path
-func (r Relation) Import(importPath, publicAlias string) string {
-	if publicAlias == "" {
-		publicAlias = DefaultPackage
-	}
-
-	if r.TargetSchema == r.SourceSchema {
-		return ""
-	}
-
-	if r.TargetSchema == PublicSchema {
-		return path.Join(importPath, publicAlias)
-	}
-
-	return path.Join(importPath, PackageName(r.TargetSchema))
 }

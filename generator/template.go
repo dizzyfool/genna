@@ -1,11 +1,11 @@
 package generator
 
 const templateModel = `//lint:ignore U1000 ignore unused code, it's generated
-package {{.Package}}{{if and .HasImports .WithModel}}
+package {{.Package}}{{if .HasImports}}
 
 import ({{range .Imports}}
     "{{.}}"{{end}}
-){{end}}{{if .WithColumns}}
+){{end}}
 
 var Columns = struct { {{range .Models}}
 	{{.StructName}} struct{ 
@@ -35,7 +35,7 @@ var Tables = struct { {{range .Models}}
 	}{ 
 		Name: "{{.TableName}}",
 	},{{end}}
-}{{end}}{{if .WithModel}}
+}
 {{range .Models}}
 type {{.StructName}} struct {
 	tableName struct{} {{.StructTag}}
@@ -44,5 +44,5 @@ type {{.StructName}} struct {
 	{{range .Relations}}
 	{{.FieldName}} {{.FieldType}} {{.FieldTag}} {{.FieldComment}}{{end}}{{end}}
 }
-{{end}}{{end}}
+{{end}}
 `

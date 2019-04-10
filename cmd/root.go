@@ -30,10 +30,7 @@ import (
 const (
 	conn      = "conn"
 	out       = "out"
-	impPath   = "import"
 	pkg       = "pkg"
-	schemaPkg = "schema-pkg"
-	multiFile = "multi-file"
 	tables    = "tables"
 	view      = "view"
 	followFK  = "follow-fk"
@@ -94,8 +91,8 @@ to quickly create a models for go-pg https://github.com/go-pg/pg`,
 			panic(err)
 		}
 
-		fmt.Printf("generated %d models from %d tables in total. saved in %d packages in %d files\n",
-			result.GeneratedModels, result.TotalTables, result.GeneratedPackages, result.GeneratedFiles,
+		fmt.Printf("generated %d models from %d tables in total.\n",
+			result.GeneratedModels, result.TotalTables,
 		)
 	},
 }
@@ -119,29 +116,20 @@ func init() {
 		panic(err)
 	}
 
-	flags.StringP(out, "o", "", "output directory for generated files")
+	flags.StringP(out, "o", "", "output file name")
 	if err := rootCmd.MarkFlagRequired(out); err != nil {
 		panic(err)
 	}
 
-	flags.StringSliceP(tables, "t", []string{"public.*"}, "table names for model generation separeted by comma\nuse 'schema_name.*' to generate model for every table in model")
-	flags.StringP(impPath, "i", "", "prefix for imports for generated models")
+	flags.StringSliceP(tables, "t", []string{"public.*"}, "table names for model generation separated by comma\nuse 'schema_name.*' to generate model for every table in model")
 
-	flags.StringP(pkg, "p", model.DefaultPackage, "package for model files. ignored with --multi-file param")
-	flags.BoolP(schemaPkg, "s", false, "generate every schema as separate package")
-	flags.BoolP(multiFile, "m", false, `generate one file for package
-schema-pkg | multi-file | result
-true       | false      | each generated package will contain one file
-true       | true       | each generated package will contain several files, one per model
-false      | true       | one package for all models separated to different files
-false      | false      | one big file for all models
-`)
+	flags.StringP(pkg, "p", model.DefaultPackage, "package for model files")
 
 	flags.BoolP(view, "v", false, "use view for selects e.g. getUsers for users table")
 	flags.BoolP(followFK, "f", false, "generate models for foreign keys, even if it not listed in tables\n")
 
 	flags.Bool(keepPK, false, "keep primary key name as is (by default it should be converted to 'ID') \n")
-	flags.Bool(noAlias, false, `do set 'alias' tag to "t"`)
+	flags.Bool(noAlias, false, `set 'alias' tag to "t"`)
 	flags.Bool(noDiscard, false, "do not use 'discard_unknown_columns' tag")
 }
 
@@ -154,23 +142,11 @@ func flagsToOptions(flags *pflag.FlagSet) (generator.Options, error) {
 		return options, err
 	}
 
-	if options.ImportPath, err = flags.GetString(impPath); err != nil {
-		return options, err
-	}
-
 	if options.Package, err = flags.GetString(pkg); err != nil {
 		return options, err
 	}
 
 	if options.Tables, err = flags.GetStringSlice(tables); err != nil {
-		return options, err
-	}
-
-	if options.SchemaPackage, err = flags.GetBool(schemaPkg); err != nil {
-		return options, err
-	}
-
-	if options.MultiFile, err = flags.GetBool(multiFile); err != nil {
 		return options, err
 	}
 

@@ -4,29 +4,24 @@ import (
 	"fmt"
 	"github.com/dizzyfool/genna/model"
 	"html/template"
-	"path"
 )
 
 // Stores package info
 type templatePackage struct {
-	FileName string
-
 	Package     string
 	HasImports  bool
-	WithModel   bool
-	WithColumns bool
 	Imports     []string
 
 	Models []templateTable
 }
 
 // newMultiPackage creates a package with multiple models
-func newMultiPackage(packageName string, tables []model.Table, options Options) templatePackage {
+func newTemplatePackage(tables []model.Table, options Options) templatePackage {
 	imports := make([]string, 0)
 
 	models := make([]templateTable, len(tables))
 	for i, table := range tables {
-		imports = append(imports, table.Imports(options.SchemaPackage, options.ImportPath, options.Package)...)
+		imports = append(imports, table.Imports()...)
 
 		models[i] = newTemplateTable(table, options)
 		models[i].uniqualizeFields()
@@ -35,53 +30,12 @@ func newMultiPackage(packageName string, tables []model.Table, options Options) 
 	imports = model.UniqStrings(imports)
 
 	return templatePackage{
-		FileName: path.Join(
-			options.Output,
-			tables[0].PackageName(options.SchemaPackage, options.Package),
-			packageName+".go",
-		),
-
-		Package:     packageName,
+		Package:     options.Package,
 		HasImports:  len(imports) > 0,
-		WithModel:   true,
-		WithColumns: true,
 		Imports:     imports,
 
 		Models: models,
 	}
-}
-
-// newSinglePackage creates a package with simple model
-func newSinglePackage(table model.Table, options Options) templatePackage {
-	tt := newTemplateTable(table, options)
-	tt.uniqualizeFields()
-
-	imports := table.Imports(options.SchemaPackage, options.ImportPath, options.Package)
-
-	return templatePackage{
-		FileName: path.Join(
-			options.Output,
-			table.PackageName(options.SchemaPackage, options.Package),
-			table.FileName()+".go",
-		),
-
-		Package:    table.PackageName(options.SchemaPackage, options.Package),
-		HasImports: len(imports) > 0,
-		WithModel:  true,
-		Imports:    imports,
-
-		Models: []templateTable{tt},
-	}
-}
-
-func newColumnsPackage(packageName string, tables []model.Table, options Options) templatePackage {
-	pack := newMultiPackage(packageName, tables, options)
-
-	pack.WithColumns = true
-	pack.WithModel = false
-	pack.FileName = model.ReplaceSuffix(pack.FileName, ".go", "_columns.go")
-
-	return pack
 }
 
 // stores struct info
@@ -114,10 +68,10 @@ func newTemplateTable(table model.Table, options Options) templateTable {
 	}
 
 	return templateTable{
-		StructName: table.ModelName(!options.SchemaPackage),
+		StructName: table.ModelName(),
 		StructTag:  template.HTML(fmt.Sprintf("`%s`", table.TableNameTag(options.View, options.NoAlias, options.NoDiscard))),
 
-		JoinAlias: table.JoinAlias(!options.SchemaPackage),
+		JoinAlias: table.JoinAlias(),
 		TableName: table.Name,
 
 		Columns: columns,
@@ -157,7 +111,7 @@ type templateRelation struct {
 func newTemplateRelation(relation model.Relation, options Options) templateRelation {
 	return templateRelation{
 		FieldName:    relation.StructFieldName(),
-		FieldType:    relation.StructFieldType(!options.SchemaPackage, options.Package),
+		FieldType:    relation.StructFieldType(),
 		FieldTag:     template.HTML(fmt.Sprintf("`%s`", relation.StructFieldTag())),
 		FieldComment: template.HTML(relation.Comment()),
 	}

@@ -8,31 +8,16 @@ import (
 
 // Options for generator
 type Options struct {
-	// Directory path where files should be saved
+	// Output file path
 	Output string
 
 	// List of tables to generate
 	// Default []string{"public.*"}
 	Tables []string
 
-	// Prefix for imports
-	ImportPath string
-
 	// Package sets package name for model
 	// Works only with SchemaPackage = false
 	Package string
-
-	// Generate every schema as separate package
-	SchemaPackage bool
-
-	// Generates one file for package
-	// SchemaPackage | MultiFile | Result
-	// true          | true      | each generated package will contain several files, one per model
-	// true          | false     | each generated package will contain one file
-	// false         | false     | one big file for all models
-	// false         | true      | one package for all models separated to different files
-	// TODO Make this param as MODE ?
-	MultiFile bool
 
 	// Generate model for foreign keys,
 	// even if tables not listed in Tables param
@@ -63,10 +48,6 @@ type Options struct {
 // def fills default values of an options
 func (o *Options) def() {
 	if strings.Trim(o.Package, " ") == "" {
-		o.Package = model.DefaultPackage
-	}
-
-	if o.SchemaPackage {
 		o.Package = model.DefaultPackage
 	}
 

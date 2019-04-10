@@ -66,7 +66,7 @@ func TestTable_ModelName(t *testing.T) {
 				Name:   tt.fields.Name,
 				Schema: tt.fields.Schema,
 			}
-			if got := tbl.ModelName(tt.withSchema); got != tt.want {
+			if got := tbl.ModelName(); got != tt.want {
 				t.Errorf("Table.ModelName() = %v, want %v", got, tt.want)
 			}
 		})
@@ -406,124 +406,6 @@ func TestTable_Imports(t *testing.T) {
 			},
 			want: []string{"time", "github.com/go-pg/pg"},
 		},
-		{
-			name: "Should not generate imports for foreign keys in same package",
-			fields: fields{
-				Relations: []Relation{
-					{
-						Type:         HasOne,
-						SourceSchema: PublicSchema,
-						TargetSchema: PublicSchema,
-					},
-				},
-			},
-			args: args{
-				withRelations: true,
-			},
-			want: []string{},
-		},
-		{
-			name: "Should not generate imports for foreign keys in different packages",
-			fields: fields{
-				Relations: []Relation{
-					{
-						Type:         HasOne,
-						SourceSchema: PublicSchema,
-						TargetSchema: "geo",
-					},
-					{
-						Type:         HasOne,
-						SourceSchema: PublicSchema,
-						TargetSchema: "geo",
-					},
-				},
-			},
-			args: args{
-				withRelations: true,
-			},
-			want: []string{"geo"},
-		},
-		{
-			name: "Should not generate imports for foreign keys in different not public packages",
-			fields: fields{
-				Relations: []Relation{
-					{
-						Type:         HasOne,
-						SourceSchema: "geo",
-						TargetSchema: PublicSchema,
-					},
-					{
-						Type:         HasOne,
-						SourceSchema: "geo",
-						TargetSchema: "users",
-					},
-					{
-						Type:         HasOne,
-						SourceSchema: "geo",
-						TargetSchema: "geo",
-					},
-				},
-			},
-			args: args{
-				withRelations: true,
-			},
-			want: []string{"model", "users"},
-		},
-		{
-			name: "Should generate imports for foreign keys with custom default package",
-			fields: fields{
-				Relations: []Relation{
-					{
-						Type:         HasOne,
-						SourceSchema: "geo",
-						TargetSchema: PublicSchema,
-					},
-					{
-						Type:         HasOne,
-						SourceSchema: "geo",
-						TargetSchema: "users",
-					},
-					{
-						Type:         HasOne,
-						SourceSchema: "geo",
-						TargetSchema: "geo",
-					},
-				},
-			},
-			args: args{
-				withRelations: true,
-				publicAlias:   "test",
-			},
-			want: []string{"test", "users"},
-		},
-		{
-			name: "Should generate imports for foreign keys with custom package prefix",
-			fields: fields{
-				Relations: []Relation{
-					{
-						Type:         HasOne,
-						SourceSchema: "geo",
-						TargetSchema: PublicSchema,
-					},
-					{
-						Type:         HasOne,
-						SourceSchema: "geo",
-						TargetSchema: "users",
-					},
-					{
-						Type:         HasOne,
-						SourceSchema: "geo",
-						TargetSchema: "geo",
-					},
-				},
-			},
-			args: args{
-				withRelations: true,
-				publicAlias:   "test",
-				importPath:    "src",
-			},
-			want: []string{"src/test", "src/users"},
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -533,7 +415,7 @@ func TestTable_Imports(t *testing.T) {
 				Columns:   tt.fields.Columns,
 				Relations: tt.fields.Relations,
 			}
-			got := tbl.Imports(tt.args.withRelations, tt.args.importPath, tt.args.publicAlias)
+			got := tbl.Imports()
 
 			sort.Strings(got)
 			sort.Strings(tt.want)

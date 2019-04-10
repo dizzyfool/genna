@@ -153,9 +153,7 @@ func TestDo(t *testing.T) {
 		Package:       "test", // model.DefaultPackage,
 		Tables:        []string{"public.users", "geo.*"},
 		FollowFKs:     true,
-		Output:        path.Dir(filename) + "/../test/",
-		SchemaPackage: true,
-		MultiFile:     true,
+		Output:        path.Dir(filename) + "/../test/model.go",
 		ImportPath:    "github.com/dizzyfool/genna/test",
 		KeepPK:        false, // try true
 		NoDiscard:     false, // try true
@@ -173,9 +171,7 @@ func TestLive(t *testing.T) {
 		Package:       model.DefaultPackage,
 		Tables:        []string{"public.*"},
 		FollowFKs:     true,
-		Output:        path.Dir(filename) + "/../test/",
-		SchemaPackage: true,
-		MultiFile:     false,
+		Output:        path.Dir(filename) + "/../test/model.go",
 		ImportPath:    "github.com/dizzyfool/genna/test",
 		KeepPK:        false, // try true
 		NoDiscard:     false, // try true
