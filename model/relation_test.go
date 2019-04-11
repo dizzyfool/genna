@@ -7,7 +7,7 @@ import (
 func TestRelation_StructFieldName(t *testing.T) {
 	type fields struct {
 		SourceColumns []string
-		TargetTable  string
+		TargetTable   string
 	}
 	tests := []struct {
 		name   string
@@ -72,14 +72,9 @@ func TestRelation_StructFieldType(t *testing.T) {
 		TargetSchema string
 		TargetTable  string
 	}
-	type args struct {
-		withSchema  bool
-		publicAlias string
-	}
 	tests := []struct {
 		name   string
 		fields fields
-		args   args
 		want   string
 	}{
 		{
@@ -89,7 +84,6 @@ func TestRelation_StructFieldType(t *testing.T) {
 				TargetSchema: PublicSchema,
 				TargetTable:  "users",
 			},
-			args: args{},
 			want: "*User",
 		},
 		{

@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"os"
 	"path"
+	"sort"
 
 	"github.com/dizzyfool/genna/model"
 
@@ -21,8 +22,8 @@ type Generator struct {
 
 // Result stores result of generator
 type Result struct {
-	TotalTables       int
-	GeneratedModels   int
+	TotalTables     int
+	GeneratedModels int
 }
 
 // NewGenerator creates generator
@@ -54,7 +55,7 @@ func (g Generator) Process(tables []model.Table) (*Result, error) {
 	}
 
 	// making intermediate structs for templates
-	pkg := g.Package(tables, toGenerate)
+	pkg := g.Package(tables, sortTables(toGenerate))
 
 	g.logger.Debug("generating", zap.String("package", pkg.Package))
 	var buffer bytes.Buffer
@@ -82,8 +83,8 @@ func (g Generator) Process(tables []model.Table) (*Result, error) {
 	}
 
 	return &Result{
-		TotalTables:       len(tables),
-		GeneratedModels:   len(toGenerate),
+		TotalTables:     len(tables),
+		GeneratedModels: len(toGenerate),
 	}, nil
 }
 
@@ -118,4 +119,26 @@ func (g Generator) File(filename string) (*os.File, error) {
 	}
 
 	return os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+}
+
+func sortTables(slice []string) []string {
+	sort.Slice(slice, func(i, j int) bool {
+		si, ti := model.Split(slice[i])
+		sj, tj := model.Split(slice[j])
+
+		if si == sj {
+			return ti < tj
+		}
+
+		if si == model.PublicSchema {
+			return true
+		}
+		if sj == model.PublicSchema {
+			return false
+		}
+
+		return si < sj
+	})
+
+	return slice
 }

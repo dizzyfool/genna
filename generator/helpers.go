@@ -2,15 +2,16 @@ package generator
 
 import (
 	"fmt"
-	"github.com/dizzyfool/genna/model"
 	"html/template"
+
+	"github.com/dizzyfool/genna/model"
 )
 
 // Stores package info
 type templatePackage struct {
-	Package     string
-	HasImports  bool
-	Imports     []string
+	Package    string
+	HasImports bool
+	Imports    []string
 
 	Models []templateTable
 }
@@ -30,9 +31,9 @@ func newTemplatePackage(tables []model.Table, options Options) templatePackage {
 	imports = model.UniqStrings(imports)
 
 	return templatePackage{
-		Package:     options.Package,
-		HasImports:  len(imports) > 0,
-		Imports:     imports,
+		Package:    options.Package,
+		HasImports: len(imports) > 0,
+		Imports:    imports,
 
 		Models: models,
 	}

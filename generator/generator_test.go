@@ -150,13 +150,12 @@ func TestDo(t *testing.T) {
 
 	// just for test
 	generator := NewGenerator(Options{
-		Package:       "test", // model.DefaultPackage,
-		Tables:        []string{"public.users", "geo.*"},
-		FollowFKs:     true,
-		Output:        path.Dir(filename) + "/../test/model.go",
-		ImportPath:    "github.com/dizzyfool/genna/test",
-		KeepPK:        false, // try true
-		NoDiscard:     false, // try true
+		Package:   "test", // model.DefaultPackage,
+		Tables:    []string{"public.users", "geo.*"},
+		FollowFKs: true,
+		Output:    path.Dir(filename) + "/../test/model.go",
+		KeepPK:    false, // try true
+		NoDiscard: false, // try true
 	}, logger)
 
 	_, err = generator.Process([]model.Table{unused, user, company, location, lang})
@@ -168,13 +167,12 @@ func TestLive(t *testing.T) {
 
 	url := `postgres://genna:genna@localhost:5432/genna?sslmode=disable`
 	options := Options{
-		Package:       model.DefaultPackage,
-		Tables:        []string{"public.*"},
-		FollowFKs:     true,
-		Output:        path.Dir(filename) + "/../test/model.go",
-		ImportPath:    "github.com/dizzyfool/genna/test",
-		KeepPK:        false, // try true
-		NoDiscard:     false, // try true
+		Package:   model.DefaultPackage,
+		Tables:    []string{"public.*"},
+		FollowFKs: true,
+		Output:    path.Dir(filename) + "/../test/model.go",
+		KeepPK:    false, // try true
+		NoDiscard: false, // try true
 	}
 
 	config := zap.NewProductionConfig()

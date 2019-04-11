@@ -353,15 +353,9 @@ func TestTable_Imports(t *testing.T) {
 		Columns   []Column
 		Relations []Relation
 	}
-	type args struct {
-		withRelations bool
-		importPath    string
-		publicAlias   string
-	}
 	tests := []struct {
 		name   string
 		fields fields
-		args   args
 		want   []string
 	}{
 		{
