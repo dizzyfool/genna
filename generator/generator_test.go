@@ -6,10 +6,10 @@ import (
 	"runtime"
 	"testing"
 
-	"go.uber.org/zap"
-
 	"github.com/dizzyfool/genna/database"
 	"github.com/dizzyfool/genna/model"
+
+	"go.uber.org/zap"
 )
 
 func TestDo(t *testing.T) {
@@ -167,12 +167,14 @@ func TestLive(t *testing.T) {
 
 	url := `postgres://genna:genna@localhost:5432/genna?sslmode=disable`
 	options := Options{
-		Package:   model.DefaultPackage,
-		Tables:    []string{"public.*"},
-		FollowFKs: true,
-		Output:    path.Dir(filename) + "/../test/model.go",
-		KeepPK:    false, // try true
-		NoDiscard: false, // try true
+		Package:      model.DefaultPackage,
+		Tables:       []string{"public.*"},
+		FollowFKs:    true,
+		Output:       path.Dir(filename) + "/../test/model.go",
+		KeepPK:       false, // try true
+		NoDiscard:    false, // try true
+		WithSearch:   true,
+		StrictSearch: false,
 	}
 
 	config := zap.NewProductionConfig()
@@ -198,5 +200,81 @@ func TestLive(t *testing.T) {
 
 	if _, err := genna.Process(tables); err != nil {
 		panic(err)
+	}
+}
+
+func Test_addSuffix(t *testing.T) {
+	type args struct {
+		filename string
+		suffix   string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "should add suffix to normal path",
+			args: args{
+				filename: "/some/dir/file.ext",
+				suffix:   "_suf",
+			},
+			want: "/some/dir/file_suf.ext",
+		},
+		{
+			name: "should add suffix to root file path",
+			args: args{
+				filename: "/file.ext",
+				suffix:   "_suf",
+			},
+			want: "/file_suf.ext",
+		},
+		{
+			name: "should add suffix to only file path",
+			args: args{
+				filename: "file.ext",
+				suffix:   "_suf",
+			},
+			want: "file_suf.ext",
+		},
+		{
+			name: "should add suffix to path without ext",
+			args: args{
+				filename: "/some/dir/file",
+				suffix:   "_suf",
+			},
+			want: "/some/dir/file_suf",
+		},
+		{
+			name: "should add suffix to file without ext",
+			args: args{
+				filename: "file",
+				suffix:   "_suf",
+			},
+			want: "file_suf",
+		},
+		{
+			name: "should add suffix to path with dots",
+			args: args{
+				filename: "/some.dir/fi.le.ext",
+				suffix:   "_suf",
+			},
+			want: "/some.dir/fi.le_suf.ext",
+		},
+		{
+			name: "should add suffix to path with dots and without ext",
+			args: args{
+				filename: "/some.dir/file",
+				suffix:   "_suf",
+			},
+			want: "/some.dir/file_suf",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := addSuffix(tt.args.filename, tt.args.suffix); got != tt.want {
+				t.Errorf("addSuffix() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

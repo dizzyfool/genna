@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"sort"
+	"strings"
 
 	"github.com/dizzyfool/genna/model"
 
@@ -49,37 +50,20 @@ func (g Generator) Process(tables []model.Table) (*Result, error) {
 		tables = model.FilterFKs(tables, toGenerate)
 	}
 
-	tmpl, err := template.New(model.DefaultPackage).Parse(templateModel)
-	if err != nil {
-		return nil, errors.Wrap(err, "parsing template error")
-	}
-
 	// making intermediate structs for templates
 	pkg := g.Package(tables, sortTables(toGenerate))
 
-	g.logger.Debug("generating", zap.String("package", pkg.Package))
-	var buffer bytes.Buffer
-	if err := tmpl.ExecuteTemplate(&buffer, model.DefaultPackage, pkg); err != nil {
-		return nil, errors.Wrap(err, "processing model template error")
+	// generating model
+	if err := g.generateAndSave(model.DefaultPackage, templateModel, g.options.Output, pkg); err != nil {
+		return nil, err
 	}
 
-	unformatted := buffer.Bytes()
-	// formatting by go-fmt
-	content, err := format.Source(unformatted)
-	if err != nil {
-		g.logger.Info("formatting file error", zap.Error(err), zap.String("file", g.options.Output))
-		// saving file even if there is fmt errors
-		content = unformatted
-	}
-
-	g.logger.Debug("saving", zap.String("file", g.options.Output))
-	file, err := g.File(g.options.Output)
-	if err != nil {
-		return nil, errors.Wrap(err, "open model file error")
-	}
-
-	if _, err := file.Write(content); err != nil {
-		return nil, errors.Wrap(err, "writing content to file error")
+	// generating search filters
+	if g.options.WithSearch {
+		output := addSuffix(g.options.Output, "_search")
+		if err := g.generateAndSave(model.SearchSuffix, templateSearch, output, pkg); err != nil {
+			return nil, err
+		}
 	}
 
 	return &Result{
@@ -119,6 +103,50 @@ func (g Generator) File(filename string) (*os.File, error) {
 	}
 
 	return os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+}
+
+func (g Generator) generateAndSave(name, tmpl string, output string, pkg templatePackage) error {
+	parsed, err := template.New(name).Parse(tmpl)
+	if err != nil {
+		return errors.Wrap(err, "parsing template error")
+	}
+
+	g.logger.Debug("generating", zap.String("package", pkg.Package))
+	var buffer bytes.Buffer
+	if err := parsed.ExecuteTemplate(&buffer, name, pkg); err != nil {
+		return errors.Wrap(err, "processing model template error")
+	}
+
+	unformatted := buffer.Bytes()
+	// formatting by go-fmt
+	content, err := format.Source(unformatted)
+	if err != nil {
+		g.logger.Info("formatting file error", zap.Error(err), zap.String("file", output))
+		// saving file even if there is fmt errors
+		content = unformatted
+	}
+
+	g.logger.Debug("saving", zap.String("file", output))
+	file, err := g.File(output)
+	if err != nil {
+		return errors.Wrap(err, "open model file error")
+	}
+
+	if _, err := file.Write(content); err != nil {
+		return errors.Wrap(err, "writing content to file error")
+	}
+
+	return nil
+}
+
+func addSuffix(filename, suffix string) string {
+	dir, file := path.Split(filename)
+	last := strings.LastIndex(file, ".")
+	if last == -1 {
+		return filename + suffix
+	}
+
+	return path.Join(dir, file[:last]+suffix+file[last:])
 }
 
 func sortTables(slice []string) []string {

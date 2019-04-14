@@ -48,11 +48,12 @@ alter table "users"
 
 Run generator
 
-`genna -c postgres://user:password@localhost:5432/yourdb -o ~/output -t public.*,geo.* -f`
+`genna -c postgres://user:password@localhost:5432/yourdb -o ~/output/model.go -t public.*,geo.* -f -s`
 
 You should get following models on model package:
 
 ```go
+//lint:file-ignore U1000 ignore unused code, it's generated
 package model
 
 var Columns = struct {
@@ -71,7 +72,7 @@ var Columns = struct {
 		Country string
 	}{
 		ID:        "userId",
-		Activated: "activated,notnull",
+		Activated: "activated",
 		CountryID: "countryId",
 		Email:     "email",
 		Name:      "name",
@@ -89,21 +90,23 @@ var Columns = struct {
 
 var Tables = struct {
 	User struct {
-		Name string
+		Name, Alias string
 	}
 	GeoCountry struct {
-		Name string
+		Name, Alias string
 	}
 }{
 	User: struct {
-		Name string
+		Name, Alias string
 	}{
-		Name: "users",
+		Name:  "users",
+		Alias: "t",
 	},
 	GeoCountry: struct {
-		Name string
+		Name, Alias string
 	}{
-		Name: "geo.countries",
+		Name:  "geo.countries",
+		Alias: "t",
 	},
 }
 
@@ -128,6 +131,101 @@ type GeoCountry struct {
 }
 ```
 
+If you choose to generate search filters another file will appear
+
+```go
+//lint:file-ignore U1000 ignore unused code, it's generated
+package model
+
+import (
+	"github.com/go-pg/pg"
+	"github.com/go-pg/pg/orm"
+)
+
+// base filters
+
+type applier func(query *orm.Query) (*orm.Query, error)
+
+type search struct {
+	custom map[string][]interface{}
+}
+
+func (s *search) apply(table string, values map[string]interface{}, query *orm.Query) *orm.Query {
+	for field, value := range values {
+		if value != nil {
+			query.Where("?.? = ?", pg.F(table), pg.F(field), value)
+		}
+	}
+
+	if s.custom != nil {
+		for condition, params := range s.custom {
+			query.Where(condition, params...)
+		}
+	}
+
+	return query
+}
+
+func (s *search) with(condition string, params ...interface{}) {
+	if s.custom == nil {
+		s.custom = map[string][]interface{}{}
+	}
+	s.custom[condition] = params
+}
+
+// Searcher is interface for every generated filter
+type Searcher interface {
+	Apply(query *orm.Query) *orm.Query
+	Q() applier
+}
+
+type UserSearch struct {
+	search
+
+	ID        interface{}
+	Activated interface{}
+	CountryID interface{}
+	Email     interface{}
+	Name      interface{}
+}
+
+func (s *UserSearch) Apply(query *orm.Query) *orm.Query {
+	return s.apply(Tables.User.Alias, map[string]interface{}{
+		Columns.User.ID:        s.ID,
+		Columns.User.Activated: s.Activated,
+		Columns.User.CountryID: s.CountryID,
+		Columns.User.Email:     s.Email,
+		Columns.User.Name:      s.Name,
+	}, query)
+}
+
+func (s *UserSearch) Q() applier {
+	return func(query *orm.Query) (*orm.Query, error) {
+		return s.Apply(query), nil
+	}
+}
+
+type GeoCountrySearch struct {
+	search
+
+	ID   interface{}
+	Code interface{}
+}
+
+func (s *GeoCountrySearch) Apply(query *orm.Query) *orm.Query {
+	return s.apply(Tables.GeoCountry.Alias, map[string]interface{}{
+		Columns.GeoCountry.ID:   s.ID,
+		Columns.GeoCountry.Code: s.Code,
+	}, query)
+}
+
+func (s *GeoCountrySearch) Q() applier {
+	return func(query *orm.Query) (*orm.Query, error) {
+		return s.Apply(query), nil
+	}
+}
+``` 
+
 Try it
 
 ```go
@@ -135,13 +233,14 @@ package model
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/go-pg/pg"
 )
 
 const AllColumns = "t.*"
 
-func Test() {
+func TestModel(t *testing.T) {
 	// connecting to db
 	options, _ := pg.ParseURL("postgres://user:password@localhost:5432/yourdb")
 	db := pg.Connect(options)
@@ -188,9 +287,7 @@ func Test() {
 	}
 
 	// selecting inserted user
-	user := User{
-		ID: newUser.ID,
-	}
+	user := User{}
 	m := db.Model(&user).
 		Column(AllColumns, Columns.User.Country).
 		Where(`? = ?`, pg.F(Columns.User.Email), "test@gmail.com")
@@ -201,6 +298,19 @@ func Test() {
 
 	fmt.Printf("%#v\n", user)
 	fmt.Printf("%#v\n", user.Country)
+
+	// selecting inserted user with generated search
+	user = User{}
+	search := UserSearch{
+		ID: newUser.ID,
+	}
+	m = db.Model(&user).Apply(search.Q())
+
+	if err := m.Select(); err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%#v\n", user)
 
 }
 

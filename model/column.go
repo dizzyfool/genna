@@ -68,6 +68,39 @@ func (c Column) StructFieldTag() string {
 	return tags.String()
 }
 
+// IsSearchable checks if field can be added to search filters
+func (c Column) IsSearchable() bool {
+	return !c.IsArray && IsBasic(c.Type)
+}
+
+// SearchFieldType generates field type for search filters struct
+func (c Column) SearchFieldType(strict bool) string {
+	if !strict {
+		return "interface{}"
+	}
+
+	typ, err := GoPointerType(c.Type, c.IsArray, c.Dimensions)
+	if err != nil {
+		return "interface{}"
+	}
+
+	return typ.String()
+}
+
+// Import gets import for column
+func (c Column) SearchImport() string {
+	if !c.IsSearchable() {
+		return ""
+	}
+
+	typ, err := GoPointerType(c.Type, c.IsArray, c.Dimensions)
+	if err != nil {
+		return ""
+	}
+
+	return GoImportFromType(typ)
+}
+
 // Comment generates commentary for column
 func (c Column) Comment() string {
 	if _, err := GoType(c.Type, c.IsNullable, c.IsArray, c.Dimensions, false); err != nil {

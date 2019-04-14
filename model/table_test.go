@@ -81,8 +81,34 @@ func TestTable_TableName(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
+		quoted bool
 		want   string
 	}{
+		{
+			name:   "Should generate from public schema and simple table name, ignore quotes",
+			fields: fields{PublicSchema, "users"},
+			quoted: true,
+			want:   "users",
+		},
+		{
+			name:   "Should generate from non-public schema and simple table name, ignore quotes",
+			fields: fields{"users", "users"},
+			quoted: true,
+			want:   "users.users",
+		},
+		{
+			name:   "Should generate quoted and escaped from public schema and table name",
+			fields: fields{PublicSchema, "userOrders"},
+			quoted: true,
+			want:   `\"userOrders\"`,
+		},
+
+		{
+			name:   "Should generate quoted and escaped",
+			fields: fields{"allUsers", "userOrders"},
+			quoted: true,
+			want:   `\"allUsers\".\"userOrders\"`,
+		},
 		{
 			name:   "Should generate from public schema and simple table name",
 			fields: fields{PublicSchema, "users"},
@@ -94,15 +120,15 @@ func TestTable_TableName(t *testing.T) {
 			want:   "users.users",
 		},
 		{
-			name:   "Should generate quoted and escaped from public schema and table name",
+			name:   "Should generate quoted and escaped from public schema and table name, no quotes",
 			fields: fields{PublicSchema, "userOrders"},
-			want:   `\"userOrders\"`,
+			want:   `userOrders`,
 		},
 
 		{
-			name:   "Should generate quoted and escaped",
+			name:   "Should generate quoted and escaped, no quotes",
 			fields: fields{"allUsers", "userOrders"},
-			want:   `\"allUsers\".\"userOrders\"`,
+			want:   `allUsers.userOrders`,
 		},
 	}
 	for _, tt := range tests {
@@ -111,7 +137,7 @@ func TestTable_TableName(t *testing.T) {
 				Schema: tt.fields.Schema,
 				Name:   tt.fields.Name,
 			}
-			if got := tbl.TableName(); got != tt.want {
+			if got := tbl.TableName(tt.quoted); got != tt.want {
 				t.Errorf("Table.TableName() = %v, want %v", got, tt.want)
 			}
 		})
@@ -416,6 +442,275 @@ func TestTable_Imports(t *testing.T) {
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Table.Imports() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestTable_HasMultiplePKs(t *testing.T) {
+	type fields struct {
+		Schema    string
+		Name      string
+		Columns   []Column
+		Relations []Relation
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{
+		{
+			name: "Should detect multiple PKs",
+			fields: fields{
+				Columns: []Column{
+					{
+						Name: "userId",
+						Type: TypeInt8,
+						IsPK: true,
+					},
+					{
+						Name: "locationId",
+						Type: TypeInt8,
+						IsPK: true,
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "Should detect single PKs",
+			fields: fields{
+				Columns: []Column{
+					{
+						Name: "userId",
+						Type: TypeInt8,
+						IsPK: true,
+					},
+					{
+						Name: "locationId",
+						Type: TypeInt8,
+					},
+				},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tbl := Table{
+				Schema:    tt.fields.Schema,
+				Name:      tt.fields.Name,
+				Columns:   tt.fields.Columns,
+				Relations: tt.fields.Relations,
+			}
+			if got := tbl.HasMultiplePKs(); got != tt.want {
+				t.Errorf("Table.HasMultiplePKs() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestTable_JoinAlias(t *testing.T) {
+	type fields struct {
+		Schema    string
+		Name      string
+		Columns   []Column
+		Relations []Relation
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name:   "Should generate from simple word",
+			fields: fields{Name: "users"},
+			want:   "user",
+		},
+		{
+			name:   "Should generate from non-countable",
+			fields: fields{Name: "audio"},
+			want:   "audio",
+		},
+		{
+			name:   "Should generate from underscored",
+			fields: fields{Name: "user_orders"},
+			want:   "user_order",
+		},
+		{
+			name:   "Should generate from camelCased",
+			fields: fields{Name: "userOrders"},
+			want:   "user_order",
+		},
+		{
+			name:   "Should generate from plural in last place",
+			fields: fields{Name: "usersWithOrders"},
+			want:   "users_with_order",
+		},
+		{
+			name:   "Should generate from abracadabra",
+			fields: fields{Name: "abracadabra"},
+			want:   "abracadabra",
+		},
+		{
+			name:   "Should generate from simple word with public schema",
+			fields: fields{Name: "users", Schema: "public"},
+			want:   "user",
+		},
+		{
+			name:   "Should generate from simple word with custom schema",
+			fields: fields{Name: "users", Schema: "users"},
+			want:   "users_user",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tbl := Table{
+				Schema:    tt.fields.Schema,
+				Name:      tt.fields.Name,
+				Columns:   tt.fields.Columns,
+				Relations: tt.fields.Relations,
+			}
+			if got := tbl.JoinAlias(); got != tt.want {
+				t.Errorf("Table.JoinAlias() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestTable_SearchModelName(t *testing.T) {
+	type fields struct {
+		Schema    string
+		Name      string
+		Columns   []Column
+		Relations []Relation
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name:   "Should generate from simple word",
+			fields: fields{Name: "users"},
+			want:   "UserSearch",
+		},
+		{
+			name:   "Should generate from non-countable",
+			fields: fields{Name: "audio"},
+			want:   "AudioSearch",
+		},
+		{
+			name:   "Should generate from underscored",
+			fields: fields{Name: "user_orders"},
+			want:   "UserOrderSearch",
+		},
+		{
+			name:   "Should generate from camelCased",
+			fields: fields{Name: "userOrders"},
+			want:   "UserOrderSearch",
+		},
+		{
+			name:   "Should generate from plural in last place",
+			fields: fields{Name: "usersWithOrders"},
+			want:   "UsersWithOrderSearch",
+		},
+		{
+			name:   "Should generate from abracadabra",
+			fields: fields{Name: "abracadabra"},
+			want:   "AbracadabraSearch",
+		},
+		{
+			name:   "Should generate from simple word with public schema",
+			fields: fields{Name: "users", Schema: "public"},
+			want:   "UserSearch",
+		},
+		{
+			name:   "Should generate from simple word with custom schema",
+			fields: fields{Name: "users", Schema: "users"},
+			want:   "UsersUserSearch",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tbl := Table{
+				Schema:    tt.fields.Schema,
+				Name:      tt.fields.Name,
+				Columns:   tt.fields.Columns,
+				Relations: tt.fields.Relations,
+			}
+			if got := tbl.SearchModelName(); got != tt.want {
+				t.Errorf("Table.SearchModelName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestTable_SearchImports(t *testing.T) {
+	type fields struct {
+		Schema    string
+		Name      string
+		Columns   []Column
+		Relations []Relation
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   []string
+	}{
+		{
+			name: "Should not generate imports if only simple types",
+			fields: fields{
+				Columns: []Column{
+					{
+						Name: "userId",
+						Type: TypeInt8,
+					},
+					{
+						Name: "locationId",
+						Type: TypeInt8,
+					},
+				},
+			},
+			want: []string{},
+		},
+		{
+			name: "Should not generate imports without duplicates",
+			fields: fields{
+				Columns: []Column{
+					{
+						Name: "userId",
+						Type: TypeInt8,
+					},
+					{
+						Name: "createdAt",
+						Type: TypeTimestamp,
+					},
+					{
+						Name:       "deletedAt",
+						Type:       TypeTimestamp,
+						IsNullable: true,
+					},
+					{
+						Name:       "updatedAt",
+						Type:       TypeTimestamp,
+						IsNullable: true,
+					},
+				},
+			},
+			want: []string{"time"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tbl := Table{
+				Schema:    tt.fields.Schema,
+				Name:      tt.fields.Name,
+				Columns:   tt.fields.Columns,
+				Relations: tt.fields.Relations,
+			}
+			if got := tbl.SearchImports(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Table.SearchImports() = %v, want %v", got, tt.want)
 			}
 		})
 	}

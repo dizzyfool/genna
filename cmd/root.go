@@ -28,15 +28,17 @@ import (
 )
 
 const (
-	conn      = "conn"
-	out       = "out"
-	pkg       = "pkg"
-	tables    = "tables"
-	view      = "view"
-	followFK  = "follow-fk"
-	keepPK    = "keep-pk"
-	noDiscard = "no-discard"
-	noAlias   = "no-alias"
+	conn         = "conn"
+	out          = "out"
+	pkg          = "pkg"
+	tables       = "tables"
+	view         = "view"
+	followFK     = "follow-fk"
+	keepPK       = "keep-pk"
+	noDiscard    = "no-discard"
+	noAlias      = "no-alias"
+	withSearch   = "with-search"
+	strictSearch = "strict-search"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -130,7 +132,10 @@ func init() {
 
 	flags.Bool(keepPK, false, "keep primary key name as is (by default it should be converted to 'ID') \n")
 	flags.Bool(noAlias, false, `set 'alias' tag to "t"`)
-	flags.Bool(noDiscard, false, "do not use 'discard_unknown_columns' tag")
+	flags.Bool(noDiscard, false, "do not use 'discard_unknown_columns' tag\n")
+
+	flags.BoolP(withSearch, "s", false, "generate search filters")
+	flags.Bool(strictSearch, false, "use exact type (with pointer) in search filters")
 }
 
 func flagsToOptions(flags *pflag.FlagSet) (generator.Options, error) {
@@ -167,6 +172,14 @@ func flagsToOptions(flags *pflag.FlagSet) (generator.Options, error) {
 	}
 
 	if options.NoAlias, err = flags.GetBool(noAlias); err != nil {
+		return options, err
+	}
+
+	if options.WithSearch, err = flags.GetBool(withSearch); err != nil {
+		return options, err
+	}
+
+	if options.StrictSearch, err = flags.GetBool(strictSearch); err != nil {
 		return options, err
 	}
 

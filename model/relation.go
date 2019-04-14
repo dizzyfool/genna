@@ -11,6 +11,9 @@ const (
 	HasMany
 	// ManyToMany is many to many relation
 	ManyToMany
+
+	// NonUniqSuffix added to non-unique relations in model
+	NonUniqSuffix = "Rel"
 )
 
 // Relation stores relation of a table with target table

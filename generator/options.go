@@ -36,6 +36,12 @@ type Options struct {
 	// Do not generate alias tag
 	NoAlias bool
 
+	// Generate search filters
+	WithSearch bool
+
+	// Strict types in filters
+	StrictSearch bool
+
 	// Stores json field names as in db and target types for them
 	// TODO implement
 	JSONTypes map[string]string

@@ -9,33 +9,43 @@ import (
 
 // Stores package info
 type templatePackage struct {
-	Package    string
+	Package string
+
 	HasImports bool
 	Imports    []string
 
 	Models []templateTable
+
+	HasSearchImports bool
+	SearchImports    []string
 }
 
 // newMultiPackage creates a package with multiple models
 func newTemplatePackage(tables []model.Table, options Options) templatePackage {
-	imports := make([]string, 0)
+	mImports := make([]string, 0)
+	sImports := make([]string, 0)
 
 	models := make([]templateTable, len(tables))
 	for i, table := range tables {
-		imports = append(imports, table.Imports()...)
+		mImports = append(mImports, table.Imports()...)
+		sImports = append(sImports, table.SearchImports()...)
 
 		models[i] = newTemplateTable(table, options)
 		models[i].uniqualizeFields()
 	}
 
-	imports = model.UniqStrings(imports)
+	mImports = model.UniqStrings(mImports)
+	sImports = model.UniqStrings(sImports)
 
 	return templatePackage{
 		Package:    options.Package,
-		HasImports: len(imports) > 0,
-		Imports:    imports,
+		HasImports: len(mImports) > 0,
+		Imports:    mImports,
 
 		Models: models,
+
+		HasSearchImports: options.StrictSearch && len(sImports) > 0,
+		SearchImports:    sImports,
 	}
 }
 
@@ -44,13 +54,18 @@ type templateTable struct {
 	StructName string
 	StructTag  template.HTML
 
-	JoinAlias string
 	TableName string
+
+	WithAlias  bool
+	TableAlias string
+	JoinAlias  string
 
 	Columns []templateColumn
 
 	HasRelations bool
 	Relations    []templateRelation
+
+	SearchStructName string
 }
 
 func newTemplateTable(table model.Table, options Options) templateTable {
@@ -65,20 +80,25 @@ func newTemplateTable(table model.Table, options Options) templateTable {
 
 	relations := make([]templateRelation, len(table.Relations))
 	for i, relation := range table.Relations {
-		relations[i] = newTemplateRelation(relation, options)
+		relations[i] = newTemplateRelation(relation)
 	}
 
 	return templateTable{
 		StructName: table.ModelName(),
 		StructTag:  template.HTML(fmt.Sprintf("`%s`", table.TableNameTag(options.View, options.NoAlias, options.NoDiscard))),
 
-		JoinAlias: table.JoinAlias(),
-		TableName: table.Name,
+		TableName: table.TableName(false),
+
+		WithAlias:  !options.NoAlias,
+		TableAlias: table.Alias(),
+		JoinAlias:  table.JoinAlias(),
 
 		Columns: columns,
 
 		HasRelations: len(relations) > 0,
 		Relations:    relations,
+
+		SearchStructName: table.SearchModelName(),
 	}
 }
 
@@ -89,6 +109,9 @@ type templateColumn struct {
 	FieldType    string
 	FieldTag     template.HTML
 	FieldComment template.HTML
+
+	IsSearchable    bool
+	SearchFieldType string
 }
 
 func newTemplateColumn(column model.Column, options Options) templateColumn {
@@ -98,6 +121,9 @@ func newTemplateColumn(column model.Column, options Options) templateColumn {
 		FieldType:    column.StructFieldType(),
 		FieldTag:     template.HTML(fmt.Sprintf("`%s`", column.StructFieldTag())),
 		FieldComment: template.HTML(column.Comment()),
+
+		IsSearchable:    column.IsSearchable(),
+		SearchFieldType: column.SearchFieldType(options.StrictSearch),
 	}
 }
 
@@ -109,7 +135,7 @@ type templateRelation struct {
 	FieldComment template.HTML
 }
 
-func newTemplateRelation(relation model.Relation, options Options) templateRelation {
+func newTemplateRelation(relation model.Relation) templateRelation {
 	return templateRelation{
 		FieldName:    relation.StructFieldName(),
 		FieldType:    relation.StructFieldType(),
@@ -158,9 +184,9 @@ func (t templateTable) uniqualizeFields() {
 	router:
 		for {
 			if suffix == 0 {
-				fieldName = fmt.Sprintf("%sRel", relation.FieldName)
+				fieldName = fmt.Sprintf("%s%s", relation.FieldName, model.NonUniqSuffix)
 			} else {
-				fieldName = fmt.Sprintf("%sRel%d", relation.FieldName, suffix)
+				fieldName = fmt.Sprintf("%s%s%d", relation.FieldName, model.NonUniqSuffix, suffix)
 			}
 
 			for _, col := range t.Columns {

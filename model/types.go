@@ -63,32 +63,56 @@ const (
 	TypePoint = "point"
 )
 
-var typeMapping = map[string]bool{
-	TypeInt2:        true,
-	TypeInt4:        true,
-	TypeInt8:        true,
-	TypeNumeric:     true,
-	TypeFloat4:      true,
-	TypeFloat8:      true,
-	TypeText:        true,
-	TypeVarchar:     true,
-	TypeUuid:        true,
-	TypeBpchar:      true,
-	TypeBytea:       true,
-	TypeBool:        true,
-	TypeTimestamp:   true,
-	TypeTimestamptz: true,
-	TypeDate:        true,
-	TypeTime:        true,
-	TypeTimetz:      true,
-	TypeInterval:    true,
-	TypeJSONB:       true,
-	TypeJSON:        true,
-	TypeHstore:      true,
-	TypeInet:        true,
-	TypeCidr:        true,
-	TypePoint:       true,
-}
+var (
+	typeMapping = map[string]bool{
+		TypeInt2:        true,
+		TypeInt4:        true,
+		TypeInt8:        true,
+		TypeNumeric:     true,
+		TypeFloat4:      true,
+		TypeFloat8:      true,
+		TypeText:        true,
+		TypeVarchar:     true,
+		TypeUuid:        true,
+		TypeBpchar:      true,
+		TypeBytea:       true,
+		TypeBool:        true,
+		TypeTimestamp:   true,
+		TypeTimestamptz: true,
+		TypeDate:        true,
+		TypeTime:        true,
+		TypeTimetz:      true,
+		TypeInterval:    true,
+		TypeJSONB:       true,
+		TypeJSON:        true,
+		TypeHstore:      true,
+		TypeInet:        true,
+		TypeCidr:        true,
+		TypePoint:       true,
+	}
+	basicTypes = map[string]bool{
+		TypeInt2:        true,
+		TypeInt4:        true,
+		TypeInt8:        true,
+		TypeNumeric:     true,
+		TypeFloat4:      true,
+		TypeFloat8:      true,
+		TypeText:        true,
+		TypeVarchar:     true,
+		TypeUuid:        true,
+		TypeBpchar:      true,
+		TypeBool:        true,
+		TypeTimestamp:   true,
+		TypeTimestamptz: true,
+		TypeDate:        true,
+		TypeTime:        true,
+		TypeTimetz:      true,
+		TypeInterval:    true,
+		TypeInet:        true,
+		TypeCidr:        true,
+		TypePoint:       true,
+	}
+)
 
 // IsValid checks type
 func IsValid(pgType string, array bool) bool {
@@ -155,6 +179,25 @@ func GoType(pgType string, nullable, array bool, dimensions int, avoidPointers b
 		return GoNullType(pgType, avoidPointers)
 	default:
 		return GoSimpleType(pgType)
+	}
+}
+
+// GoType generates all go types from pg type with pointer
+func GoPointerType(pgType string, array bool, dimensions int) (types.Type, error) {
+	if array {
+		return GoSliceType(pgType, dimensions)
+	}
+
+	switch pgType {
+	case TypeJSONB, TypeJSON, TypeHstore, TypeBytea:
+		return GoSimpleType(pgType)
+	default:
+		typ, err := GoSimpleType(pgType)
+		if err != nil {
+			return nil, err
+		}
+
+		return types.NewPointer(typ), nil
 	}
 }
 
@@ -250,6 +293,11 @@ func GoNullType(pgType string, avoidPointers bool) (types.Type, error) {
 		}
 		return types.NewPointer(typ), nil
 	}
+}
+
+// IsBasic returns true if type is number/string/bool
+func IsBasic(pgType string) bool {
+	return basicTypes[pgType]
 }
 
 // Custom types goes here

@@ -8,6 +8,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+// SearchSuffix added to saerch filters struct
+const SearchSuffix = "Search"
+
 // Table stores information about table
 type Table struct {
 	Schema string
@@ -48,9 +51,9 @@ func (t Table) ModelName() string {
 }
 
 // TableName returns valid table name with schema and quoted if needed
-func (t Table) TableName() string {
+func (t Table) TableName(quoted bool) string {
 	table := t.Name
-	if HasUpper(table) {
+	if HasUpper(table) && quoted {
 		table = fmt.Sprintf(`\"%s\"`, table)
 	}
 
@@ -59,7 +62,7 @@ func (t Table) TableName() string {
 	}
 
 	schema := t.Schema
-	if HasUpper(schema) {
+	if HasUpper(schema) && quoted {
 		schema = fmt.Sprintf(`\"%s\"`, schema)
 	}
 
@@ -97,7 +100,7 @@ func (t Table) Alias() string {
 func (t Table) TableNameTag(withView, noDiscard, noAlias bool) string {
 	annotation := NewAnnotation()
 
-	annotation.AddTag("sql", t.TableName())
+	annotation.AddTag("sql", t.TableName(true))
 	if withView {
 		annotation.AddTag("sql", fmt.Sprintf("select:%s", t.ViewName()))
 	}
@@ -115,7 +118,7 @@ func (t Table) TableNameTag(withView, noDiscard, noAlias bool) string {
 }
 
 // HasMultiplePKs returns true if model have several PKs
-// can disable convertin PK's name to ID
+// can disable converting PK's name to ID
 func (t Table) HasMultiplePKs() bool {
 	count := 0
 	for _, column := range t.Columns {
@@ -133,6 +136,28 @@ func (t Table) HasMultiplePKs() bool {
 // JoinAlias used in raws relations
 func (t Table) JoinAlias() string {
 	return Underscore(t.ModelName())
+}
+
+// SearchModelName returns model name for search filters
+func (t Table) SearchModelName() string {
+	return fmt.Sprintf("%s%s", t.ModelName(), SearchSuffix)
+}
+
+// SearchImports returns all imports required by search filters
+func (t Table) SearchImports() []string {
+	imports := make([]string, 0)
+	index := make(map[string]struct{})
+
+	for _, column := range t.Columns {
+		if imp := column.SearchImport(); imp != "" {
+			if _, ok := index[imp]; !ok {
+				imports = append(imports, imp)
+				index[imp] = struct{}{}
+			}
+		}
+	}
+
+	return imports
 }
 
 // Validate checks current table for problems

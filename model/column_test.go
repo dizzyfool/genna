@@ -350,3 +350,177 @@ func TestColumn_Validate(t *testing.T) {
 		})
 	}
 }
+
+func TestColumn_IsSearchable(t *testing.T) {
+	type fields struct {
+		Name       string
+		Type       string
+		IsArray    bool
+		Dimensions int
+		IsNullable bool
+		IsPK       bool
+		IsFK       bool
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   bool
+	}{
+		{
+			name: "Should return true for int2 type",
+			fields: fields{
+				Type:       TypeInt2,
+				IsArray:    false,
+				IsNullable: false,
+			},
+			want: true,
+		},
+		{
+			name: "Should return false for int2 array type",
+			fields: fields{
+				Type:       TypeInt2,
+				IsArray:    true,
+				Dimensions: 2,
+				IsNullable: false,
+			},
+			want: false,
+		},
+		{
+			name: "Should return true int2 nullable type",
+			fields: fields{
+				Type:       TypeInt2,
+				IsArray:    false,
+				IsNullable: true,
+			},
+			want: true,
+		},
+		{
+			name: "Should return true time type",
+			fields: fields{
+				Type:       TypeTimetz,
+				IsArray:    false,
+				IsNullable: true,
+			},
+			want: true,
+		},
+		{
+			name: "Should return false for unknown type",
+			fields: fields{
+				Type:       "unknown",
+				IsArray:    false,
+				IsNullable: true,
+			},
+			want: false,
+		},
+		{
+			name: "Should return false for json type",
+			fields: fields{
+				Type:       TypeJSONB,
+				IsArray:    false,
+				IsNullable: true,
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := Column{
+				Name:       tt.fields.Name,
+				Type:       tt.fields.Type,
+				IsArray:    tt.fields.IsArray,
+				Dimensions: tt.fields.Dimensions,
+				IsNullable: tt.fields.IsNullable,
+				IsPK:       tt.fields.IsPK,
+				IsFK:       tt.fields.IsFK,
+			}
+			if got := c.IsSearchable(); got != tt.want {
+				t.Errorf("Column.IsSearchable() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestColumn_SearchFieldType(t *testing.T) {
+	type fields struct {
+		Name       string
+		Type       string
+		IsArray    bool
+		Dimensions int
+		IsNullable bool
+		IsPK       bool
+		IsFK       bool
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		// See TestGoType, TestGoSliceType, TestGoPointerType for full test cases
+		{
+			name: "Should generate int2 type",
+			fields: fields{
+				Type:       TypeInt2,
+				IsArray:    false,
+				Dimensions: 0,
+				IsNullable: false,
+			},
+			want: "*int",
+		},
+		{
+			name: "Should generate int2 array type",
+			fields: fields{
+				Type:       TypeInt2,
+				IsArray:    true,
+				Dimensions: 2,
+				IsNullable: false,
+			},
+			want: "[][]int",
+		},
+		{
+			name: "Should generate int2 nullable type",
+			fields: fields{
+				Type:       TypeInt2,
+				IsArray:    true,
+				Dimensions: 2,
+				IsNullable: true,
+			},
+			want: "[][]int",
+		},
+		{
+			name: "Should generate struct type",
+			fields: fields{
+				Type:       TypeTimetz,
+				IsArray:    false,
+				Dimensions: 0,
+				IsNullable: true,
+			},
+			want: "*time.Time",
+		},
+		{
+			name: "Should generate interface for unknown type",
+			fields: fields{
+				Type:       "unknown",
+				IsArray:    false,
+				Dimensions: 0,
+				IsNullable: true,
+			},
+			want: "interface{}",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := Column{
+				Name:       tt.fields.Name,
+				Type:       tt.fields.Type,
+				IsArray:    tt.fields.IsArray,
+				Dimensions: tt.fields.Dimensions,
+				IsNullable: tt.fields.IsNullable,
+				IsPK:       tt.fields.IsPK,
+				IsFK:       tt.fields.IsFK,
+			}
+			if got := c.SearchFieldType(true); got != tt.want {
+				t.Errorf("Column.SearchFieldType() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -27,13 +27,14 @@ var Columns = struct { {{range .Models}}
 
 var Tables = struct { {{range .Models}}
 	{{.StructName}} struct {
-		Name string
+		Name{{if .WithAlias}}, Alias{{end}} string
 	}{{end}}
 }{ {{range .Models}}
 	{{.StructName}}: struct {
-		Name string
+		Name{{if .WithAlias}}, Alias{{end}} string
 	}{ 
-		Name: "{{.TableName}}",
+		Name: "{{.TableName}}"{{if .WithAlias}},
+		Alias: "{{.TableAlias}}",{{end}}
 	},{{end}}
 }
 {{range .Models}}
