@@ -14,7 +14,7 @@ In most of the cases go-pg models represent database's tables and relations. Gen
 
 1. Install `go get github.com/dizzyfool/genna`
 1. Read though help `genna -h`
-1. Run `genna -c postgres://user:password@localhost:5432/yourdb -o ~/output`
+1. Run `genna -c postgres://user:password@localhost:5432/yourdb -o ~/output/model.go`
 
 #### Example
 

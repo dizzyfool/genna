@@ -1,9 +1,11 @@
 package database
 
 import (
-	"github.com/dizzyfool/genna/model"
-	"go.uber.org/zap"
 	"testing"
+
+	"github.com/dizzyfool/genna/model"
+
+	"go.uber.org/zap"
 )
 
 func TestLive(t *testing.T) {
@@ -67,11 +69,11 @@ func createTestTable(store *Store) {
 func isThereDuplicates(rows []columnRow) bool {
 	encountered := map[string]bool{}
 	for _, v := range rows {
-		if encountered[v.TblName+v.ColumnName] {
+		if encountered[v.TblName+"|||"+v.ColumnName] {
 			return true
-		} else {
-			encountered[v.TblName+v.ColumnName] = true
 		}
+
+		encountered[v.TblName+"|||"+v.ColumnName] = true
 	}
 	return false
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// SearchSuffix added to saerch filters struct
+// SearchSuffix added to search filters struct
 const SearchSuffix = "Search"
 
 // Table stores information about table

@@ -72,7 +72,7 @@ func (g Generator) Process(tables []model.Table) (*Result, error) {
 	}, nil
 }
 
-// Packages makes intermediate structs for templates
+// Package makes intermediate struct for templates
 // tables - all tables in database
 // toGenerate - tables with schemas need to generate, e.g. public.users
 func (g Generator) Package(tables []model.Table, toGenerate []string) templatePackage {

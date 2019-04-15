@@ -9,18 +9,22 @@ import (
 	"go.uber.org/zap"
 )
 
+// NewQueryLogger helper struct for query logging
 type QueryLogger struct {
 	logger *zap.Logger
 }
 
+// NewQueryLogger creates new helper struct for query logging
 func NewQueryLogger(logger *zap.Logger) QueryLogger {
 	return QueryLogger{logger: logger}
 }
 
+// BeforeQuery stores start time in custom data array
 func (ql QueryLogger) BeforeQuery(event *pg.QueryEvent) {
 	event.Data["startedAt"] = time.Now()
 }
 
+// AfterQuery calculates execution time and print it with formatted query
 func (ql QueryLogger) AfterQuery(event *pg.QueryEvent) {
 	query, err := event.FormattedQuery()
 	if err != nil {

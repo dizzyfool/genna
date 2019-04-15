@@ -65,7 +65,6 @@ func (c Column) StructFieldTag(softDeleteColumn string) string {
 		tags.AddTag("sql", "notnull")
 	}
 
-	fmt.Println(softDeleteColumn)
 	if c.isSoftDeletable(softDeleteColumn) {
 		tags.AddTag("pg", ",soft_delete")
 	}
@@ -102,7 +101,7 @@ func (c Column) SearchFieldType(strict bool) string {
 	return typ.String()
 }
 
-// Import gets import for column
+// SearchImport gets import for search column
 func (c Column) SearchImport() string {
 	if !c.IsSearchable() {
 		return ""

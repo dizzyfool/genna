@@ -59,7 +59,7 @@ const (
 	TypeInet = "inet"
 	// TypeCidr is a postgres type
 	TypeCidr = "cidr"
-	// TypeCidr is a postgres type
+	// TypePoint is a postgres type
 	TypePoint = "point"
 )
 
@@ -191,7 +191,7 @@ func GoType(pgType string, nullable, array bool, dimensions int, avoidPointers b
 	}
 }
 
-// GoType generates all go types from pg type with pointer
+// GoPointerType generates all go types from pg type with pointer
 func GoPointerType(pgType string, array bool, dimensions int) (types.Type, error) {
 	if array {
 		return GoSliceType(pgType, dimensions)
