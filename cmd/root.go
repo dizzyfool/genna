@@ -39,6 +39,7 @@ const (
 	noAlias      = "no-alias"
 	withSearch   = "with-search"
 	strictSearch = "strict-search"
+	softDelete   = "soft-delete"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -127,15 +128,16 @@ func init() {
 
 	flags.StringP(pkg, "p", model.DefaultPackage, "package for model files")
 
-	flags.BoolP(view, "v", false, "use view for selects e.g. getUsers for users table")
-	flags.BoolP(followFK, "f", false, "generate models for foreign keys, even if it not listed in tables\n")
+	flags.BoolP(followFK, "f", false, "generate models for foreign keys, even if it not listed in tables")
+	flags.Bool(keepPK, false, "keep primary key name as is (by default it should be converted to 'ID')")
+	flags.String(softDelete, "", "field for soft_delete tag\n")
 
-	flags.Bool(keepPK, false, "keep primary key name as is (by default it should be converted to 'ID') \n")
-	flags.Bool(noAlias, false, `set 'alias' tag to "t"`)
+	flags.BoolP(view, "v", false, "use view for selects e.g. getUsers for users table")
+	flags.Bool(noAlias, false, `do not set 'alias' tag to "t"`)
 	flags.Bool(noDiscard, false, "do not use 'discard_unknown_columns' tag\n")
 
 	flags.BoolP(withSearch, "s", false, "generate search filters")
-	flags.Bool(strictSearch, false, "use exact type (with pointer) in search filters")
+	flags.Bool(strictSearch, false, "use exact type (with pointer) in search filters\n")
 }
 
 func flagsToOptions(flags *pflag.FlagSet) (generator.Options, error) {
@@ -155,15 +157,19 @@ func flagsToOptions(flags *pflag.FlagSet) (generator.Options, error) {
 		return options, err
 	}
 
-	if options.View, err = flags.GetBool(view); err != nil {
-		return options, err
-	}
-
 	if options.FollowFKs, err = flags.GetBool(followFK); err != nil {
 		return options, err
 	}
 
 	if options.KeepPK, err = flags.GetBool(keepPK); err != nil {
+		return options, err
+	}
+
+	if options.SoftDelete, err = flags.GetString(softDelete); err != nil {
+		return options, err
+	}
+
+	if options.View, err = flags.GetBool(view); err != nil {
 		return options, err
 	}
 

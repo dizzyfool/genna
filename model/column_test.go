@@ -152,6 +152,7 @@ func TestColumn_StructFieldTag(t *testing.T) {
 		IsNullable bool
 		IsPK       bool
 		IsFK       bool
+		SoftDelete string
 	}
 	tests := []struct {
 		name   string
@@ -220,6 +221,35 @@ func TestColumn_StructFieldTag(t *testing.T) {
 			},
 			want: `sql:"-"`,
 		},
+		{
+			name: "Should generate soft_delete column",
+			fields: fields{
+				Name:       "flags",
+				Type:       TypeTime,
+				SoftDelete: "flags",
+				IsNullable: true,
+			},
+			want: `sql:"flags" pg:",soft_delete"`,
+		},
+		{
+			name: "Should not generate soft_delete column from wrong type",
+			fields: fields{
+				Name:       "flags",
+				Type:       TypeHstore,
+				SoftDelete: "flags",
+				IsNullable: true,
+			},
+			want: `sql:"flags,hstore"`,
+		},
+		{
+			name: "Should not generate soft_delete column from not null",
+			fields: fields{
+				Name:       "flags",
+				Type:       TypeTime,
+				SoftDelete: "flags",
+			},
+			want: `sql:"flags,notnull"`,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -231,7 +261,7 @@ func TestColumn_StructFieldTag(t *testing.T) {
 				IsPK:       tt.fields.IsPK,
 				IsFK:       tt.fields.IsFK,
 			}
-			if got := c.StructFieldTag(); got != tt.want {
+			if got := c.StructFieldTag(tt.fields.SoftDelete); got != tt.want {
 				t.Errorf("Column.StructFieldTag() = %v, want %v", got, tt.want)
 			}
 		})

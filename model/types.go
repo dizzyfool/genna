@@ -133,6 +133,15 @@ func IsValid(pgType string, array bool) bool {
 	return true
 }
 
+func IsDateTimeType(pgType string) bool {
+	switch pgType {
+	case TypeTimestamp, TypeTimestamptz, TypeDate, TypeTime, TypeTimetz:
+		return true
+	}
+
+	return false
+}
+
 // GoImport generates import from pg type
 func GoImport(pgType string, nullable, array bool, dimensions int, avoidPointers bool) string {
 	// not valid types should not generate import

@@ -119,7 +119,7 @@ func newTemplateColumn(column model.Column, options Options) templateColumn {
 		FieldName:    column.StructFieldName(options.KeepPK),
 		FieldDBName:  column.Name,
 		FieldType:    column.StructFieldType(),
-		FieldTag:     template.HTML(fmt.Sprintf("`%s`", column.StructFieldTag())),
+		FieldTag:     template.HTML(fmt.Sprintf("`%s`", column.StructFieldTag(options.SoftDelete))),
 		FieldComment: template.HTML(column.Comment()),
 
 		IsSearchable:    column.IsSearchable(),

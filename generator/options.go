@@ -24,11 +24,14 @@ type Options struct {
 	// will not generate fks if schema not listed
 	FollowFKs bool
 
-	// Generate model with views e.g. getUsers for users table
-	View bool
-
 	// Do not replace primary key name to ID
 	KeepPK bool
+
+	// Soft delete column
+	SoftDelete string
+
+	// Generate model with views e.g. getUsers for users table
+	View bool
 
 	// Do not generate discard_unknown_columns tag
 	NoDiscard bool

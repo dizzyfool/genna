@@ -42,7 +42,7 @@ func (c Column) StructFieldType() string {
 }
 
 // StructFieldTag generates field tag for struct
-func (c Column) StructFieldTag() string {
+func (c Column) StructFieldTag(softDeleteColumn string) string {
 	// Ignoring unknown types
 	if c.StructFieldType() == "interface{}" {
 		return `sql:"-"`
@@ -65,7 +65,22 @@ func (c Column) StructFieldTag() string {
 		tags.AddTag("sql", "notnull")
 	}
 
+	fmt.Println(softDeleteColumn)
+	if c.isSoftDeletable(softDeleteColumn) {
+		tags.AddTag("pg", ",soft_delete")
+	}
+
 	return tags.String()
+}
+
+func (c Column) isSoftDeletable(softDeleteColumn string) bool {
+	return softDeleteColumn != "" &&
+		softDeleteColumn == c.Name &&
+		c.IsNullable &&
+		!c.IsPK &&
+		!c.IsFK &&
+		!c.IsArray &&
+		IsDateTimeType(c.Type)
 }
 
 // IsSearchable checks if field can be added to search filters
