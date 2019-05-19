@@ -31,7 +31,7 @@ func TestGoType(t *testing.T) {
 		{
 			name:   "Should generate numeric type",
 			pgType: TypeNumeric,
-			want:   "float32",
+			want:   "float64",
 		},
 		{
 			name:   "Should generate float4 type",
@@ -167,7 +167,7 @@ func TestGoSliceType(t *testing.T) {
 		{
 			name: "Should generate numeric array",
 			args: args{TypeNumeric, 1},
-			want: "[]float32",
+			want: "[]float64",
 		},
 		{
 			name: "Should generate float4 array",
@@ -275,7 +275,7 @@ func TestGoNullType(t *testing.T) {
 		{
 			name:   "Should generate numeric type",
 			pgType: TypeNumeric,
-			want:   "*float32",
+			want:   "*float64",
 		},
 		{
 			name:   "Should generate float4 type",
@@ -618,14 +618,14 @@ func TestGoPointerType(t *testing.T) {
 		{
 			name: "Should get float32",
 			args: args{
-				pgTypes: []string{TypeNumeric, TypeFloat4},
+				pgTypes: []string{TypeFloat4},
 			},
 			want: types.NewPointer(types.Typ[types.Float32]),
 		},
 		{
 			name: "Should get float64",
 			args: args{
-				pgTypes: []string{TypeFloat8},
+				pgTypes: []string{TypeNumeric, TypeFloat8},
 			},
 			want: types.NewPointer(types.Typ[types.Float64]),
 		},
@@ -723,7 +723,7 @@ func TestGoPointerType(t *testing.T) {
 		{
 			name: "Should get float32 array",
 			args: args{
-				pgTypes:    []string{TypeNumeric, TypeFloat4},
+				pgTypes:    []string{TypeFloat4},
 				array:      true,
 				dimensions: 1,
 			},
@@ -732,7 +732,7 @@ func TestGoPointerType(t *testing.T) {
 		{
 			name: "Should get float64 array",
 			args: args{
-				pgTypes:    []string{TypeFloat8},
+				pgTypes:    []string{TypeNumeric, TypeFloat8},
 				array:      true,
 				dimensions: 1,
 			},
@@ -860,12 +860,12 @@ func TestGoSimpleType(t *testing.T) {
 		},
 		{
 			name:    "Should get float32",
-			pgTypes: []string{TypeNumeric, TypeFloat4},
+			pgTypes: []string{TypeFloat4},
 			want:    types.Typ[types.Float32],
 		},
 		{
 			name:    "Should get float64",
-			pgTypes: []string{TypeFloat8},
+			pgTypes: []string{TypeNumeric, TypeFloat8},
 			want:    types.Typ[types.Float64],
 		},
 		{

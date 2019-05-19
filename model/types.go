@@ -221,9 +221,9 @@ func GoSimpleType(pgType string) (types.Type, error) {
 		return types.Typ[types.Int], nil
 	case TypeInt8:
 		return types.Typ[types.Int64], nil
-	case TypeNumeric, TypeFloat4:
+	case TypeFloat4:
 		return types.Typ[types.Float32], nil
-	case TypeFloat8:
+	case TypeNumeric, TypeFloat8:
 		return types.Typ[types.Float64], nil
 	case TypeText, TypeVarchar, TypeUuid, TypeBpchar, TypePoint:
 		return types.Typ[types.String], nil
