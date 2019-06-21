@@ -22,7 +22,9 @@ func NewQueryLogger(logger *zap.Logger) QueryLogger {
 
 // BeforeQuery stores start time in custom data array
 func (ql QueryLogger) BeforeQuery(ctx context.Context, event *pg.QueryEvent) (context.Context, error) {
-	event.Stash["startedAt"] = time.Now()
+	if event.Stash != nil {
+		event.Stash["startedAt"] = time.Now()
+	}
 	return ctx, nil
 }
 
