@@ -118,7 +118,8 @@ func (s *Store) queryTables(schema []string) ([]columnRow, error) {
 						from information_schema.table_constraints tc 
 						where tc.constraint_name = kcu.constraint_name 
 							and tc.constraint_schema = kcu.constraint_schema 
-							and tc.constraint_catalog = tc.constraint_catalog
+							and tc.constraint_catalog = kcu.constraint_catalog
+						limit 1
 					)) as "constraint_types"
 				from information_schema.key_column_usage kcu
 				group by kcu.table_schema, kcu.table_name, kcu.column_name
