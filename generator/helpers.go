@@ -3,6 +3,7 @@ package generator
 import (
 	"fmt"
 	"html/template"
+	"strings"
 
 	"github.com/dizzyfool/genna/model"
 )
@@ -18,12 +19,16 @@ type templatePackage struct {
 
 	HasSearchImports bool
 	SearchImports    []string
+
+	HasValidation bool
 }
 
 // newMultiPackage creates a package with multiple models
 func newTemplatePackage(tables []model.Table, options Options) templatePackage {
 	mImports := make([]string, 0)
 	sImports := make([]string, 0)
+
+	hasValidation := false
 
 	models := make([]templateTable, len(tables))
 	for i, table := range tables {
@@ -32,6 +37,11 @@ func newTemplatePackage(tables []model.Table, options Options) templatePackage {
 
 		models[i] = newTemplateTable(table, options)
 		models[i].uniqualizeFields()
+
+		if options.Validator && models[i].HasValidation {
+			hasValidation = true
+			mImports = append(mImports, "unicode/utf8")
+		}
 	}
 
 	mImports = model.UniqStrings(mImports)
@@ -46,6 +56,8 @@ func newTemplatePackage(tables []model.Table, options Options) templatePackage {
 
 		HasSearchImports: options.StrictSearch && len(sImports) > 0,
 		SearchImports:    sImports,
+
+		HasValidation: options.Validator && hasValidation,
 	}
 }
 
@@ -66,6 +78,8 @@ type templateTable struct {
 	Relations    []templateRelation
 
 	SearchStructName string
+
+	HasValidation bool
 }
 
 func newTemplateTable(table model.Table, options Options) templateTable {
@@ -99,6 +113,8 @@ func newTemplateTable(table model.Table, options Options) templateTable {
 		Relations:    relations,
 
 		SearchStructName: table.SearchModelName(),
+
+		HasValidation: options.Validator && table.HasValidation(),
 	}
 }
 
@@ -112,6 +128,11 @@ type templateColumn struct {
 
 	IsSearchable    bool
 	SearchFieldType string
+
+	IsValidatable   bool
+	ValidationCheck string
+	MaxLen          int
+	Enum            template.HTML
 }
 
 func newTemplateColumn(column model.Column, options Options) templateColumn {
@@ -124,6 +145,11 @@ func newTemplateColumn(column model.Column, options Options) templateColumn {
 
 		IsSearchable:    column.IsSearchable(),
 		SearchFieldType: column.SearchFieldType(options.StrictSearch),
+
+		IsValidatable:   options.Validator && column.IsValidatable(),
+		ValidationCheck: column.ValidationCheck(),
+		MaxLen:          column.MaxLen,
+		Enum:            template.HTML(fmt.Sprintf(`"%s"`, strings.Join(column.Enum, `", "`))),
 	}
 }
 

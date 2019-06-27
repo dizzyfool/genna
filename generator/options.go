@@ -45,6 +45,9 @@ type Options struct {
 	// Strict types in filters
 	StrictSearch bool
 
+	// Generate validate functions
+	Validator bool
+
 	// Stores json field names as in db and target types for them
 	// TODO implement
 	JSONTypes map[string]string

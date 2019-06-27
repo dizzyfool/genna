@@ -16,6 +16,8 @@ type Column struct {
 	IsNullable bool
 	IsPK       bool
 	IsFK       bool
+	MaxLen     int
+	Enum       []string
 }
 
 // Import gets import for column
@@ -119,6 +121,63 @@ func (c Column) SearchImport() string {
 func (c Column) Comment() string {
 	if _, err := GoType(c.Type, c.IsNullable, c.IsArray, c.Dimensions, false); err != nil {
 		return fmt.Sprintf("// type %s not supported", c.Type)
+	}
+
+	return ""
+}
+
+// IsValidatable checks if field can be validated
+func (c Column) IsValidatable() bool {
+	// validate FK
+	if c.IsFK {
+		return true
+	}
+
+	// validate strings len
+	if IsStringType(c.Type) && c.MaxLen > 0 {
+		return true
+	}
+
+	// validate complex types
+	if !c.IsNullable && (c.IsArray || IsComplexType(c.Type)) {
+		return true
+	}
+
+	// validate enum
+	if len(c.Enum) > 0 {
+		return true
+	}
+
+	return false
+}
+
+// ValidationCheck return check type for validation
+func (c Column) ValidationCheck() string {
+	if c.IsValidatable() {
+		if c.IsArray || IsComplexType(c.Type) {
+			return "nil"
+		}
+
+		if c.IsFK {
+			if c.IsNullable {
+				return "pzero"
+			}
+			return "zero"
+		}
+
+		if IsStringType(c.Type) && c.MaxLen > 0 {
+			if c.IsNullable {
+				return "plen"
+			}
+			return "len"
+		}
+
+		if len(c.Enum) > 0 {
+			if c.IsNullable {
+				return "penum"
+			}
+			return "enum"
+		}
 	}
 
 	return ""

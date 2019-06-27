@@ -40,6 +40,7 @@ const (
 	withSearch   = "with-search"
 	strictSearch = "strict-search"
 	softDelete   = "soft-delete"
+	validator    = "validator"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -138,6 +139,8 @@ func init() {
 
 	flags.BoolP(withSearch, "s", false, "generate search filters")
 	flags.Bool(strictSearch, false, "use exact type (with pointer) in search filters\n")
+
+	flags.Bool(validator, false, "generate validator functions")
 }
 
 func flagsToOptions(flags *pflag.FlagSet) (generator.Options, error) {
@@ -186,6 +189,10 @@ func flagsToOptions(flags *pflag.FlagSet) (generator.Options, error) {
 	}
 
 	if options.StrictSearch, err = flags.GetBool(strictSearch); err != nil {
+		return options, err
+	}
+
+	if options.Validator, err = flags.GetBool(validator); err != nil {
 		return options, err
 	}
 

@@ -8,8 +8,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-// SearchSuffix added to search filters struct
-const SearchSuffix = "Search"
+const (
+	// SearchSuffix added to search filters struct
+	SearchSuffix = "Search"
+
+	defaultAlias = "t"
+)
 
 // Table stores information about table
 type Table struct {
@@ -85,15 +89,7 @@ func (t Table) ViewName() string {
 
 // Alias generates alias name for table
 func (t Table) Alias() string {
-	// default alias is "t" for filters
-	return "t"
-
-	//alias := strings.ToLower(t.Name)
-	//if t.Schema != PublicSchema {
-	//	alias = fmt.Sprintf(`%s_%s`, strings.ToLower(t.Schema), alias)
-	//}
-	//
-	//return alias
+	return defaultAlias
 }
 
 // TableNameTag returns tag for tableName property
@@ -158,6 +154,17 @@ func (t Table) SearchImports() []string {
 	}
 
 	return imports
+}
+
+// HasValidation return true if any column of table can be validated
+func (t Table) HasValidation() bool {
+	for _, column := range t.Columns {
+		if column.IsValidatable() {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Validate checks current table for problems

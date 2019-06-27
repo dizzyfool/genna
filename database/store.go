@@ -20,16 +20,18 @@ func NewStore(db orm.DB) *Store {
 
 // columnRow stores raw column information
 type columnRow struct {
-	SchemaName string `sql:"schema"`
-	TblName    string `sql:"table"`
-	ColumnName string `sql:"column"`
-	IsNullable bool   `sql:"nullable"`
-	IsArray    bool   `sql:"array"`
-	Dimensions int    `sql:"dims"`
-	Type       string `sql:"type"`
-	Default    string `sql:"default"`
-	IsPK       bool   `sql:"pk"`
-	IsFK       bool   `sql:"fk"`
+	SchemaName string   `sql:"schema"`
+	TblName    string   `sql:"table"`
+	ColumnName string   `sql:"column"`
+	IsNullable bool     `sql:"nullable"`
+	IsArray    bool     `sql:"array"`
+	Dimensions int      `sql:"dims"`
+	Type       string   `sql:"type"`
+	Default    string   `sql:"default"`
+	IsPK       bool     `sql:"pk"`
+	IsFK       bool     `sql:"fk"`
+	MaxLen     int      `sql:"len"`
+	Enum       []string `sql:"enum,array"`
 }
 
 // Table converts row to Table model
@@ -50,6 +52,8 @@ func (r *columnRow) Column() model.Column {
 		IsNullable: r.IsNullable,
 		IsPK:       r.IsPK,
 		IsFK:       r.IsFK,
+		MaxLen:     r.MaxLen,
+		Enum:       r.Enum,
 	}
 }
 
@@ -83,14 +87,16 @@ func (s *Store) queryTables(schema []string) ([]columnRow, error) {
 	query := `
 		with
 		    enums as (
-		        select distinct true        as "is_enum",
-		                        sch.nspname as "table_schema",
-		                        tb.relname  as "table_name",
-		                        col.attname as "column_name"
+		        select distinct true                   as "is_enum",
+		                        sch.nspname            as "table_schema",
+		                        tb.relname             as "table_name",
+		                        col.attname            as "column_name",
+                                array_agg(e.enumlabel) as "enum_values"
 		        from pg_class tb
 		        left join pg_namespace sch on sch.oid = tb.relnamespace
 		        left join pg_attribute col on col.attrelid = tb.oid
 		        inner join pg_enum e on e.enumtypid = col.atttypid
+				group by 1, 2, 3, 4
 		    ),
 		    arrays as (
 		        select sch.nspname  as "table_schema",
@@ -134,7 +140,9 @@ func (s *Store) queryTables(schema []string) ([]columnRow, error) {
 		                then 'varchar'
 		                else ltrim(c."udt_name", '_')
 		                end                                    as "type",
-		                c.column_default                       as "default"
+		                c.column_default                       as "default",
+                        c.character_maximum_length             as "len",
+						e.enum_values 						   as "enum"
 		from information_schema.tables t
 		left join information_schema.columns c using (table_name, table_schema)
 		left join info i using (table_name, table_schema, column_name)

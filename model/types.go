@@ -133,9 +133,30 @@ func IsValid(pgType string, array bool) bool {
 	return true
 }
 
+// IsDateTimeType checks is type date time
 func IsDateTimeType(pgType string) bool {
 	switch pgType {
 	case TypeTimestamp, TypeTimestamptz, TypeDate, TypeTime, TypeTimetz:
+		return true
+	}
+
+	return false
+}
+
+// IsComplexType checks is type generates map or array
+func IsComplexType(pgType string) bool {
+	switch pgType {
+	case TypeJSONB, TypeJSON, TypeHstore, TypeBytea:
+		return true
+	}
+
+	return false
+}
+
+// IsComplexType checks is type generates string
+func IsStringType(pgType string) bool {
+	switch pgType {
+	case TypeText, TypeVarchar, TypeUuid, TypeBpchar, TypePoint:
 		return true
 	}
 
@@ -292,7 +313,7 @@ func GoNullType(pgType string, avoidPointers bool) (types.Type, error) {
 	case TypeTimestamp, TypeTimestamptz, TypeDate, TypeTime, TypeTimetz:
 		return pgNullTime{}, nil
 	case TypeHstore, TypeJSON, TypeJSONB:
-		// hstore & jason types without pointers
+		// hstore & json types without pointers
 		return GoSimpleType(pgType)
 	default:
 		// adding pointers for simple types
