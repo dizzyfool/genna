@@ -5,6 +5,11 @@ package {{.Package}}{{if .HasImports}}
 
 import ({{range .Imports}}
     "{{.}}"{{end}}
+){{end}}{{if .HasValidation}}
+const (
+	EmptyErr  = "empty"
+	LengthErr = "len"
+	ValueErr  = "value"
 ){{end}}
 
 var Columns = struct { {{range .Models}}
@@ -37,7 +42,7 @@ var Tables = struct { {{range .Models}}
 		Alias: "{{.TableAlias}}",{{end}}
 	},{{end}}
 }
-{{range .Models}}
+{{range $model := .Models}}
 type {{.StructName}} struct {
 	tableName struct{} {{.StructTag}}
 	{{range .Columns}}
@@ -53,36 +58,36 @@ func (m {{.StructName}}) Validate() (errors map[string]string, valid bool) {
 	{{if .IsValidatable}}
 	{{if eq .ValidationCheck "nil" }}
 	if m.{{.FieldName}} == nil {
-		errors["{{.FieldName}}"] = "empty"
+		errors[Columns.{{$model.StructName}}.{{.FieldName}}] = EmptyErr
 	}	
 	{{else if eq .ValidationCheck "zero"}}
 	if m.{{.FieldName}} == 0 {
-		errors["{{.FieldName}}"] = "empty"
+		errors[Columns.{{$model.StructName}}.{{.FieldName}}] = EmptyErr
 	}
 	{{else if eq .ValidationCheck "pzero"}}
 	if m.{{.FieldName}} != nil && *m.{{.FieldName}} == 0 {
-		errors["{{.FieldName}}"] = "empty"
+		errors[Columns.{{$model.StructName}}.{{.FieldName}}] = EmptyErr
 	}
 	{{else if eq .ValidationCheck "len"}}
 	if isExceedsLen(m.{{.FieldName}}, {{.MaxLen}}) {
-		errors["{{.FieldName}}"] = "len"
+		errors[Columns.{{$model.StructName}}.{{.FieldName}}] = LengthErr
 	}
 	{{else if eq .ValidationCheck "plen"}}
 	if m.{{.FieldName}} != nil && isExceedsLen(*m.{{.FieldName}}, {{.MaxLen}}) {
-		errors["{{.FieldName}}"] = "len"
+		errors[Columns.{{$model.StructName}}.{{.FieldName}}] = LengthErr
 	}
 	{{else if eq .ValidationCheck "enum"}}
 	switch m.{{.FieldName}} {
 		case {{.Enum}}:
 		default:
-			errors["{{.FieldName}}"] = "value"
+			errors[Columns.{{$model.StructName}}.{{.FieldName}}] = ValueErr
 	}
 	{{else if eq .ValidationCheck "penum"}}
 	if m.{{.FieldName}} != nil { 
 		switch *m.{{.FieldName}} {
 			case {{.Enum}}:
 			default:
-				errors["{{.FieldName}}"] = "value"
+				errors[Columns.{{$model.StructName}}.{{.FieldName}}] = ValueErr
 		}
 	}
 	{{end}}
