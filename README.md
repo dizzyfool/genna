@@ -20,7 +20,7 @@ In most of the cases go-pg models represent database's tables and relations. Gen
 
 Create your database and tables in it
 
-```sql
+```postgresql
 create table "users" (
     "userId"    serial      not null,
     "email"     varchar(64) not null,
@@ -316,4 +316,83 @@ func TestModel(t *testing.T) {
 
 ```
 
+#### Validation
+
+Genna can generate simple validation functions for models with `--validator` flag. This function should check if values in model can be stored in database, and not intended to implement application logic
+
+```postgresql
+create type "enumvals" as enum ('one', 'two', 'three');
+
+create table "example"
+(
+    "foreignKey"    int
+        constraint "validationTest_userId_fkey"
+            references users
+            on update restrict on delete restrict,
+
+    "notNullJSON"   jsonb    not null,
+    "notNullHStore" hstore   not null,
+    "enum"          enumvals not null,
+    "limitedString" varchar(12)
+)
+```
+
+```go
+//lint:file-ignore U1000 ignore unused code, it's generated
+package model
+
+import (
+	"unicode/utf8"
+)
+
+const (
+	EmptyErr  = "empty"
+	LengthErr = "len"
+	ValueErr  = "value"
+)
+
+// ... Columns & Tables //
+
+type Example struct {
+	tableName struct{} `sql:"example,alias:t" pg:",discard_unknown_columns"`
+
+	Enum          string                 `sql:"enum,notnull"`
+	ForeignKey    *int                   `sql:"foreignKey"`
+	LimitedString *string                `sql:"limitedString"`
+	NotNullHStore map[string]string      `sql:"notNullHStore,hstore,notnull"`
+	NotNullJSON   map[string]interface{} `sql:"notNullJSON,notnull"`
+}
+
+func (m Example) Validate() (errors map[string]string, valid bool) {
+	errors = map[string]string{}
+
+	switch m.Enum {
+	case "one", "two", "three":
+	default:
+		errors[Columns.Example.Enum] = ValueErr
+	}
+
+	if m.ForeignKey != nil && *m.ForeignKey == 0 {
+		errors[Columns.Example.ForeignKey] = EmptyErr
+	}
+
+	if m.LimitedString != nil && isExceedsLen(*m.LimitedString, 12) {
+		errors[Columns.Example.LimitedString] = LengthErr
+	}
+
+	if m.NotNullHStore == nil {
+		errors[Columns.Example.NotNullHStore] = EmptyErr
+	}
+
+	if m.NotNullJSON == nil {
+		errors[Columns.Example.NotNullJSON] = EmptyErr
+	}
+
+	return errors, len(errors) == 0
+}
+
+func isExceedsLen(v string, len int) bool {
+	return utf8.RuneCountInString(v) > len
+}
+```  
  
