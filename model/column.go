@@ -6,6 +6,16 @@ import (
 	"strings"
 )
 
+const (
+	ValidateNil   = "nil"
+	ValidateZero  = "zero"
+	ValidatePZero = "pzero"
+	ValidateLen   = "len"
+	ValidatePLen  = "plen"
+	ValidateEnum  = "enum"
+	ValidatePEnum = "penum"
+)
+
 // Column stores information about column
 // it does not store relation info
 type Column struct {
@@ -155,28 +165,28 @@ func (c Column) IsValidatable() bool {
 func (c Column) ValidationCheck() string {
 	if c.IsValidatable() {
 		if c.IsArray || IsComplexType(c.Type) {
-			return "nil"
+			return ValidateNil
 		}
 
 		if c.IsFK {
 			if c.IsNullable {
-				return "pzero"
+				return ValidatePZero
 			}
-			return "zero"
+			return ValidateZero
 		}
 
 		if IsStringType(c.Type) && c.MaxLen > 0 {
 			if c.IsNullable {
-				return "plen"
+				return ValidatePLen
 			}
-			return "len"
+			return ValidateLen
 		}
 
 		if len(c.Enum) > 0 {
 			if c.IsNullable {
-				return "penum"
+				return ValidatePEnum
 			}
-			return "enum"
+			return ValidateEnum
 		}
 	}
 

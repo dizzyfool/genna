@@ -39,6 +39,14 @@ func (t Table) Imports() []string {
 				index[imp] = struct{}{}
 			}
 		}
+
+		if validate := column.ValidationCheck(); validate == ValidateLen || validate == ValidatePLen {
+			imp := "unicode/utf8"
+			if _, ok := index[imp]; !ok {
+				imports = append(imports, imp)
+				index[imp] = struct{}{}
+			}
+		}
 	}
 
 	return imports

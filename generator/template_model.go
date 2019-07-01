@@ -7,9 +7,9 @@ import ({{range .Imports}}
     "{{.}}"{{end}}
 ){{end}}{{if .HasValidation}}
 const (
-	EmptyErr  = "empty"
-	LengthErr = "len"
-	ValueErr  = "value"
+	ErrEmptyValue = "empty"
+	ErrMaxLength  = "len"
+	ErrWrongValue = "value"
 ){{end}}
 
 var Columns = struct { {{range .Models}}
@@ -58,36 +58,36 @@ func (m {{.StructName}}) Validate() (errors map[string]string, valid bool) {
 	{{if .IsValidatable}}
 	{{if eq .ValidationCheck "nil" }}
 	if m.{{.FieldName}} == nil {
-		errors[Columns.{{$model.StructName}}.{{.FieldName}}] = EmptyErr
+		errors[Columns.{{$model.StructName}}.{{.FieldName}}] = ErrEmptyValue
 	}	
 	{{else if eq .ValidationCheck "zero"}}
 	if m.{{.FieldName}} == 0 {
-		errors[Columns.{{$model.StructName}}.{{.FieldName}}] = EmptyErr
+		errors[Columns.{{$model.StructName}}.{{.FieldName}}] = ErrEmptyValue
 	}
 	{{else if eq .ValidationCheck "pzero"}}
 	if m.{{.FieldName}} != nil && *m.{{.FieldName}} == 0 {
-		errors[Columns.{{$model.StructName}}.{{.FieldName}}] = EmptyErr
+		errors[Columns.{{$model.StructName}}.{{.FieldName}}] = ErrEmptyValue
 	}
 	{{else if eq .ValidationCheck "len"}}
-	if isExceedsLen(m.{{.FieldName}}, {{.MaxLen}}) {
-		errors[Columns.{{$model.StructName}}.{{.FieldName}}] = LengthErr
+	if utf8.RuneCountInString(m.{{.FieldName}}) > {{.MaxLen}} {
+		errors[Columns.{{$model.StructName}}.{{.FieldName}}] = ErrMaxLength
 	}
 	{{else if eq .ValidationCheck "plen"}}
-	if m.{{.FieldName}} != nil && isExceedsLen(*m.{{.FieldName}}, {{.MaxLen}}) {
-		errors[Columns.{{$model.StructName}}.{{.FieldName}}] = LengthErr
+	if m.{{.FieldName}} != nil && utf8.RuneCountInString(*m.{{.FieldName}}) > {{.MaxLen}} {
+		errors[Columns.{{$model.StructName}}.{{.FieldName}}] = ErrMaxLength
 	}
 	{{else if eq .ValidationCheck "enum"}}
 	switch m.{{.FieldName}} {
 		case {{.Enum}}:
 		default:
-			errors[Columns.{{$model.StructName}}.{{.FieldName}}] = ValueErr
+			errors[Columns.{{$model.StructName}}.{{.FieldName}}] = ErrWrongValue
 	}
 	{{else if eq .ValidationCheck "penum"}}
 	if m.{{.FieldName}} != nil { 
 		switch *m.{{.FieldName}} {
 			case {{.Enum}}:
 			default:
-				errors[Columns.{{$model.StructName}}.{{.FieldName}}] = ValueErr
+				errors[Columns.{{$model.StructName}}.{{.FieldName}}] = ErrWrongValue
 		}
 	}
 	{{end}}
@@ -97,11 +97,5 @@ func (m {{.StructName}}) Validate() (errors map[string]string, valid bool) {
 	return errors, len(errors) == 0
 }
 {{end}}
-{{end}}
-
-{{if .HasValidation}}
-func isExceedsLen(v string, len int) bool {
-	return utf8.RuneCountInString(v) > len
-}
 {{end}}
 `

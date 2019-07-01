@@ -40,7 +40,6 @@ func newTemplatePackage(tables []model.Table, options Options) templatePackage {
 
 		if options.Validator && models[i].HasValidation {
 			hasValidation = true
-			mImports = append(mImports, "unicode/utf8")
 		}
 	}
 
