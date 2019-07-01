@@ -20,7 +20,7 @@ In most of the cases go-pg models represent database's tables and relations. Gen
 
 Create your database and tables in it
 
-```postgresql
+```sql
 create table "users" (
     "userId"    serial      not null,
     "email"     varchar(64) not null,
@@ -320,7 +320,7 @@ func TestModel(t *testing.T) {
 
 Genna can generate simple validation functions for models with `--validator` flag. This function should check if values in model can be stored in database, and not intended to implement application logic
 
-```postgresql
+```sql
 create type "enumvals" as enum ('one', 'two', 'three');
 
 create table "example"
@@ -346,9 +346,9 @@ import (
 )
 
 const (
-	EmptyErr  = "empty"
-	LengthErr = "len"
-	ValueErr  = "value"
+	ErrEmptyValue = "empty"
+	ErrMaxLength  = "len"
+	ErrWrongValue = "value"
 )
 
 // ... Columns & Tables //
@@ -369,30 +369,26 @@ func (m Example) Validate() (errors map[string]string, valid bool) {
 	switch m.Enum {
 	case "one", "two", "three":
 	default:
-		errors[Columns.Example.Enum] = ValueErr
+		errors[Columns.Example.Enum] = ErrWrongValue
 	}
 
 	if m.ForeignKey != nil && *m.ForeignKey == 0 {
-		errors[Columns.Example.ForeignKey] = EmptyErr
+		errors[Columns.Example.ForeignKey] = ErrEmptyValue
 	}
 
-	if m.LimitedString != nil && isExceedsLen(*m.LimitedString, 12) {
-		errors[Columns.Example.LimitedString] = LengthErr
+	if m.LimitedString != nil && utf8.RuneCountInString(*m.LimitedString) > 12 {
+		errors[Columns.Example.LimitedString] = ErrMaxLength
 	}
 
 	if m.NotNullHStore == nil {
-		errors[Columns.Example.NotNullHStore] = EmptyErr
+		errors[Columns.Example.NotNullHStore] = ErrEmptyValue
 	}
 
 	if m.NotNullJSON == nil {
-		errors[Columns.Example.NotNullJSON] = EmptyErr
+		errors[Columns.Example.NotNullJSON] = ErrEmptyValue
 	}
 
 	return errors, len(errors) == 0
-}
-
-func isExceedsLen(v string, len int) bool {
-	return utf8.RuneCountInString(v) > len
 }
 ```  
  
