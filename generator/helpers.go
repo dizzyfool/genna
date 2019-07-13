@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"strings"
 
-	"github.com/dizzyfool/genna/model"
+	"github.com/dizzyfool/genna/model_old"
 )
 
 // Stores package info
@@ -24,7 +24,7 @@ type templatePackage struct {
 }
 
 // newMultiPackage creates a package with multiple models
-func newTemplatePackage(tables []model.Table, options Options) templatePackage {
+func newTemplatePackage(tables []model_old.Entity, options Options) templatePackage {
 	mImports := make([]string, 0)
 	sImports := make([]string, 0)
 
@@ -43,8 +43,8 @@ func newTemplatePackage(tables []model.Table, options Options) templatePackage {
 		}
 	}
 
-	mImports = model.UniqStrings(mImports)
-	sImports = model.UniqStrings(sImports)
+	mImports = model_old.UniqStrings(mImports)
+	sImports = model_old.UniqStrings(sImports)
 
 	return templatePackage{
 		Package:    options.Package,
@@ -81,7 +81,7 @@ type templateTable struct {
 	HasValidation bool
 }
 
-func newTemplateTable(table model.Table, options Options) templateTable {
+func newTemplateTable(table model_old.Entity, options Options) templateTable {
 	if table.HasMultiplePKs() {
 		options.KeepPK = true
 	}
@@ -134,7 +134,7 @@ type templateColumn struct {
 	Enum            template.HTML
 }
 
-func newTemplateColumn(column model.Column, options Options) templateColumn {
+func newTemplateColumn(column model_old.Column, options Options) templateColumn {
 	return templateColumn{
 		FieldName:    column.StructFieldName(options.KeepPK),
 		FieldDBName:  column.Name,
@@ -160,7 +160,7 @@ type templateRelation struct {
 	FieldComment template.HTML
 }
 
-func newTemplateRelation(relation model.Relation) templateRelation {
+func newTemplateRelation(relation model_old.Relation) templateRelation {
 	return templateRelation{
 		FieldName:    relation.StructFieldName(),
 		FieldType:    relation.StructFieldType(),
@@ -209,9 +209,9 @@ func (t templateTable) uniqualizeFields() {
 	router:
 		for {
 			if suffix == 0 {
-				fieldName = fmt.Sprintf("%s%s", relation.FieldName, model.NonUniqSuffix)
+				fieldName = fmt.Sprintf("%s%s", relation.FieldName, model_old.NonUniqSuffix)
 			} else {
-				fieldName = fmt.Sprintf("%s%s%d", relation.FieldName, model.NonUniqSuffix, suffix)
+				fieldName = fmt.Sprintf("%s%s%d", relation.FieldName, model_old.NonUniqSuffix, suffix)
 			}
 
 			for _, col := range t.Columns {

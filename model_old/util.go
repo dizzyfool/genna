@@ -1,4 +1,4 @@
-package model
+package model_old
 
 import "strings"
 
@@ -40,7 +40,7 @@ func Schemas(tables []string) (schemas []string) {
 }
 
 // DiscloseSchemas discloses "*" in schemas
-func DiscloseSchemas(allTables []Table, selected []string) []string {
+func DiscloseSchemas(allTables []Entity, selected []string) []string {
 	index := map[string]struct{}{}
 
 	for _, t := range selected {
@@ -70,7 +70,7 @@ func DiscloseSchemas(allTables []Table, selected []string) []string {
 }
 
 // FollowFKs resolves foreign keys & adds tables in to generate list
-func FollowFKs(tables []Table, disclosed []string) []string {
+func FollowFKs(tables []Entity, disclosed []string) []string {
 	iTables := map[string]struct{}{}
 	for _, d := range disclosed {
 		iTables[d] = struct{}{}
@@ -103,7 +103,7 @@ func FollowFKs(tables []Table, disclosed []string) []string {
 }
 
 // FilterFKs filters fks that not presented
-func FilterFKs(tables []Table, disclosed []string) []Table {
+func FilterFKs(tables []Entity, disclosed []string) []Entity {
 	iTables := map[string]struct{}{}
 	for _, d := range disclosed {
 		iTables[d] = struct{}{}

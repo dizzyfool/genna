@@ -1,4 +1,4 @@
-package model
+package model_old
 
 import (
 	"reflect"
@@ -49,7 +49,7 @@ func TestSchemas(t *testing.T) {
 func TestDiscloseSchemas(t *testing.T) {
 	type args struct {
 		tables []string
-		models []Table
+		models []Entity
 	}
 	tests := []struct {
 		name string
@@ -60,7 +60,7 @@ func TestDiscloseSchemas(t *testing.T) {
 			name: "Should disclose *",
 			args: args{
 				tables: []string{"*"},
-				models: []Table{
+				models: []Entity{
 					{Schema: "public", Name: "users"},
 					{Schema: "public", Name: "locations"},
 				},
@@ -71,7 +71,7 @@ func TestDiscloseSchemas(t *testing.T) {
 			name: "Should disclose users.*",
 			args: args{
 				tables: []string{"users.*"},
-				models: []Table{
+				models: []Entity{
 					{Schema: "users", Name: "users"},
 					{Schema: "users", Name: "locations"},
 				},
@@ -82,7 +82,7 @@ func TestDiscloseSchemas(t *testing.T) {
 			name: "Should disclose [users.*, user.users]",
 			args: args{
 				tables: []string{"users.*", "users.users"},
-				models: []Table{
+				models: []Entity{
 					{Schema: "users", Name: "users"},
 					{Schema: "users", Name: "locations"},
 				},
@@ -94,7 +94,7 @@ func TestDiscloseSchemas(t *testing.T) {
 			name: "Should disclose [user.locations, public.*]",
 			args: args{
 				tables: []string{"users.locations", "public.*"},
-				models: []Table{
+				models: []Entity{
 					{Schema: "public", Name: "users"},
 					{Schema: "public", Name: "locations"},
 					{Schema: "users", Name: "locations"},
@@ -131,7 +131,7 @@ func TestFollowFKs(t *testing.T) {
 
 	type args struct {
 		tables []string
-		models []Table
+		models []Entity
 	}
 	tests := []struct {
 		name string
@@ -142,7 +142,7 @@ func TestFollowFKs(t *testing.T) {
 			name: "Should follow foreign key",
 			args: args{
 				tables: []string{"public.locations"},
-				models: []Table{
+				models: []Entity{
 					{
 						Schema:    PublicSchema,
 						Name:      "locations",
@@ -164,7 +164,7 @@ func TestFollowFKs(t *testing.T) {
 			name: "Should follow self recursive foreign key",
 			args: args{
 				tables: []string{"public.locations"},
-				models: []Table{
+				models: []Entity{
 					{
 						Schema:    PublicSchema,
 						Name:      "locations",
@@ -186,7 +186,7 @@ func TestFollowFKs(t *testing.T) {
 			name: "Should follow recursive foreign key",
 			args: args{
 				tables: []string{"public.locations"},
-				models: []Table{
+				models: []Entity{
 					{
 						Schema:    PublicSchema,
 						Name:      "locations",
@@ -209,7 +209,7 @@ func TestFollowFKs(t *testing.T) {
 			name: "Should follow recursive foreign key",
 			args: args{
 				tables: []string{"public.locations"},
-				models: []Table{
+				models: []Entity{
 					{
 						Schema:    PublicSchema,
 						Name:      "locations",
@@ -232,7 +232,7 @@ func TestFollowFKs(t *testing.T) {
 			name: "Should follow recursive foreign key without doubles",
 			args: args{
 				tables: []string{"public.locations", "users.users"},
-				models: []Table{
+				models: []Entity{
 					{
 						Schema: PublicSchema,
 						Name:   "locations",
@@ -255,7 +255,7 @@ func TestFollowFKs(t *testing.T) {
 			name: "Should follow recursive deep foreign key",
 			args: args{
 				tables: []string{"users.locations"},
-				models: []Table{
+				models: []Entity{
 					{
 						Schema:    PublicSchema,
 						Name:      "locations",
@@ -356,18 +356,18 @@ func TestJoin(t *testing.T) {
 
 func TestFilterFKs(t *testing.T) {
 	type args struct {
-		tables    []Table
+		tables    []Entity
 		disclosed []string
 	}
 	tests := []struct {
 		name string
 		args args
-		want []Table
+		want []Entity
 	}{
 		{
 			name: "Should filter fks",
 			args: args{
-				tables: []Table{
+				tables: []Entity{
 					{
 						Schema: PublicSchema,
 						Name:   "users",
@@ -395,7 +395,7 @@ func TestFilterFKs(t *testing.T) {
 				},
 				disclosed: []string{"public.users"},
 			},
-			want: []Table{
+			want: []Entity{
 				{
 					Schema: PublicSchema,
 					Name:   "users",

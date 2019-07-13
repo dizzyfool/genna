@@ -1,4 +1,4 @@
-package model
+package util
 
 import (
 	"testing"
@@ -33,9 +33,9 @@ func TestAnnotation_AddTag(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := &Annotation{
-				tags: tt.fields.tags,
-			}
+			a := NewAnnotation()
+			a.tags = tt.fields.tags
+
 			a.AddTag(tt.args.name, tt.args.value)
 			if ln := len(a.tags); ln != tt.want {
 				t.Errorf("Tags len = %v, want %v", ln, tt.want)

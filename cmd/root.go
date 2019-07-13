@@ -20,7 +20,7 @@ import (
 
 	"github.com/dizzyfool/genna/database"
 	"github.com/dizzyfool/genna/generator"
-	"github.com/dizzyfool/genna/model"
+	"github.com/dizzyfool/genna/model_old"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -84,7 +84,7 @@ to quickly create a models for go-pg https://github.com/go-pg/pg`,
 		}
 
 		fmt.Println("getting info from database ...")
-		tables, err := store.Tables(model.Schemas(options.Tables))
+		tables, err := store.Tables(model_old.Schemas(options.Tables))
 		if err != nil {
 			panic(err)
 		}
@@ -127,7 +127,7 @@ func init() {
 
 	flags.StringSliceP(tables, "t", []string{"public.*"}, "table names for model generation separated by comma\nuse 'schema_name.*' to generate model for every table in model")
 
-	flags.StringP(pkg, "p", model.DefaultPackage, "package for model files")
+	flags.StringP(pkg, "p", model_old.DefaultPackage, "package for model files")
 
 	flags.BoolP(followFK, "f", false, "generate models for foreign keys, even if it not listed in tables")
 	flags.Bool(keepPK, false, "keep primary key name as is (by default it should be converted to 'ID')")

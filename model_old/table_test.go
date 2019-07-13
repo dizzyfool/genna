@@ -1,4 +1,4 @@
-package model
+package model_old
 
 import (
 	"reflect"
@@ -62,12 +62,12 @@ func TestTable_ModelName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tbl := Table{
+			tbl := Entity{
 				Name:   tt.fields.Name,
 				Schema: tt.fields.Schema,
 			}
 			if got := tbl.ModelName(); got != tt.want {
-				t.Errorf("Table.ModelName() = %v, want %v", got, tt.want)
+				t.Errorf("Entity.ModelName() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -133,12 +133,12 @@ func TestTable_TableName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tbl := Table{
+			tbl := Entity{
 				Schema: tt.fields.Schema,
 				Name:   tt.fields.Name,
 			}
 			if got := tbl.TableName(tt.quoted); got != tt.want {
-				t.Errorf("Table.TableName() = %v, want %v", got, tt.want)
+				t.Errorf("Entity.TableName() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -177,12 +177,12 @@ func TestTable_ViewName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tbl := Table{
+			tbl := Entity{
 				Schema: tt.fields.Schema,
 				Name:   tt.fields.Name,
 			}
 			if got := tbl.ViewName(); got != tt.want {
-				t.Errorf("Table.ViewName() = %v, want %v", got, tt.want)
+				t.Errorf("Entity.ViewName() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -237,12 +237,12 @@ func TestTable_TableNameTag(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tbl := Table{
+			tbl := Entity{
 				Schema: tt.fields.Schema,
 				Name:   tt.fields.Name,
 			}
 			if got := tbl.TableNameTag(tt.args.withView, tt.args.noDiscard, tt.args.noAlias); got != tt.want {
-				t.Errorf("Table.TableNameTag() = %v, want %v", got, tt.want)
+				t.Errorf("Entity.TableNameTag() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -251,13 +251,13 @@ func TestTable_TableNameTag(t *testing.T) {
 func TestTable_Validate(t *testing.T) {
 	pkColumn := Column{
 		Name: "userId",
-		Type: TypeInt8,
+		Type: TypePGInt8,
 		IsPK: true,
 	}
 
 	fkColumn := Column{
 		Name: "locationId",
-		Type: TypeInt8,
+		Type: TypePGInt8,
 		IsFK: true,
 	}
 
@@ -359,14 +359,14 @@ func TestTable_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tbl := Table{
+			tbl := Entity{
 				Schema:    tt.fields.Schema,
 				Name:      tt.fields.Name,
 				Columns:   tt.fields.Columns,
 				Relations: tt.fields.Relations,
 			}
 			if err := tbl.Validate(); (err != nil) != tt.wantErr {
-				t.Errorf("Table.Validate() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Entity.Validate() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
@@ -390,11 +390,11 @@ func TestTable_Imports(t *testing.T) {
 				Columns: []Column{
 					{
 						Name: "userId",
-						Type: TypeInt8,
+						Type: TypePGInt8,
 					},
 					{
 						Name: "locationId",
-						Type: TypeInt8,
+						Type: TypePGInt8,
 					},
 				},
 			},
@@ -406,20 +406,20 @@ func TestTable_Imports(t *testing.T) {
 				Columns: []Column{
 					{
 						Name: "userId",
-						Type: TypeInt8,
+						Type: TypePGInt8,
 					},
 					{
 						Name: "createdAt",
-						Type: TypeTimestamp,
+						Type: TypePGPimestamp,
 					},
 					{
 						Name:       "deletedAt",
-						Type:       TypeTimestamp,
+						Type:       TypePGPimestamp,
 						IsNullable: true,
 					},
 					{
 						Name:       "updatedAt",
-						Type:       TypeTimestamp,
+						Type:       TypePGPimestamp,
 						IsNullable: true,
 					},
 				},
@@ -429,7 +429,7 @@ func TestTable_Imports(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tbl := Table{
+			tbl := Entity{
 				Schema:    tt.fields.Schema,
 				Name:      tt.fields.Name,
 				Columns:   tt.fields.Columns,
@@ -441,7 +441,7 @@ func TestTable_Imports(t *testing.T) {
 			sort.Strings(tt.want)
 
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Table.Imports() = %v, want %v", got, tt.want)
+				t.Errorf("Entity.Imports() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -465,12 +465,12 @@ func TestTable_HasMultiplePKs(t *testing.T) {
 				Columns: []Column{
 					{
 						Name: "userId",
-						Type: TypeInt8,
+						Type: TypePGInt8,
 						IsPK: true,
 					},
 					{
 						Name: "locationId",
-						Type: TypeInt8,
+						Type: TypePGInt8,
 						IsPK: true,
 					},
 				},
@@ -483,12 +483,12 @@ func TestTable_HasMultiplePKs(t *testing.T) {
 				Columns: []Column{
 					{
 						Name: "userId",
-						Type: TypeInt8,
+						Type: TypePGInt8,
 						IsPK: true,
 					},
 					{
 						Name: "locationId",
-						Type: TypeInt8,
+						Type: TypePGInt8,
 					},
 				},
 			},
@@ -497,14 +497,14 @@ func TestTable_HasMultiplePKs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tbl := Table{
+			tbl := Entity{
 				Schema:    tt.fields.Schema,
 				Name:      tt.fields.Name,
 				Columns:   tt.fields.Columns,
 				Relations: tt.fields.Relations,
 			}
 			if got := tbl.HasMultiplePKs(); got != tt.want {
-				t.Errorf("Table.HasMultiplePKs() = %v, want %v", got, tt.want)
+				t.Errorf("Entity.HasMultiplePKs() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -565,14 +565,14 @@ func TestTable_JoinAlias(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tbl := Table{
+			tbl := Entity{
 				Schema:    tt.fields.Schema,
 				Name:      tt.fields.Name,
 				Columns:   tt.fields.Columns,
 				Relations: tt.fields.Relations,
 			}
 			if got := tbl.JoinAlias(); got != tt.want {
-				t.Errorf("Table.JoinAlias() = %v, want %v", got, tt.want)
+				t.Errorf("Entity.JoinAlias() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -633,14 +633,14 @@ func TestTable_SearchModelName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tbl := Table{
+			tbl := Entity{
 				Schema:    tt.fields.Schema,
 				Name:      tt.fields.Name,
 				Columns:   tt.fields.Columns,
 				Relations: tt.fields.Relations,
 			}
 			if got := tbl.SearchModelName(); got != tt.want {
-				t.Errorf("Table.SearchModelName() = %v, want %v", got, tt.want)
+				t.Errorf("Entity.SearchModelName() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -664,11 +664,11 @@ func TestTable_SearchImports(t *testing.T) {
 				Columns: []Column{
 					{
 						Name: "userId",
-						Type: TypeInt8,
+						Type: TypePGInt8,
 					},
 					{
 						Name: "locationId",
-						Type: TypeInt8,
+						Type: TypePGInt8,
 					},
 				},
 			},
@@ -680,20 +680,20 @@ func TestTable_SearchImports(t *testing.T) {
 				Columns: []Column{
 					{
 						Name: "userId",
-						Type: TypeInt8,
+						Type: TypePGInt8,
 					},
 					{
 						Name: "createdAt",
-						Type: TypeTimestamp,
+						Type: TypePGTimestamp,
 					},
 					{
 						Name:       "deletedAt",
-						Type:       TypeTimestamp,
+						Type:       TypePGTimestamp,
 						IsNullable: true,
 					},
 					{
 						Name:       "updatedAt",
-						Type:       TypeTimestamp,
+						Type:       TypePGTimestamp,
 						IsNullable: true,
 					},
 				},
@@ -703,14 +703,14 @@ func TestTable_SearchImports(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tbl := Table{
+			tbl := Entity{
 				Schema:    tt.fields.Schema,
 				Name:      tt.fields.Name,
 				Columns:   tt.fields.Columns,
 				Relations: tt.fields.Relations,
 			}
 			if got := tbl.SearchImports(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Table.SearchImports() = %v, want %v", got, tt.want)
+				t.Errorf("Entity.SearchImports() = %v, want %v", got, tt.want)
 			}
 		})
 	}

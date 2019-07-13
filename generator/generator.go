@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/dizzyfool/genna/model"
+	"github.com/dizzyfool/genna/model_old"
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -37,31 +37,31 @@ func NewGenerator(options Options, logger *zap.Logger) *Generator {
 }
 
 // Process processing all tables
-func (g Generator) Process(tables []model.Table) (*Result, error) {
+func (g Generator) Process(tables []model_old.Entity) (*Result, error) {
 
 	// disclosing asterisks
-	toGenerate := model.DiscloseSchemas(tables, g.options.Tables)
+	toGenerate := model_old.DiscloseSchemas(tables, g.options.Tables)
 
 	if g.options.FollowFKs {
 		// adding models for foreign keys that was not selected for generation by user
-		toGenerate = model.FollowFKs(tables, toGenerate)
+		toGenerate = model_old.FollowFKs(tables, toGenerate)
 	} else {
 		// filtering relations for models that not listed for generation by user
-		tables = model.FilterFKs(tables, toGenerate)
+		tables = model_old.FilterFKs(tables, toGenerate)
 	}
 
 	// making intermediate structs for templates
 	pkg := g.Package(tables, sortTables(toGenerate))
 
 	// generating model
-	if err := g.generateAndSave(model.DefaultPackage, templateModel, g.options.Output, pkg); err != nil {
+	if err := g.generateAndSave(model_old.DefaultPackage, templateModel, g.options.Output, pkg); err != nil {
 		return nil, err
 	}
 
 	// generating search filters
 	if g.options.WithSearch {
 		output := addSuffix(g.options.Output, "_search")
-		if err := g.generateAndSave(model.SearchSuffix, templateSearch, output, pkg); err != nil {
+		if err := g.generateAndSave(model_old.SearchSuffix, templateSearch, output, pkg); err != nil {
 			return nil, err
 		}
 	}
@@ -75,15 +75,15 @@ func (g Generator) Process(tables []model.Table) (*Result, error) {
 // Package makes intermediate struct for templates
 // tables - all tables in database
 // toGenerate - tables with schemas need to generate, e.g. public.users
-func (g Generator) Package(tables []model.Table, toGenerate []string) templatePackage {
+func (g Generator) Package(tables []model_old.Entity, toGenerate []string) templatePackage {
 	// index for quick access to model
 	index := map[string]int{}
 	for i, t := range tables {
-		index[model.Join(t.Schema, t.Name)] = i
+		index[model_old.Join(t.Schema, t.Name)] = i
 	}
 
 	// on one big file
-	toTemplate := make([]model.Table, 0)
+	toTemplate := make([]model_old.Entity, 0)
 	// just go though all tables
 	for _, t := range toGenerate {
 		if i, ok := index[t]; ok {
@@ -151,17 +151,17 @@ func addSuffix(filename, suffix string) string {
 
 func sortTables(slice []string) []string {
 	sort.Slice(slice, func(i, j int) bool {
-		si, ti := model.Split(slice[i])
-		sj, tj := model.Split(slice[j])
+		si, ti := model_old.Split(slice[i])
+		sj, tj := model_old.Split(slice[j])
 
 		if si == sj {
 			return ti < tj
 		}
 
-		if si == model.PublicSchema {
+		if si == model_old.PublicSchema {
 			return true
 		}
-		if sj == model.PublicSchema {
+		if sj == model_old.PublicSchema {
 			return false
 		}
 

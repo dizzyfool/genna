@@ -1,4 +1,4 @@
-package model
+package util
 
 import (
 	"regexp"
@@ -6,6 +6,12 @@ import (
 
 	"github.com/fatih/camelcase"
 	"github.com/jinzhu/inflection"
+)
+
+const (
+	Id  = "Id"
+	ID  = "ID"
+	Rel = "Rel"
 )
 
 // Singular makes singular of plural english word
@@ -86,8 +92,13 @@ func Sanitize(s string) string {
 	return sanitized
 }
 
-// ModelName gets string usable as struct name
-func ModelName(s string) string {
+// PackageName gets string usable as package name
+func PackageName(s string) string {
+	return strings.ToLower(Sanitize(s))
+}
+
+// EntityName gets string usable as struct name
+func EntityName(s string) string {
 	splitted := camelcase.Split(CamelCased(Sanitize(s)))
 
 	ln := len(splitted) - 1
@@ -103,9 +114,9 @@ func ModelName(s string) string {
 	return strings.Join(splitted, "")
 }
 
-// StructFieldName gets string usable as struct field name
-func StructFieldName(s string) string {
-	camelCased := ReplaceSuffix(CamelCased(Sanitize(s)), "Id", "ID")
+// ColumnName gets string usable as struct field name
+func ColumnName(s string) string {
+	camelCased := ReplaceSuffix(CamelCased(Sanitize(s)), Id, ID)
 
 	return strings.Title(camelCased)
 }
@@ -127,9 +138,4 @@ func ReplaceSuffix(in, suffix, replace string) string {
 		in = in[:len(in)-len(suffix)] + replace
 	}
 	return in
-}
-
-// PackageName gets string usable as package name
-func PackageName(s string) string {
-	return strings.ToLower(Sanitize(s))
 }

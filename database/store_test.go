@@ -3,7 +3,7 @@ package database
 import (
 	"testing"
 
-	"github.com/dizzyfool/genna/model"
+	"github.com/dizzyfool/genna/model_old"
 
 	"go.uber.org/zap"
 )
@@ -22,7 +22,7 @@ func TestLive(t *testing.T) {
 	createTestTable(store)
 
 	var schemas []string
-	schemas = append(schemas, model.PublicSchema)
+	schemas = append(schemas, model_old.PublicSchema)
 	rows, _ := store.queryTables(schemas)
 
 	t.Run("Should be 5 rows", func(t *testing.T) {

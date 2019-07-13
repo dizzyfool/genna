@@ -7,47 +7,47 @@ import (
 	"testing"
 
 	"github.com/dizzyfool/genna/database"
-	"github.com/dizzyfool/genna/model"
+	"github.com/dizzyfool/genna/model_old"
 
 	"go.uber.org/zap"
 )
 
 func TestDo(t *testing.T) {
-	user := model.Table{
-		Schema: model.PublicSchema,
+	user := model_old.Entity{
+		Schema: model_old.PublicSchema,
 		Name:   "users",
-		Columns: []model.Column{
+		Columns: []model_old.Column{
 			{
 				Name:       "userId",
-				Type:       model.TypeInt8,
+				Type:       model_old.TypePGInt8,
 				IsPK:       true,
 				IsNullable: false,
 			},
 			{
 				Name:       "email",
-				Type:       model.TypeVarchar,
+				Type:       model_old.TypePGVarchar,
 				IsNullable: true,
 			},
 			{
 				Name:       "locationId",
-				Type:       model.TypeInt8,
+				Type:       model_old.TypePGInt8,
 				IsNullable: false,
 				IsFK:       true,
 			},
 			{
 				Name: "companyId",
-				Type: model.TypeInt8,
+				Type: model_old.TypePGInt8,
 				IsFK: true,
 			},
 			{
 				Name: "createdAt",
-				Type: model.TypeTimestamp,
+				Type: model_old.TypePGTimestamp,
 			},
 		},
-		Relations: []model.Relation{
+		Relations: []model_old.Relation{
 			{
-				Type:          model.HasOne,
-				SourceSchema:  model.PublicSchema,
+				Type:          model_old.HasOne,
+				SourceSchema:  model_old.PublicSchema,
 				SourceTable:   "users",
 				SourceColumns: []string{"locationId"},
 				TargetSchema:  "geo",
@@ -55,84 +55,84 @@ func TestDo(t *testing.T) {
 				TargetColumns: []string{"locationId"},
 			},
 			{
-				Type:          model.HasOne,
-				SourceSchema:  model.PublicSchema,
+				Type:          model_old.HasOne,
+				SourceSchema:  model_old.PublicSchema,
 				SourceTable:   "users",
 				SourceColumns: []string{"companyId"},
-				TargetSchema:  model.PublicSchema,
+				TargetSchema:  model_old.PublicSchema,
 				TargetTable:   "companies",
 				TargetColumns: []string{"companyId"},
 			},
 		},
 	}
 
-	company := model.Table{
-		Schema: model.PublicSchema,
+	company := model_old.Entity{
+		Schema: model_old.PublicSchema,
 		Name:   "companies",
-		Columns: []model.Column{
+		Columns: []model_old.Column{
 			{
 				Name:       "companyId",
-				Type:       model.TypeInt8,
+				Type:       model_old.TypePGInt8,
 				IsPK:       true,
 				IsNullable: false,
 			},
 			{
 				Name:       "title",
-				Type:       model.TypeVarchar,
+				Type:       model_old.TypePGVarchar,
 				IsNullable: true,
 			},
 		},
 	}
 
-	location := model.Table{
+	location := model_old.Entity{
 		Schema: "geo",
 		Name:   "locations",
-		Columns: []model.Column{
+		Columns: []model_old.Column{
 			{
 				Name:       "locationId",
-				Type:       model.TypeInt8,
+				Type:       model_old.TypePGInt8,
 				IsPK:       true,
 				IsNullable: false,
 			},
 			{
 				Name:       "title",
-				Type:       model.TypeVarchar,
+				Type:       model_old.TypePGVarchar,
 				IsNullable: true,
 			},
 		},
 	}
 
-	lang := model.Table{
+	lang := model_old.Entity{
 		Schema: "geo",
 		Name:   "languages",
-		Columns: []model.Column{
+		Columns: []model_old.Column{
 			{
 				Name:       "languageId",
-				Type:       model.TypeInt8,
+				Type:       model_old.TypePGInt8,
 				IsPK:       true,
 				IsNullable: false,
 			},
 			{
 				Name:       "title",
-				Type:       model.TypeVarchar,
+				Type:       model_old.TypePGVarchar,
 				IsNullable: true,
 			},
 		},
 	}
 
-	unused := model.Table{
-		Schema: model.PublicSchema,
+	unused := model_old.Entity{
+		Schema: model_old.PublicSchema,
 		Name:   "unused",
-		Columns: []model.Column{
+		Columns: []model_old.Column{
 			{
 				Name:       "unusedId",
-				Type:       model.TypeInt8,
+				Type:       model_old.TypePGInt8,
 				IsPK:       true,
 				IsNullable: false,
 			},
 			{
 				Name:       "title",
-				Type:       model.TypeVarchar,
+				Type:       model_old.TypePGVarchar,
 				IsNullable: true,
 			},
 		},
@@ -158,7 +158,7 @@ func TestDo(t *testing.T) {
 		NoDiscard: false, // try true
 	}, logger)
 
-	_, err = generator.Process([]model.Table{unused, user, company, location, lang})
+	_, err = generator.Process([]model_old.Entity{unused, user, company, location, lang})
 	fmt.Print(err)
 }
 
@@ -167,7 +167,7 @@ func TestLive(t *testing.T) {
 
 	url := `postgres://genna:genna@localhost:5432/genna?sslmode=disable`
 	options := Options{
-		Package:      model.DefaultPackage,
+		Package:      model_old.DefaultPackage,
 		Tables:       []string{"public.*"},
 		FollowFKs:    true,
 		Output:       path.Dir(filename) + "/../test/model.go",
@@ -191,7 +191,7 @@ func TestLive(t *testing.T) {
 	}
 
 	store := database.NewStore(db)
-	tables, err := store.Tables(model.Schemas(options.Tables))
+	tables, err := store.Tables(model_old.Schemas(options.Tables))
 	if err != nil {
 		panic(err)
 	}

@@ -1,7 +1,7 @@
 package database
 
 import (
-	"github.com/dizzyfool/genna/model"
+	"github.com/dizzyfool/genna/model_old"
 
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
@@ -34,17 +34,17 @@ type columnRow struct {
 	Enum       []string `sql:"enum,array"`
 }
 
-// Table converts row to Table model
-func (r *columnRow) Table() model.Table {
-	return model.Table{
+// Entity converts row to Entity model
+func (r *columnRow) Table() model_old.Entity {
+	return model_old.Entity{
 		Schema: r.SchemaName,
 		Name:   r.TblName,
 	}
 }
 
 // Column converts row to Column model
-func (r *columnRow) Column() model.Column {
-	return model.Column{
+func (r *columnRow) Column() model_old.Column {
+	return model_old.Column{
 		Name:       r.ColumnName,
 		Type:       r.Type,
 		IsArray:    r.IsArray,
@@ -69,10 +69,10 @@ type relationRow struct {
 }
 
 // Relation converts row to Relation model
-func (r *relationRow) Relation() model.Relation {
-	return model.Relation{
+func (r *relationRow) Relation() model_old.Relation {
+	return model_old.Relation{
 		// TODO HasMany relation
-		Type:          model.HasOne,
+		Type:          model_old.HasOne,
 		SourceSchema:  r.SchemaName,
 		SourceTable:   r.TblName,
 		SourceColumns: r.ColumnsName,
@@ -160,7 +160,7 @@ func (s *Store) queryTables(schema []string) ([]columnRow, error) {
 }
 
 // Tables get basic tables information among selected schemas
-func (s *Store) Tables(schema []string) ([]model.Table, error) {
+func (s *Store) Tables(schema []string) ([]model_old.Entity, error) {
 
 	rows, err := s.queryTables(schema)
 	if err != nil {
@@ -168,7 +168,7 @@ func (s *Store) Tables(schema []string) ([]model.Table, error) {
 	}
 
 	var current = -1
-	tables := make([]model.Table, 0)
+	tables := make([]model_old.Entity, 0)
 	for _, row := range rows {
 		if current == -1 ||
 			tables[current].Schema != row.SchemaName ||
@@ -195,7 +195,7 @@ func (s *Store) Tables(schema []string) ([]model.Table, error) {
 }
 
 // Relations gets relations of a selected table
-func (s *Store) Relations(schema, table string) ([]model.Relation, error) {
+func (s *Store) Relations(schema, table string) ([]model_old.Relation, error) {
 	query := `
 		with
 		    schemas as (
@@ -241,7 +241,7 @@ func (s *Store) Relations(schema, table string) ([]model.Relation, error) {
 		return nil, errors.Wrap(err, "getting relations info error")
 	}
 
-	relations := make([]model.Relation, len(rows))
+	relations := make([]model_old.Relation, len(rows))
 	for i, row := range rows {
 		relations[i] = row.Relation()
 	}

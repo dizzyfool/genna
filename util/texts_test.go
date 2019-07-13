@@ -1,4 +1,4 @@
-package model
+package util
 
 import (
 	"testing"
@@ -43,7 +43,7 @@ func TestSingular(t *testing.T) {
 	}
 }
 
-func TestModelName(t *testing.T) {
+func TestEntityName(t *testing.T) {
 	type args struct {
 		input string
 	}
@@ -95,14 +95,14 @@ func TestModelName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ModelName(tt.args.input); got != tt.want {
-				t.Errorf("ModelName() = %v, want %v", got, tt.want)
+			if got := EntityName(tt.args.input); got != tt.want {
+				t.Errorf("EntityName() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestStructFieldName(t *testing.T) {
+func TestColumnName(t *testing.T) {
 	type args struct {
 		input string
 	}
@@ -139,7 +139,7 @@ func TestStructFieldName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := StructFieldName(tt.args.input); got != tt.want {
+			if got := ColumnName(tt.args.input); got != tt.want {
 				t.Errorf("ColumnName() = %v, want %v", got, tt.want)
 			}
 		})
@@ -276,6 +276,182 @@ func TestSanitize(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := Sanitize(tt.s); got != tt.want {
 				t.Errorf("Sanitize() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsUpper(t *testing.T) {
+	tests := []struct {
+		name string
+		c    byte
+		want bool
+	}{
+		{
+			name: "Should detect upper A",
+			c:    'A',
+			want: true,
+		},
+		{
+			name: "Should detect upper Z",
+			c:    'Z',
+			want: true,
+		},
+		{
+			name: "Should not detect lower z",
+			c:    'z',
+			want: false,
+		},
+		{
+			name: "Should not detect 1",
+			c:    '1',
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsUpper(tt.c); got != tt.want {
+				t.Errorf("IsUpper() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsLower(t *testing.T) {
+	tests := []struct {
+		name string
+		c    byte
+		want bool
+	}{
+		{
+			name: "Should detect lower a",
+			c:    'a',
+			want: true,
+		},
+		{
+			name: "Should detect lower z",
+			c:    'z',
+			want: true,
+		},
+		{
+			name: "Should not detect upper Z",
+			c:    'Z',
+			want: false,
+		},
+		{
+			name: "Should not detect 1",
+			c:    '1',
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsLower(tt.c); got != tt.want {
+				t.Errorf("IsLower() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestToUpper(t *testing.T) {
+	tests := []struct {
+		name string
+		c    byte
+		want byte
+	}{
+		{
+			name: "Should convert lower a to A",
+			c:    'a',
+			want: 'A',
+		},
+		{
+			name: "Should convert lower z to Z",
+			c:    'z',
+			want: 'Z',
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ToUpper(tt.c); got != tt.want {
+				t.Errorf("ToUpper() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestToLower(t *testing.T) {
+	tests := []struct {
+		name string
+		c    byte
+		want byte
+	}{
+		{
+			name: "Should convert upper A to a",
+			c:    'A',
+			want: 'a',
+		},
+		{
+			name: "Should convert upper Z to z",
+			c:    'Z',
+			want: 'z',
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ToLower(tt.c); got != tt.want {
+				t.Errorf("ToLower() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCamelCased(t *testing.T) {
+	tests := []struct {
+		name string
+		s    string
+		want string
+	}{
+		{
+			name: "Should convert word to Word",
+			s:    "word",
+			want: "Word",
+		},
+		{
+			name: "Should convert word_word to WordWord",
+			s:    "word_word",
+			want: "WordWord",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := CamelCased(tt.s); got != tt.want {
+				t.Errorf("CamelCased() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUnderscore(t *testing.T) {
+	tests := []struct {
+		name string
+		s    string
+		want string
+	}{
+		{
+			name: "Should convert Word to word",
+			s:    "Word",
+			want: "word",
+		},
+		{
+			name: "Should convert WordWord to word_word",
+			s:    "WordWord",
+			want: "word_word",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Underscore(tt.s); got != tt.want {
+				t.Errorf("Underscore() = %v, want %v", got, tt.want)
 			}
 		})
 	}
