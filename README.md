@@ -2,26 +2,40 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/dizzyfool/genna)](https://goreportcard.com/report/github.com/dizzyfool/genna)
 
+
 Requirements:
 - [go-pg](https://github.com/go-pg/pg)
 - your PostgreSQL database
 
-#### Idea
+### Idea
 
 In most of the cases go-pg models represent database's tables and relations. Genna's main goal is to prepare those models by reading detailed information about PostrgeSQL database. The result should be several files with ready to use structs.
 
-#### Usage
+### Usage
 
 1. Install `go get github.com/dizzyfool/genna`
 1. Read though help `genna -h`
-1. Run `genna -c postgres://user:password@localhost:5432/yourdb -o ~/output/model.go`
 
-#### Example
+Currently genna support 3 generators:
+- [base](#Basic), that generates basic go-pg model
+- [search](#Search), that generates search structs for basic model
+- [validate](#Validate), that generates validate functions for basic model
 
-Create your database and tables in it
+### Example
+
+First create your database and tables in it
 
 ```sql
-create table "users" (
+create table "projects"
+(
+    "projectId" serial      not null,
+    "name"      varchar(64) not null,
+
+    primary key ("projectId")
+);
+
+create table "users"
+(
     "userId"    serial      not null,
     "email"     varchar(64) not null,
     "activated" bool        not null default false,
@@ -32,7 +46,8 @@ create table "users" (
 );
 
 create schema "geo";
-create table geo."countries" (
+create table geo."countries"
+(
     "countryId" serial     not null,
     "code"      varchar(3) not null,
     "coords"    integer[],
@@ -46,9 +61,11 @@ alter table "users"
             references geo."countries" ("countryId") on update restrict on delete restrict;
 ```
 
+#### Basic
+
 Run generator
 
-`genna -c postgres://user:password@localhost:5432/yourdb -o ~/output/model.go -t public.*,geo.* -f -s`
+`genna base -c postgres://user:password@localhost:5432/yourdb -o ~/output/model.go -t public.* -f`
 
 You should get following models on model package:
 
@@ -57,6 +74,9 @@ You should get following models on model package:
 package model
 
 var Columns = struct {
+	Project struct {
+		ID, Name string
+	}
 	User struct {
 		ID, Activated, CountryID, Email, Name string
 
@@ -66,6 +86,12 @@ var Columns = struct {
 		ID, Code, Coords string
 	}
 }{
+	Project: struct {
+		ID, Name string
+	}{
+		ID:   "projectId",
+		Name: "name",
+	},
 	User: struct {
 		ID, Activated, CountryID, Email, Name string
 
@@ -89,6 +115,9 @@ var Columns = struct {
 }
 
 var Tables = struct {
+	Project struct {
+		Name, Alias string
+	}
 	User struct {
 		Name, Alias string
 	}
@@ -96,6 +125,12 @@ var Tables = struct {
 		Name, Alias string
 	}
 }{
+	Project: struct {
+		Name, Alias string
+	}{
+		Name:  "projects",
+		Alias: "t",
+	},
 	User: struct {
 		Name, Alias string
 	}{
@@ -108,6 +143,13 @@ var Tables = struct {
 		Name:  "geo.countries",
 		Alias: "t",
 	},
+}
+
+type Project struct {
+	tableName struct{} `sql:"projects,alias:t" pg:",discard_unknown_columns"`
+
+	ID   int    `sql:"projectId,pk"`
+	Name string `sql:"name,notnull"`
 }
 
 type User struct {
@@ -131,7 +173,13 @@ type GeoCountry struct {
 }
 ```
 
-If you choose to generate search filters another file will appear
+#### Search
+
+Run generator
+
+`genna validate -c postgres://user:password@localhost:5432/yourdb -o ~/output/search.go -t public.* -f`
+
+You should get following search on model package:
 
 ```go
 //lint:file-ignore U1000 ignore unused code, it's generated
@@ -179,14 +227,34 @@ type Searcher interface {
 	Q() applier
 }
 
+type ProjectSearch struct {
+	search
+
+	ID   *int
+	Name *string
+}
+
+func (s *ProjectSearch) Apply(query *orm.Query) *orm.Query {
+	return s.apply(Tables.Project.Alias, map[string]interface{}{
+		Columns.Project.ID:   s.ID,
+		Columns.Project.Name: s.Name,
+	}, query)
+}
+
+func (s *ProjectSearch) Q() applier {
+	return func(query *orm.Query) (*orm.Query, error) {
+		return s.Apply(query), nil
+	}
+}
+
 type UserSearch struct {
 	search
 
-	ID        interface{}
-	Activated interface{}
-	CountryID interface{}
-	Email     interface{}
-	Name      interface{}
+	ID        *int
+	Activated *bool
+	CountryID *int
+	Email     *string
+	Name      *string
 }
 
 func (s *UserSearch) Apply(query *orm.Query) *orm.Query {
@@ -208,8 +276,8 @@ func (s *UserSearch) Q() applier {
 type GeoCountrySearch struct {
 	search
 
-	ID   interface{}
-	Code interface{}
+	ID   *int
+	Code *string
 }
 
 func (s *GeoCountrySearch) Apply(query *orm.Query) *orm.Query {
@@ -226,7 +294,70 @@ func (s *GeoCountrySearch) Q() applier {
 }
 ``` 
 
-Try it
+#### Validate
+
+Generated functions should check if values in model can be stored in database, and not intended to implement application logic
+
+Run generator
+
+`genna search -c postgres://user:password@localhost:5432/yourdb -o ~/output/validate.go -t public.* -f`
+
+You should get following search on model package:
+
+```go
+//lint:file-ignore U1000 ignore unused code, it's generated
+package model
+
+import (
+	"unicode/utf8"
+)
+
+const (
+	ErrEmptyValue = "empty"
+	ErrMaxLength  = "len"
+	ErrWrongValue = "value"
+)
+
+func (m Project) Validate() (errors map[string]string, valid bool) {
+	errors = map[string]string{}
+
+	if utf8.RuneCountInString(m.Name) > 64 {
+		errors[Columns.Project.Name] = ErrMaxLength
+	}
+
+	return errors, len(errors) == 0
+}
+
+func (m User) Validate() (errors map[string]string, valid bool) {
+	errors = map[string]string{}
+
+	if m.CountryID != nil && *m.CountryID == 0 {
+		errors[Columns.User.CountryID] = ErrEmptyValue
+	}
+
+	if utf8.RuneCountInString(m.Email) > 64 {
+		errors[Columns.User.Email] = ErrMaxLength
+	}
+
+	if m.Name != nil && utf8.RuneCountInString(*m.Name) > 128 {
+		errors[Columns.User.Name] = ErrMaxLength
+	}
+
+	return errors, len(errors) == 0
+}
+
+func (m GeoCountry) Validate() (errors map[string]string, valid bool) {
+	errors = map[string]string{}
+
+	if utf8.RuneCountInString(m.Code) > 3 {
+		errors[Columns.GeoCountry.Code] = ErrMaxLength
+	}
+
+	return errors, len(errors) == 0
+}
+```
+
+### Try
 
 ```go
 package model
@@ -316,80 +447,4 @@ func TestModel(t *testing.T) {
 }
 
 ```
-
-#### Validation
-
-Genna can generate simple validation functions for models with `--validator` flag. This function should check if values in model can be stored in database, and not intended to implement application logic
-
-```sql
-create type "enumvals" as enum ('one', 'two', 'three');
-
-create table "example"
-(
-    "foreignKey"    int
-        constraint "validationTest_userId_fkey"
-            references users
-            on update restrict on delete restrict,
-
-    "notNullJSON"   jsonb    not null,
-    "notNullHStore" hstore   not null,
-    "enum"          enumvals not null,
-    "limitedString" varchar(12)
-)
-```
-
-```go
-//lint:file-ignore U1000 ignore unused code, it's generated
-package model
-
-import (
-	"unicode/utf8"
-)
-
-const (
-	ErrEmptyValue = "empty"
-	ErrMaxLength  = "len"
-	ErrWrongValue = "value"
-)
-
-// ... Columns & Tables //
-
-type Example struct {
-	tableName struct{} `sql:"example,alias:t" pg:",discard_unknown_columns"`
-
-	Enum          string                 `sql:"enum,notnull"`
-	ForeignKey    *int                   `sql:"foreignKey"`
-	LimitedString *string                `sql:"limitedString"`
-	NotNullHStore map[string]string      `sql:"notNullHStore,hstore,notnull"`
-	NotNullJSON   map[string]interface{} `sql:"notNullJSON,notnull"`
-}
-
-func (m Example) Validate() (errors map[string]string, valid bool) {
-	errors = map[string]string{}
-
-	switch m.Enum {
-	case "one", "two", "three":
-	default:
-		errors[Columns.Example.Enum] = ErrWrongValue
-	}
-
-	if m.ForeignKey != nil && *m.ForeignKey == 0 {
-		errors[Columns.Example.ForeignKey] = ErrEmptyValue
-	}
-
-	if m.LimitedString != nil && utf8.RuneCountInString(*m.LimitedString) > 12 {
-		errors[Columns.Example.LimitedString] = ErrMaxLength
-	}
-
-	if m.NotNullHStore == nil {
-		errors[Columns.Example.NotNullHStore] = ErrEmptyValue
-	}
-
-	if m.NotNullJSON == nil {
-		errors[Columns.Example.NotNullJSON] = ErrEmptyValue
-	}
-
-	return errors, len(errors) == 0
-}
-```  
  
