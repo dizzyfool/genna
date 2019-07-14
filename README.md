@@ -267,7 +267,8 @@ func TestModel(t *testing.T) {
 	}
 
 	// selecting
-	toSelect := []GeoCountry{}
+	var toSelect []GeoCountry
+	
 	if err := db.Model(&toSelect).Select(); err != nil {
 		panic(err)
 	}

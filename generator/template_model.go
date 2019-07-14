@@ -12,13 +12,13 @@ const (
 	ErrWrongValue = "value"
 ){{end}}
 
-var Columns = struct { {{range .Models}}
+var Columns = struct { {{range .Entities}}
 	{{.StructName}} struct{ 
 		{{range $i, $e := .Columns}}{{if $i}}, {{end}}{{.FieldName}}{{end}} string{{if .HasRelations}}
 
 		{{range $i, $e := .Relations}}{{if $i}}, {{end}}{{.FieldName}}{{end}} string{{end}}
 	}{{end}}
-}{ {{range .Models}}
+}{ {{range .Entities}}
 	{{.StructName}}: struct { 
 		{{range $i, $e := .Columns}}{{if $i}}, {{end}}{{.FieldName}}{{end}} string{{if .HasRelations}}
 
@@ -30,11 +30,11 @@ var Columns = struct { {{range .Models}}
 	},{{end}}
 }
 
-var Tables = struct { {{range .Models}}
+var Tables = struct { {{range .Entities}}
 	{{.StructName}} struct {
 		Name{{if .WithAlias}}, Alias{{end}} string
 	}{{end}}
-}{ {{range .Models}}
+}{ {{range .Entities}}
 	{{.StructName}}: struct {
 		Name{{if .WithAlias}}, Alias{{end}} string
 	}{ 
@@ -42,7 +42,7 @@ var Tables = struct { {{range .Models}}
 		Alias: "{{.TableAlias}}",{{end}}
 	},{{end}}
 }
-{{range $model := .Models}}
+{{range $model := .Entities}}
 type {{.StructName}} struct {
 	tableName struct{} {{.StructTag}}
 	{{range .Columns}}

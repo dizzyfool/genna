@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -10,6 +11,9 @@ const (
 
 	// DefaultPackage is a default package name
 	DefaultPackage = "model"
+
+	// DefaultAlias is a default alias for model
+	DefaultAlias = "t"
 )
 
 // Split splits full table name in schema and table name
@@ -25,6 +29,34 @@ func Split(s string) (string, string) {
 // Join joins table name and schema to full name
 func Join(schema, table string) string {
 	return schema + "." + table
+}
+
+// Join joins table name and schema to full name filtering public
+func JoinF(schema, table string) string {
+	if schema == PublicSchema {
+		return table
+	}
+
+	return Join(schema, table)
+}
+
+// Quoted quotes entity name if needed
+func Quoted(fullName string, escape bool) string {
+	if !HasUpper(fullName) {
+		return fullName
+	}
+
+	pattern := `"%s"`
+	if escape {
+		pattern = `\"%s\"`
+	}
+
+	d := strings.Split(fullName, ".")
+	if len(d) < 2 {
+		return fmt.Sprintf(pattern, fullName)
+	}
+
+	return Join(fmt.Sprintf(pattern, d[0]), fmt.Sprintf(pattern, d[1]))
 }
 
 // Schemas get schemas from table names

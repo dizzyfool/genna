@@ -289,11 +289,11 @@ func Test_column_Column(t *testing.T) {
 func Test_store_Tables(t *testing.T) {
 	store, err := prepareStore()
 	if err != nil {
-		t.Errorf("prepare store error = %v", err)
+		t.Errorf("prepare Store error = %v", err)
 		return
 	}
 
-	t.Run("Should get all tables from test db", func(t *testing.T) {
+	t.Run("Should get all tables from test DB", func(t *testing.T) {
 		tables, err := store.Tables([]string{"public.*", "geo.*"})
 		if err != nil {
 			t.Errorf("get tables error = %v", err)
@@ -301,12 +301,12 @@ func Test_store_Tables(t *testing.T) {
 		}
 
 		if ln := len(tables); ln != 3 {
-			t.Errorf("len(store.Tables()) = %v, want %v", ln, 3)
+			t.Errorf("len(Store.Tables()) = %v, want %v", ln, 3)
 			return
 		}
 	})
 
-	t.Run("Should get specific table from test db", func(t *testing.T) {
+	t.Run("Should get specific table from test DB", func(t *testing.T) {
 		tables, err := store.Tables([]string{"public.users"})
 		if err != nil {
 			t.Errorf("get tables error = %v", err)
@@ -314,12 +314,12 @@ func Test_store_Tables(t *testing.T) {
 		}
 
 		if ln := len(tables); ln != 1 {
-			t.Errorf("len(store.Tables()) = %v, want %v", ln, 1)
+			t.Errorf("len(Store.Tables()) = %v, want %v", ln, 1)
 			return
 		}
 	})
 
-	t.Run("Should get specific & geo tables from test db", func(t *testing.T) {
+	t.Run("Should get specific & geo tables from test DB", func(t *testing.T) {
 		tables, err := store.Tables([]string{"public.users", "geo.*"})
 		if err != nil {
 			t.Errorf("get tables error = %v", err)
@@ -327,7 +327,7 @@ func Test_store_Tables(t *testing.T) {
 		}
 
 		if ln := len(tables); ln != 2 {
-			t.Errorf("len(store.Tables()) = %v, want %v", ln, 2)
+			t.Errorf("len(Store.Tables()) = %v, want %v", ln, 2)
 			return
 		}
 	})
@@ -336,11 +336,11 @@ func Test_store_Tables(t *testing.T) {
 func Test_store_Relations(t *testing.T) {
 	store, err := prepareStore()
 	if err != nil {
-		t.Errorf("prepare store error = %v", err)
+		t.Errorf("prepare Store error = %v", err)
 		return
 	}
 
-	t.Run("Should get all relations from test db", func(t *testing.T) {
+	t.Run("Should get all relations from test DB", func(t *testing.T) {
 		tables, err := store.Tables([]string{"public.*"})
 		if err != nil {
 			t.Errorf("get tables error = %v", err)
@@ -354,7 +354,7 @@ func Test_store_Relations(t *testing.T) {
 		}
 
 		if ln := len(relations); ln != 1 {
-			t.Errorf("len(store.Relations()) = %v, want %v", ln, 1)
+			t.Errorf("len(Store.Relations()) = %v, want %v", ln, 1)
 			return
 		}
 	})
@@ -363,11 +363,11 @@ func Test_store_Relations(t *testing.T) {
 func Test_store_Columns(t *testing.T) {
 	store, err := prepareStore()
 	if err != nil {
-		t.Errorf("prepare store error = %v", err)
+		t.Errorf("prepare Store error = %v", err)
 		return
 	}
 
-	t.Run("Should get all columns from test db", func(t *testing.T) {
+	t.Run("Should get all columns from test DB", func(t *testing.T) {
 		tables, err := store.Tables([]string{"public.*"})
 		if err != nil {
 			t.Errorf("get tables error = %v", err)
@@ -381,7 +381,7 @@ func Test_store_Columns(t *testing.T) {
 		}
 
 		if ln := len(columns); ln != 7 {
-			t.Errorf("len(store.Columns()) = %v, want %v", ln, 7)
+			t.Errorf("len(Store.Columns()) = %v, want %v", ln, 7)
 			return
 		}
 	})

@@ -2,9 +2,10 @@ package model_old
 
 import (
 	"fmt"
-	"github.com/dizzyfool/genna/util"
 	"regexp"
 	"strings"
+
+	"github.com/dizzyfool/genna/util"
 )
 
 const (
@@ -68,7 +69,7 @@ func (c Column) StructFieldTag(softDeleteColumn string) string {
 		tags.AddTag("sql", "pk")
 	}
 
-	if c.Type == TypePGHstore {
+	if c.Type == TypeHstore {
 		tags.AddTag("sql", "hstore")
 	} else if c.IsArray {
 		tags.AddTag("sql", "array")
@@ -209,7 +210,7 @@ func (c Column) Validate() error {
 	}
 
 	if c.IsArray {
-		if c.Type == TypePGHstore {
+		if c.Type == TypeHstore {
 			return fmt.Errorf("array of hstores is not supported")
 		}
 

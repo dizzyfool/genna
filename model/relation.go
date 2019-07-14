@@ -8,8 +8,8 @@ import (
 
 // Relation stores relation
 type Relation struct {
-	FKField []string
-	GoName  string
+	FKFields []string
+	GoName   string
 
 	GoType string
 }
@@ -27,8 +27,8 @@ func NewRelation(sourceColumns []string, targetSchema, targetTable string) Relat
 	}
 
 	return Relation{
-		FKField: sourceColumns,
-		GoName:  strings.Join(names, ""),
-		GoType:  typ,
+		FKFields: sourceColumns,
+		GoName:   strings.Join(names, ""),
+		GoType:   typ,
 	}
 }

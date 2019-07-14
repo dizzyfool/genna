@@ -47,7 +47,7 @@ type Searcher interface {
 	Q() applier
 }
 
-{{range $model := .Models}}
+{{range $model := .Entities}}
 type {{.SearchStructName}} struct {
 	search
 

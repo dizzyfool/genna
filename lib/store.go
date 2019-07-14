@@ -1,6 +1,7 @@
 package genna
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/dizzyfool/genna/model"
@@ -62,8 +63,8 @@ type column struct {
 	Values     []string `sql:"enum,array"`
 }
 
-func (c column) Column() model.Column {
-	return model.NewColumn(c.Name, c.Type, c.IsNullable, false, c.IsArray, c.Dimensions, c.IsPK, c.IsFK, c.MaxLen, c.Values)
+func (c column) Column(useSqlNulls bool) model.Column {
+	return model.NewColumn(c.Name, c.Type, c.IsNullable, useSqlNulls, c.IsArray, c.Dimensions, c.IsPK, c.IsFK, c.MaxLen, c.Values)
 }
 
 // Store is database helper
@@ -71,7 +72,7 @@ type store struct {
 	db orm.DB
 }
 
-// NewStore creates store
+// NewStore creates Store
 func newStore(db orm.DB) *store {
 	return &store{db: db}
 }
@@ -250,4 +251,26 @@ func (s store) Columns(tables []table) ([]column, error) {
 	}
 
 	return columns, nil
+}
+
+func Sort(tables []table) []table {
+	sort.Slice(tables, func(i, j int) bool {
+		ti := tables[i]
+		tj := tables[i]
+
+		if ti.Schema == tj.Schema {
+			return ti.Name < tj.Name
+		}
+
+		if ti.Schema == util.PublicSchema {
+			return true
+		}
+		if tj.Schema == util.PublicSchema {
+			return false
+		}
+
+		return util.Join(ti.Schema, ti.Name) < util.Join(tj.Schema, tj.Name)
+	})
+
+	return tables
 }

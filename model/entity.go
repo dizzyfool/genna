@@ -6,9 +6,10 @@ import (
 
 // Entity stores information about table
 type Entity struct {
-	GoName   string
-	PGName   string
-	PGSchema string
+	GoName     string
+	PGName     string
+	PGSchema   string
+	PGFullName string
 
 	ViewName string
 
@@ -30,9 +31,10 @@ func NewEntity(schema, pgName string, columns []Column, relations []Relation) En
 	}
 
 	entity := Entity{
-		GoName:   goName,
-		PGName:   pgName,
-		PGSchema: schema,
+		GoName:     goName,
+		PGName:     pgName,
+		PGSchema:   schema,
+		PGFullName: util.JoinF(schema, pgName),
 
 		Columns:   []Column{},
 		Relations: []Relation{},

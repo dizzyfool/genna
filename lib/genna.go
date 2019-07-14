@@ -10,50 +10,51 @@ import (
 )
 
 type Genna struct {
-	url    string
-	logger *zap.Logger
+	url string
 
-	db    orm.DB
-	store *store
+	DB    orm.DB
+	Store *store
+
+	Logger *zap.Logger
 }
 
 func New(url string, logger *zap.Logger) Genna {
 	return Genna{
 		url:    url,
-		logger: logger,
+		Logger: logger,
 	}
 }
 
 func (g *Genna) connect() error {
 	var err error
 
-	if g.db == nil {
-		if g.db, err = newDatabase(g.url, g.logger); err != nil {
-			return xerrors.Errorf("unable to connect to db: %w", err)
+	if g.DB == nil {
+		if g.DB, err = newDatabase(g.url, g.Logger); err != nil {
+			return xerrors.Errorf("unable to connect to DB: %w", err)
 		}
 
-		g.store = newStore(g.db)
+		g.Store = newStore(g.DB)
 	}
 
 	return nil
 }
 
-func (g *Genna) Read(selected []string, withFK bool) ([]model.Entity, error) {
+func (g *Genna) Read(selected []string, followFK bool, useSqlNulls bool) ([]model.Entity, error) {
 	if err := g.connect(); err != nil {
 		return nil, err
 	}
 
-	tables, err := g.store.Tables(selected)
+	tables, err := g.Store.Tables(selected)
 	if err != nil {
 		return nil, err
 	}
 
-	relations, err := g.store.Relations(tables)
+	relations, err := g.Store.Relations(tables)
 	if err != nil {
 		return nil, err
 	}
 
-	if withFK {
+	if followFK {
 		set := util.NewSet()
 		for _, t := range tables {
 			set.Add(util.Join(t.Schema, t.Name))
@@ -67,7 +68,9 @@ func (g *Genna) Read(selected []string, withFK bool) ([]model.Entity, error) {
 		}
 	}
 
-	columns, err := g.store.Columns(tables)
+	tables = Sort(tables)
+
+	columns, err := g.Store.Columns(tables)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +84,7 @@ func (g *Genna) Read(selected []string, withFK bool) ([]model.Entity, error) {
 
 	for _, c := range columns {
 		if i, ok := index[util.Join(c.Schema, c.Table)]; ok {
-			entities[i].AddColumn(c.Column())
+			entities[i].AddColumn(c.Column(useSqlNulls))
 		}
 	}
 
