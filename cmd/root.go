@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"github.com/dizzyfool/genna/generators/validate"
 	"os"
 
 	"github.com/dizzyfool/genna/generators/base"
 	"github.com/dizzyfool/genna/generators/search"
+	"github.com/dizzyfool/genna/generators/validate"
 
 	"github.com/spf13/cobra"
 )
@@ -36,7 +36,7 @@ func Execute() {
 
 func init() {
 	root.AddCommand(
-		base.Command(),
+		base.Command("base", "Basic go-pg model generator"),
 		search.Command(),
 		validate.Command(),
 	)

@@ -23,6 +23,8 @@ func New(url string, logger *zap.Logger) Generator {
 }
 
 func (g Generator) Generate(options Options) error {
+	options.def()
+
 	entities, err := g.Read(options.Tables, options.FollowFKs, false)
 	if err != nil {
 		return xerrors.Errorf("read database error: %w", err)

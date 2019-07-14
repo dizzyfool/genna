@@ -25,10 +25,10 @@ const (
 	validator    = "validator"
 )
 
-func Command() *cobra.Command {
+func Command(name, description string) *cobra.Command {
 	command := &cobra.Command{
-		Use:   "base",
-		Short: "Basic go-pg model generator",
+		Use:   name,
+		Short: description,
 		Long:  "",
 		Run:   Run,
 		FParseErrWhitelist: cobra.FParseErrWhitelist{

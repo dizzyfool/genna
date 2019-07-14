@@ -3,7 +3,7 @@ package base
 import (
 	"strings"
 
-	"github.com/dizzyfool/genna/model_old"
+	"github.com/dizzyfool/genna/util"
 )
 
 // Options for generator
@@ -43,7 +43,7 @@ type Options struct {
 // def fills default values of an options
 func (o *Options) def() {
 	if strings.Trim(o.Package, " ") == "" {
-		o.Package = model_old.DefaultPackage
+		o.Package = util.DefaultPackage
 	}
 
 	if len(o.Tables) == 0 {
