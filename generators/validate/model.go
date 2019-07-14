@@ -34,12 +34,12 @@ func NewTemplatePackage(entities []model.Entity, options Options) TemplatePackag
 
 	var models []TemplateEntity
 	for i, entity := range entities {
-		model := NewTemplateEntity(entity, options)
-		if len(model.Columns) == 0 {
+		mdl := NewTemplateEntity(entity, options)
+		if len(mdl.Columns) == 0 {
 			continue
 		}
 
-		models = append(models, model)
+		models = append(models, mdl)
 		for _, imp := range models[i].Imports {
 			imports.Add(imp)
 		}
@@ -98,7 +98,7 @@ type TemplateColumn struct {
 	Import string
 }
 
-func NewTemplateColumn(column model.Column, options Options) TemplateColumn {
+func NewTemplateColumn(column model.Column, _ Options) TemplateColumn {
 	tmpl := TemplateColumn{
 		Column: column,
 

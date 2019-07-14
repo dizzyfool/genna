@@ -7,8 +7,6 @@ import (
 )
 
 const (
-	// Unknown represents unknown type
-	Unknown = "unknown"
 	// TypePGInt2 is a postgres type
 	TypePGInt2 = "int2"
 	// TypePGInt4 is a postgres type
