@@ -1,7 +1,4 @@
-.PHONY: vendor lint
-
-vendor:
-	@GO111MODULE=on go mod vendor
+.PHONY: lint
 
 lint:
 	@golangci-lint run ./...

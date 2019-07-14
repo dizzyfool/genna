@@ -24,13 +24,12 @@ type Column struct {
 
 	Import string
 
-	MaxVal int
-	MinVal int
+	MaxLen int
 	Values []string
 }
 
 // NewColumn creates Column from pg info
-func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dims int, pk, fk bool, max, min int, values []string) Column {
+func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dims int, pk, fk bool, len int, values []string) Column {
 	var err error
 
 	array, dims = fixIsArray(pgType, array, dims)
@@ -43,8 +42,7 @@ func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dim
 		Dimensions: dims,
 		IsPK:       pk,
 		IsFK:       fk,
-		MaxVal:     max,
-		MinVal:     min,
+		MaxLen:     len,
 		Values:     values,
 	}
 
