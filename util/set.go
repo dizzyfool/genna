@@ -32,3 +32,7 @@ func (s *Set) Exists(element string) bool {
 func (s *Set) Elements() []string {
 	return s.elements
 }
+
+func (s *Set) Len() int {
+	return len(s.elements)
+}

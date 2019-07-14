@@ -1,10 +1,12 @@
 package base
 
 import (
+	"os"
+
 	"github.com/dizzyfool/genna/util"
+
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
-	"os"
 )
 
 const (

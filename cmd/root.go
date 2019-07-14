@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/dizzyfool/genna/generators/base"
+	"github.com/dizzyfool/genna/generators/search"
 
 	"github.com/spf13/cobra"
 )
@@ -32,5 +33,6 @@ func Execute() {
 func init() {
 	root.AddCommand(
 		base.Command(),
+		search.Command(),
 	)
 }

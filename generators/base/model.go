@@ -2,11 +2,11 @@ package base
 
 import (
 	"fmt"
-	"github.com/dizzyfool/genna/util"
 	"html/template"
 	"strings"
 
 	"github.com/dizzyfool/genna/model"
+	"github.com/dizzyfool/genna/util"
 )
 
 // Stores package info
