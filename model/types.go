@@ -80,10 +80,10 @@ const (
 	TypeMapInterface = "map[string]interface{}"
 	// TypeMapString is a go type
 	TypeMapString = "map[string]string"
-	// TypeIp is a go type
-	TypeIp = "net.IP"
-	// TypeIpNet is a go type
-	TypeIpNet = "net.IPNet"
+	// TypeIP is a go type
+	TypeIP = "net.IP"
+	// TypeIPNet is a go type
+	TypeIPNet = "net.IPNet"
 
 	// TypeInterface is a go type
 	TypeInterface = "interface{}"
@@ -123,9 +123,9 @@ func goType(pgType string) (string, error) {
 	case TypePGHstore:
 		return TypeMapString, nil
 	case TypePGInet:
-		return TypeIp, nil
+		return TypeIP, nil
 	case TypePGCidr:
-		return TypeIpNet, nil
+		return TypeIPNet, nil
 	}
 
 	return "", xerrors.Errorf("unsupported type: %s", pgType)
@@ -152,9 +152,9 @@ func goSlice(pgType string, dimensions int) (string, error) {
 }
 
 // goNullable generates all go types from pg type with pointer
-func goNullable(pgType string, useSqlNull bool) (string, error) {
+func goNullable(pgType string, useSQLNull bool) (string, error) {
 	// avoiding pointers with sql.Null... types
-	if useSqlNull {
+	if useSQLNull {
 		switch pgType {
 		case TypePGInt2, TypePGInt4, TypePGInt8:
 			return "sql.NullInt64", nil
@@ -184,8 +184,8 @@ func goNullable(pgType string, useSqlNull bool) (string, error) {
 }
 
 // goImport generates import from go type
-func goImport(pgType string, nullable, useSqlNull bool) string {
-	if nullable && useSqlNull {
+func goImport(pgType string, nullable, useSQLNull bool) string {
+	if nullable && useSQLNull {
 		switch pgType {
 		case TypePGInt2, TypePGInt4, TypePGInt8,
 			TypePGNumeric, TypePGFloat4, TypePGFloat8,

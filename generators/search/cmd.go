@@ -17,6 +17,7 @@ const (
 	relaxed = "relaxed"
 )
 
+// Command gets generator cli command
 func Command() *cobra.Command {
 	command := &cobra.Command{
 		Use:   "search",
@@ -32,6 +33,7 @@ func Command() *cobra.Command {
 	return command
 }
 
+// Run is callback for command
 func Run(cmd *cobra.Command, _ []string) {
 	config := zap.NewProductionConfig()
 	config.OutputPaths = []string{"stdout"}
@@ -63,6 +65,7 @@ func Run(cmd *cobra.Command, _ []string) {
 	}
 }
 
+// AddFlags adds flags to command
 func AddFlags(command *cobra.Command) {
 	base.AddBaseFlags(command)
 
@@ -78,6 +81,7 @@ func AddFlags(command *cobra.Command) {
 	flags.Bool(relaxed, false, "use interface{} type in search filters\n")
 }
 
+// ReadFlags reads flags from user input
 func ReadFlags(command *cobra.Command) (conn string, options Options, err error) {
 	conn, options.Output, options.Tables, options.FollowFKs, err = base.ReadBaseFlags(command)
 	if err != nil {

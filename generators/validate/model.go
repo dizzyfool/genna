@@ -9,16 +9,23 @@ import (
 )
 
 const (
-	Nil   = "nil"
-	Zero  = "zero"
+	// Nil is nil check types
+	Nil = "nil"
+	// Zero is 0 check types
+	Zero = "zero"
+	// PZero is 0 check types for pointers
 	PZero = "pzero"
-	Len   = "len"
-	PLen  = "plen"
-	Enum  = "enum"
+	// Len is length check types
+	Len = "len"
+	// PLen is length check types for pointers
+	PLen = "plen"
+	// Enum is allowed values check types
+	Enum = "enum"
+	// PEnum is allowed values check types for pointers
 	PEnum = "penum"
 )
 
-// Stores package info
+// TemplatePackage stores package info
 type TemplatePackage struct {
 	Package string
 
@@ -28,7 +35,7 @@ type TemplatePackage struct {
 	Entities []TemplateEntity
 }
 
-// newMultiPackage creates a package with multiple models
+// NewTemplatePackage creates a package for template
 func NewTemplatePackage(entities []model.Entity, options Options) TemplatePackage {
 	imports := util.NewSet()
 
@@ -55,7 +62,7 @@ func NewTemplatePackage(entities []model.Entity, options Options) TemplatePackag
 	}
 }
 
-// stores struct info
+// TemplateEntity stores struct info
 type TemplateEntity struct {
 	model.Entity
 
@@ -63,6 +70,7 @@ type TemplateEntity struct {
 	Imports []string
 }
 
+// NewTemplateEntity creates an entity for template
 func NewTemplateEntity(entity model.Entity, options Options) TemplateEntity {
 	imports := util.NewSet()
 
@@ -88,7 +96,7 @@ func NewTemplateEntity(entity model.Entity, options Options) TemplateEntity {
 	}
 }
 
-// stores column info
+// TemplateColumn stores column info
 type TemplateColumn struct {
 	model.Column
 
@@ -98,6 +106,7 @@ type TemplateColumn struct {
 	Import string
 }
 
+// NewTemplateColumn creates a column for template
 func NewTemplateColumn(column model.Column, _ Options) TemplateColumn {
 	tmpl := TemplateColumn{
 		Column: column,
@@ -116,7 +125,7 @@ func NewTemplateColumn(column model.Column, _ Options) TemplateColumn {
 	return tmpl
 }
 
-// IsValidatable checks if field can be validated
+// isValidatable checks if field can be validated
 func isValidatable(c model.Column) bool {
 	// validate FK
 	if c.IsFK {
@@ -141,7 +150,7 @@ func isValidatable(c model.Column) bool {
 	return false
 }
 
-// ValidationCheck return check type for validation
+// check return check type for validation
 func check(c model.Column) string {
 	if !isValidatable(c) {
 		return ""

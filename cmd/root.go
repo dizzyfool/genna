@@ -28,6 +28,7 @@ to quickly create a models for go-pg https://github.com/go-pg/pg`,
 	},
 }
 
+// Execute runs root cmd
 func Execute() {
 	if err := root.Execute(); err != nil {
 		os.Exit(1)

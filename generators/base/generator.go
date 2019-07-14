@@ -12,20 +12,23 @@ import (
 	"golang.org/x/xerrors"
 )
 
+// Generator represents basic generator
 type Generator struct {
 	genna.Genna
 }
 
+// New creates basic generator
 func New(url string, logger *zap.Logger) Generator {
 	return Generator{
 		Genna: genna.New(url, logger),
 	}
 }
 
+// Generate runs whole generation process
 func (g Generator) Generate(options Options) error {
 	options.def()
 
-	entities, err := g.Read(options.Tables, options.FollowFKs, options.UseSqlNulls)
+	entities, err := g.Read(options.Tables, options.FollowFKs, options.UseSQLNulls)
 	if err != nil {
 		return xerrors.Errorf("read database error: %w", err)
 	}

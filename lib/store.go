@@ -63,8 +63,8 @@ type column struct {
 	Values     []string `sql:"enum,array"`
 }
 
-func (c column) Column(useSqlNulls bool) model.Column {
-	return model.NewColumn(c.Name, c.Type, c.IsNullable, useSqlNulls, c.IsArray, c.Dimensions, c.IsPK, c.IsFK, c.MaxLen, c.Values)
+func (c column) Column(useSQLNulls bool) model.Column {
+	return model.NewColumn(c.Name, c.Type, c.IsNullable, useSQLNulls, c.IsArray, c.Dimensions, c.IsPK, c.IsFK, c.MaxLen, c.Values)
 }
 
 // Store is database helper
@@ -253,6 +253,7 @@ func (s store) Columns(tables []table) ([]column, error) {
 	return columns, nil
 }
 
+// Sort sorts table by schema and name (public tables always first)
 func Sort(tables []table) []table {
 	sort.Slice(tables, func(i, j int) bool {
 		ti := tables[i]

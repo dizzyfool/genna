@@ -12,16 +12,19 @@ import (
 	"golang.org/x/xerrors"
 )
 
+// Generator represents validate generator
 type Generator struct {
 	genna.Genna
 }
 
+// New creates generator
 func New(url string, logger *zap.Logger) Generator {
 	return Generator{
 		Genna: genna.New(url, logger),
 	}
 }
 
+// Generate runs whole generation process
 func (g Generator) Generate(options Options) error {
 	options.def()
 

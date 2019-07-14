@@ -7,6 +7,8 @@ import (
 	"path"
 )
 
+// FmtAndSave formats go code and saves file
+// if formatting failed it still saves file but return error also
 func FmtAndSave(unformatted []byte, filename string) (bool, error) {
 	// formatting by go-fmt
 	content, fmtErr := format.Source(unformatted)
@@ -15,7 +17,7 @@ func FmtAndSave(unformatted []byte, filename string) (bool, error) {
 		content = unformatted
 	}
 
-	file, err := File(filename)
+	file, err := file(filename)
 	if err != nil {
 		return false, xerrors.Errorf("open model file error: %w", err)
 	}
@@ -27,7 +29,7 @@ func FmtAndSave(unformatted []byte, filename string) (bool, error) {
 	return true, fmtErr
 }
 
-func File(filename string) (*os.File, error) {
+func file(filename string) (*os.File, error) {
 	directory := path.Dir(filename)
 
 	if err := os.MkdirAll(directory, os.ModePerm); err != nil {

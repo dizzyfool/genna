@@ -75,12 +75,12 @@ func Test_goType(t *testing.T) {
 		{
 			name:    "Should get netIP",
 			pgTypes: []string{TypePGInet},
-			want:    TypeIp,
+			want:    TypeIP,
 		},
 		{
 			name:    "Should get netIPNet",
 			pgTypes: []string{TypePGCidr},
-			want:    TypeIpNet,
+			want:    TypeIPNet,
 		},
 	}
 	for _, tt := range tests {

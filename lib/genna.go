@@ -9,6 +9,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
+// Genna is  struct should be embedded to custom generator when genna used as library
 type Genna struct {
 	url string
 
@@ -18,6 +19,7 @@ type Genna struct {
 	Logger *zap.Logger
 }
 
+// New creates Genna
 func New(url string, logger *zap.Logger) Genna {
 	return Genna{
 		url:    url,
@@ -39,7 +41,8 @@ func (g *Genna) connect() error {
 	return nil
 }
 
-func (g *Genna) Read(selected []string, followFK bool, useSqlNulls bool) ([]model.Entity, error) {
+// Read reads database and gets entities with columns and relations
+func (g *Genna) Read(selected []string, followFK bool, useSQLNulls bool) ([]model.Entity, error) {
 	if err := g.connect(); err != nil {
 		return nil, err
 	}
@@ -84,7 +87,7 @@ func (g *Genna) Read(selected []string, followFK bool, useSqlNulls bool) ([]mode
 
 	for _, c := range columns {
 		if i, ok := index[util.Join(c.Schema, c.Table)]; ok {
-			entities[i].AddColumn(c.Column(useSqlNulls))
+			entities[i].AddColumn(c.Column(useSQLNulls))
 		}
 	}
 

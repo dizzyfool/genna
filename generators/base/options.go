@@ -31,7 +31,7 @@ type Options struct {
 	SoftDelete string
 
 	// use sql.Null... instead of pointers
-	UseSqlNulls bool
+	UseSQLNulls bool
 
 	// Do not generate alias tag
 	NoAlias bool

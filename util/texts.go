@@ -9,8 +9,11 @@ import (
 )
 
 const (
-	Id  = "Id"
-	ID  = "ID"
+	// Id is camelCased Id
+	Id = "Id"
+	// ID is golang ID
+	ID = "ID"
+	// Rel if suffix for Relation
 	Rel = "Rel"
 )
 

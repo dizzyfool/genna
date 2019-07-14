@@ -10,9 +10,16 @@ import (
 )
 
 const (
-	Conn      = "conn"
-	Output    = "output"
-	Tables    = "tables"
+	// Conn is connection string (-c) basic flag
+	Conn = "conn"
+
+	// Output is output filename (-o) basic flag
+	Output = "output"
+
+	// Tables is basic flag (-t) for tables to generate
+	Tables = "tables"
+
+	// FollowFKs is basic flag (-f) for generate foreign keys models for selected tables
 	FollowFKs = "follow-fk"
 
 	pkg          = "pkg"
@@ -25,6 +32,7 @@ const (
 	validator    = "validator"
 )
 
+// Command gets generator cli command
 func Command(name, description string) *cobra.Command {
 	command := &cobra.Command{
 		Use:   name,
@@ -40,6 +48,7 @@ func Command(name, description string) *cobra.Command {
 	return command
 }
 
+// Run is callback for command
 func Run(cmd *cobra.Command, _ []string) {
 	config := zap.NewProductionConfig()
 	config.OutputPaths = []string{"stdout"}
@@ -71,6 +80,7 @@ func Run(cmd *cobra.Command, _ []string) {
 	}
 }
 
+// AddFlags adds flags to command
 func AddFlags(command *cobra.Command) {
 	AddBaseFlags(command)
 
@@ -91,6 +101,7 @@ func AddFlags(command *cobra.Command) {
 	flags.Bool(validator, false, "generate validator functions")
 }
 
+// AddBaseFlags adds basic flags to command
 func AddBaseFlags(command *cobra.Command) {
 	flags := command.Flags()
 
@@ -110,6 +121,7 @@ func AddBaseFlags(command *cobra.Command) {
 	return
 }
 
+// ReadFlags reads flags from user input
 func ReadFlags(command *cobra.Command) (conn string, options Options, err error) {
 	conn, options.Output, options.Tables, options.FollowFKs, err = ReadBaseFlags(command)
 	if err != nil {
@@ -141,6 +153,7 @@ func ReadFlags(command *cobra.Command) (conn string, options Options, err error)
 	return
 }
 
+// ReadBaseFlags reads basic flags from user input
 func ReadBaseFlags(command *cobra.Command) (conn, output string, tables []string, followFKs bool, err error) {
 	flags := command.Flags()
 

@@ -9,7 +9,7 @@ import (
 	"github.com/dizzyfool/genna/util"
 )
 
-// Stores package info
+// TemplatePackage stores package info
 type TemplatePackage struct {
 	Package string
 
@@ -19,7 +19,7 @@ type TemplatePackage struct {
 	Entities []TemplateEntity
 }
 
-// newMultiPackage creates a package with multiple models
+// NewTemplatePackage creates a package for template
 func NewTemplatePackage(entities []model.Entity, options Options) TemplatePackage {
 	imports := util.NewSet()
 
@@ -42,7 +42,7 @@ func NewTemplatePackage(entities []model.Entity, options Options) TemplatePackag
 	}
 }
 
-// stores struct info
+// TemplateEntity stores struct info
 type TemplateEntity struct {
 	model.Entity
 
@@ -57,6 +57,7 @@ type TemplateEntity struct {
 	Relations    []TemplateRelation
 }
 
+// NewTemplateEntity creates an entity for template
 func NewTemplateEntity(entity model.Entity, options Options) TemplateEntity {
 	if entity.HasMultiplePKs() {
 		options.KeepPK = true
@@ -97,7 +98,7 @@ func NewTemplateEntity(entity model.Entity, options Options) TemplateEntity {
 	}
 }
 
-// stores column info
+// TemplateColumn stores column info
 type TemplateColumn struct {
 	model.Column
 
@@ -105,6 +106,7 @@ type TemplateColumn struct {
 	Comment template.HTML
 }
 
+// NewTemplateColumn creates a column for template
 func NewTemplateColumn(column model.Column, options Options) TemplateColumn {
 	if !options.KeepPK && column.IsPK {
 		column.GoName = util.ID
@@ -145,7 +147,7 @@ func NewTemplateColumn(column model.Column, options Options) TemplateColumn {
 	}
 }
 
-// stores relation info
+// TemplateRelation stores relation info
 type TemplateRelation struct {
 	model.Relation
 
@@ -153,6 +155,7 @@ type TemplateRelation struct {
 	Comment template.HTML
 }
 
+// NewTemplateRelation creates relation for template
 func NewTemplateRelation(relation model.Relation) TemplateRelation {
 	comment := ""
 	tags := util.NewAnnotation().AddTag("pg", "fk:"+strings.Join(relation.FKFields, ","))
