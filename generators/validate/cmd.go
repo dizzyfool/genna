@@ -1,4 +1,4 @@
-package search
+package validate
 
 import (
 	"os"
@@ -11,16 +11,13 @@ import (
 )
 
 const (
-	pkg     = "pkg"
-	keepPK  = "keep-pk"
-	noAlias = "no-alias"
-	relaxed = "relaxed"
+	pkg = "pkg"
 )
 
 func Command() *cobra.Command {
 	command := &cobra.Command{
-		Use:   "search",
-		Short: "Search generator for go-pg model",
+		Use:   "validate",
+		Short: "Validation generator for go-pg models",
 		Long:  "",
 		Run:   Run,
 		FParseErrWhitelist: cobra.FParseErrWhitelist{
@@ -70,12 +67,6 @@ func AddFlags(command *cobra.Command) {
 	flags.SortFlags = false
 
 	flags.StringP(pkg, "p", util.DefaultPackage, "package for model files")
-
-	flags.Bool(keepPK, false, "keep primary key name as is (by default it should be converted to 'ID')")
-
-	flags.Bool(noAlias, false, `do not set 'alias' tag to "t"`)
-
-	flags.Bool(relaxed, false, "use interface{} type in search filters\n")
 }
 
 func ReadFlags(command *cobra.Command) (conn string, options Options, err error) {
@@ -87,18 +78,6 @@ func ReadFlags(command *cobra.Command) (conn string, options Options, err error)
 	flags := command.Flags()
 
 	if options.Package, err = flags.GetString(pkg); err != nil {
-		return
-	}
-
-	if options.KeepPK, err = flags.GetBool(keepPK); err != nil {
-		return
-	}
-
-	if options.NoAlias, err = flags.GetBool(noAlias); err != nil {
-		return
-	}
-
-	if options.Relaxed, err = flags.GetBool(relaxed); err != nil {
 		return
 	}
 

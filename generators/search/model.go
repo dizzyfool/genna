@@ -23,8 +23,8 @@ func NewTemplatePackage(entities []model.Entity, options Options) TemplatePackag
 	imports := util.NewSet()
 
 	var models []TemplateEntity
-	for i, table := range entities {
-		model := NewTemplateTable(table, options)
+	for i, entity := range entities {
+		model := NewTemplateEntity(entity, options)
 		if len(model.Columns) == 0 {
 			continue
 		}
@@ -36,7 +36,8 @@ func NewTemplatePackage(entities []model.Entity, options Options) TemplatePackag
 	}
 
 	return TemplatePackage{
-		Package:    options.Package,
+		Package: options.Package,
+
 		HasImports: imports.Len() > 0,
 		Imports:    imports.Elements(),
 
@@ -56,7 +57,7 @@ type TemplateEntity struct {
 	Imports []string
 }
 
-func NewTemplateTable(entity model.Entity, options Options) TemplateEntity {
+func NewTemplateEntity(entity model.Entity, options Options) TemplateEntity {
 	if entity.HasMultiplePKs() {
 		options.KeepPK = true
 	}

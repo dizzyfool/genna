@@ -21,23 +21,22 @@ type TemplatePackage struct {
 
 // newMultiPackage creates a package with multiple models
 func NewTemplatePackage(entities []model.Entity, options Options) TemplatePackage {
-	set := util.NewSet()
+	imports := util.NewSet()
 
 	models := make([]TemplateEntity, len(entities))
-	for i, table := range entities {
-		for _, imp := range table.Imports {
-			set.Add(imp)
+	for i, entity := range entities {
+		for _, imp := range entity.Imports {
+			imports.Add(imp)
 		}
 
-		models[i] = NewTemplateTable(table, options)
+		models[i] = NewTemplateEntity(entity, options)
 	}
 
-	imports := set.Elements()
-
 	return TemplatePackage{
-		Package:    options.Package,
-		HasImports: len(imports) > 0,
-		Imports:    imports,
+		Package: options.Package,
+
+		HasImports: imports.Len() > 0,
+		Imports:    imports.Elements(),
 
 		Entities: models,
 	}
@@ -58,7 +57,7 @@ type TemplateEntity struct {
 	Relations    []TemplateRelation
 }
 
-func NewTemplateTable(entity model.Entity, options Options) TemplateEntity {
+func NewTemplateEntity(entity model.Entity, options Options) TemplateEntity {
 	if entity.HasMultiplePKs() {
 		options.KeepPK = true
 	}

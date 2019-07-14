@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/dizzyfool/genna/generators/validate"
 	"os"
 
 	"github.com/dizzyfool/genna/generators/base"
@@ -22,6 +23,9 @@ to quickly create a models for go-pg https://github.com/go-pg/pg`,
 			os.Exit(0)
 		}
 	},
+	FParseErrWhitelist: cobra.FParseErrWhitelist{
+		UnknownFlags: true,
+	},
 }
 
 func Execute() {
@@ -34,5 +38,6 @@ func init() {
 	root.AddCommand(
 		base.Command(),
 		search.Command(),
+		validate.Command(),
 	)
 }

@@ -31,6 +31,9 @@ func Command() *cobra.Command {
 		Short: "Basic go-pg model generator",
 		Long:  "",
 		Run:   Run,
+		FParseErrWhitelist: cobra.FParseErrWhitelist{
+			UnknownFlags: true,
+		},
 	}
 
 	AddFlags(command)
