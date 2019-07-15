@@ -17,7 +17,7 @@ func FmtAndSave(unformatted []byte, filename string) (bool, error) {
 		content = unformatted
 	}
 
-	file, err := file(filename)
+	file, err := File(filename)
 	if err != nil {
 		return false, xerrors.Errorf("open model file error: %w", err)
 	}
@@ -29,7 +29,8 @@ func FmtAndSave(unformatted []byte, filename string) (bool, error) {
 	return true, fmtErr
 }
 
-func file(filename string) (*os.File, error) {
+// File creates file
+func File(filename string) (*os.File, error) {
 	directory := path.Dir(filename)
 
 	if err := os.MkdirAll(directory, os.ModePerm); err != nil {

@@ -84,6 +84,15 @@ func (e *Entity) AddRelation(relation Relation) {
 	e.colIndex.Add(relation.GoName)
 
 	e.Relations = append(e.Relations, relation)
+
+	// adding relation to column
+	for _, field := range relation.FKFields {
+		for i, column := range e.Columns {
+			if column.PGName == field {
+				e.Columns[i].AddRelation(&relation)
+			}
+		}
+	}
 }
 
 // HasMultiplePKs checks if entity has many primary keys

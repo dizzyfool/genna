@@ -19,8 +19,9 @@ type Column struct {
 	IsArray    bool
 	Dimensions int
 
-	IsPK bool
-	IsFK bool
+	IsPK     bool
+	IsFK     bool
+	Relation *Relation
 
 	Import string
 
@@ -69,4 +70,8 @@ func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dim
 	column.Import = goImport(pgType, nullable, sqlNulls)
 
 	return column
+}
+
+func (c *Column) AddRelation(relation *Relation) {
+	c.Relation = relation
 }
