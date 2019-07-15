@@ -5,7 +5,7 @@ import (
 
 	"github.com/dizzyfool/genna/generators/base"
 	"github.com/dizzyfool/genna/generators/model"
-	"github.com/dizzyfool/genna/generators/model_named"
+	"github.com/dizzyfool/genna/generators/named"
 	"github.com/dizzyfool/genna/generators/search"
 	"github.com/dizzyfool/genna/generators/validate"
 
@@ -44,7 +44,7 @@ func init() {
 		CreateCommand("model", "Basic go-pg model generator", model.New(logger)),
 		CreateCommand("search", "Search generator for go-pg models", search.New(logger)),
 		CreateCommand("validation", "Validation generator for go-pg models", validate.New(logger)),
-		CreateCommand("model-named", "Basic go-pg model generator with named structures", model_named.New(logger)),
+		CreateCommand("model-named", "Basic go-pg model generator with named structures", named.New(logger)),
 	)
 }
 

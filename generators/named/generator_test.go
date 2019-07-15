@@ -1,4 +1,4 @@
-package model_named
+package named
 
 import (
 	"io/ioutil"

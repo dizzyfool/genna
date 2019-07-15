@@ -1,4 +1,4 @@
-package model_named
+package named
 
 import (
 	"github.com/dizzyfool/genna/generators/base"
@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// Generator represents basic named generator
 type Generator struct {
 	*model.Basic
 }

@@ -16,7 +16,7 @@ type Options struct {
 	Package string
 }
 
-// def fills default values of an options
+// Def fills default values of an options
 func (o *Options) Def() {
 	o.Options.Def()
 

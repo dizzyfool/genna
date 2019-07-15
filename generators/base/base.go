@@ -138,7 +138,7 @@ func (g Generator) Generate(tables []string, followFKs, useSQLNulls bool, output
 		g.Logger.Error("formatting file error", zap.Error(err), zap.String("file", output))
 	}
 
-	g.Logger.Info(fmt.Sprintf("succesfully generated %d models\n", len(entities)))
+	g.Logger.Info(fmt.Sprintf("successfully generated %d models\n", len(entities)))
 
 	return nil
 }

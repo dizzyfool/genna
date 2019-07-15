@@ -1,4 +1,4 @@
-package model_named
+package named
 
 const templateModel = `//lint:file-ignore U1000 ignore unused code, it's generated
 package {{.Package}}{{if .HasImports}}
