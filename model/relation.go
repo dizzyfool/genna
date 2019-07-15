@@ -11,6 +11,10 @@ type Relation struct {
 	FKFields []string
 	GoName   string
 
+	TargetPGName     string
+	TargetPGSchema   string
+	TargetPGFullName string
+
 	GoType string
 }
 
@@ -29,6 +33,11 @@ func NewRelation(sourceColumns []string, targetSchema, targetTable string) Relat
 	return Relation{
 		FKFields: sourceColumns,
 		GoName:   strings.Join(names, ""),
-		GoType:   typ,
+
+		TargetPGName:     targetTable,
+		TargetPGSchema:   targetSchema,
+		TargetPGFullName: util.JoinF(targetSchema, targetTable),
+
+		GoType: typ,
 	}
 }
