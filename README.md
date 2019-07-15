@@ -17,7 +17,7 @@ In most of the cases go-pg models represent database's tables and relations. Gen
 1. Read though help `genna -h`
 
 Currently genna support 3 generators:
-- [base](#Basic), that generates basic go-pg model
+- [model](#Model), that generates basic go-pg model
 - [search](#Search), that generates search structs for basic model
 - [validate](#Validate), that generates validate functions for basic model
 
@@ -61,11 +61,11 @@ alter table "users"
             references geo."countries" ("countryId") on update restrict on delete restrict;
 ```
 
-#### Basic
+#### Model
 
 Run generator
 
-`genna base -c postgres://user:password@localhost:5432/yourdb -o ~/output/model.go -t public.* -f`
+`genna model -c postgres://user:password@localhost:5432/yourdb -o ~/output/model.go -t public.* -f`
 
 You should get following models on model package:
 

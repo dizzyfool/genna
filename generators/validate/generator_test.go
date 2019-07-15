@@ -1,7 +1,6 @@
 package validate
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -11,33 +10,25 @@ import (
 	"go.uber.org/zap"
 )
 
-func prepareReq() (url string, logger *zap.Logger) {
+func TestGenerator_Generate(t *testing.T) {
 	config := zap.NewProductionConfig()
 	config.OutputPaths = []string{"stdout"}
 	config.Encoding = "console"
+	logger, _ := config.Build()
 
-	logger, _ = config.Build()
-	url = `postgres://genna:genna@localhost:5432/genna?sslmode=disable`
+	generator := New(logger)
 
-	return
-}
+	generator.options.Def()
+	generator.options.URL = `postgres://genna:genna@localhost:5432/genna?sslmode=disable`
+	generator.options.Output = path.Join(os.TempDir(), "validate_test.go")
+	generator.options.FollowFKs = true
 
-func TestGenerator_Generate(t *testing.T) {
-	generator := New(prepareReq())
-	output := path.Join(os.TempDir(), "base_test.go")
-	fmt.Println(output)
-
-	err := generator.Generate(Options{
-		Output:    output,
-		FollowFKs: true,
-	})
-
-	if err != nil {
+	if err := generator.Generate(); err != nil {
 		t.Errorf("generate error = %v", err)
 		return
 	}
 
-	generated, err := ioutil.ReadFile(output)
+	generated, err := ioutil.ReadFile(generator.options.Output)
 	if err != nil {
 		t.Errorf("file not generated = %v", err)
 	}

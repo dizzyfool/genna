@@ -1,4 +1,4 @@
-package search
+package model
 
 import (
 	"github.com/dizzyfool/genna/generators/base"
@@ -10,32 +10,36 @@ import (
 )
 
 const (
-	pkg     = "pkg"
-	keepPK  = "keep-pk"
-	noAlias = "no-alias"
-	relaxed = "relaxed"
+	pkg          = "pkg"
+	keepPK       = "keep-pk"
+	noDiscard    = "no-discard"
+	noAlias      = "no-alias"
+	withSearch   = "with-search"
+	strictSearch = "strict-search"
+	softDelete   = "soft-delete"
+	validator    = "validator"
 )
 
-// Search represents search generator
-type Search struct {
+// Basic represents basic generator
+type Basic struct {
 	logger  *zap.Logger
 	options Options
 }
 
-// New creates generator
-func New(logger *zap.Logger) *Search {
-	return &Search{
+// New creates basic generator
+func New(logger *zap.Logger) *Basic {
+	return &Basic{
 		logger: logger,
 	}
 }
 
 // Logger gets logger
-func (g *Search) Logger() *zap.Logger {
+func (g *Basic) Logger() *zap.Logger {
 	return g.logger
 }
 
 // AddFlags adds flags to command
-func (g *Search) AddFlags(command *cobra.Command) {
+func (g *Basic) AddFlags(command *cobra.Command) {
 	base.AddFlags(command)
 
 	flags := command.Flags()
@@ -44,14 +48,19 @@ func (g *Search) AddFlags(command *cobra.Command) {
 	flags.StringP(pkg, "p", util.DefaultPackage, "package for model files")
 
 	flags.Bool(keepPK, false, "keep primary key name as is (by default it should be converted to 'ID')")
+	flags.String(softDelete, "", "field for soft_delete tag\n")
 
 	flags.Bool(noAlias, false, `do not set 'alias' tag to "t"`)
+	flags.Bool(noDiscard, false, "do not use 'discard_unknown_columns' tag\n")
 
-	flags.Bool(relaxed, false, "use interface{} type in search filters\n")
+	flags.BoolP(withSearch, "s", false, "generate search filters")
+	flags.Bool(strictSearch, false, "use exact type (with pointer) in search filters\n")
+
+	flags.Bool(validator, false, "generate validator functions")
 }
 
 // ReadFlags read flags from command
-func (g *Search) ReadFlags(command *cobra.Command) error {
+func (g *Basic) ReadFlags(command *cobra.Command) error {
 	var err error
 
 	g.options.URL, g.options.Output, g.options.Tables, g.options.FollowFKs, err = base.ReadFlags(command)
@@ -69,11 +78,15 @@ func (g *Search) ReadFlags(command *cobra.Command) error {
 		return err
 	}
 
-	if g.options.NoAlias, err = flags.GetBool(noAlias); err != nil {
+	if g.options.SoftDelete, err = flags.GetString(softDelete); err != nil {
 		return err
 	}
 
-	if g.options.Relaxed, err = flags.GetBool(relaxed); err != nil {
+	if g.options.NoDiscard, err = flags.GetBool(noDiscard); err != nil {
+		return err
+	}
+
+	if g.options.NoAlias, err = flags.GetBool(noAlias); err != nil {
 		return err
 	}
 
@@ -84,20 +97,20 @@ func (g *Search) ReadFlags(command *cobra.Command) error {
 }
 
 // Generate runs whole generation process
-func (g *Search) Generate() error {
+func (g *Basic) Generate() error {
 	return base.NewGenerator(g.options.URL, g.logger).
 		Generate(
 			g.options.Tables,
 			g.options.FollowFKs,
-			false,
+			g.options.UseSQLNulls,
 			g.options.Output,
-			templateSearch,
+			templateModel,
 			g.Packer(),
 		)
 }
 
 // Packer returns packer function for compile entities into package
-func (g *Search) Packer() base.Packer {
+func (g *Basic) Packer() base.Packer {
 	return func(entities []model.Entity) interface{} {
 		return NewTemplatePackage(entities, g.options)
 	}

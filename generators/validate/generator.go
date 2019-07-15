@@ -1,59 +1,83 @@
 package validate
 
 import (
-	"bytes"
-	"fmt"
-	"html/template"
-
-	"github.com/dizzyfool/genna/lib"
+	"github.com/dizzyfool/genna/generators/base"
+	"github.com/dizzyfool/genna/model"
 	"github.com/dizzyfool/genna/util"
 
+	"github.com/spf13/cobra"
 	"go.uber.org/zap"
-	"golang.org/x/xerrors"
 )
 
-// Generator represents validate generator
-type Generator struct {
-	genna.Genna
+const (
+	pkg = "pkg"
+)
+
+// Validate represents validate generator
+type Validate struct {
+	logger  *zap.Logger
+	options Options
 }
 
 // New creates generator
-func New(url string, logger *zap.Logger) Generator {
-	return Generator{
-		Genna: genna.New(url, logger),
+func New(logger *zap.Logger) *Validate {
+	return &Validate{
+		logger: logger,
 	}
 }
 
-// Generate runs whole generation process
-func (g Generator) Generate(options Options) error {
-	options.def()
+// Logger gets logger
+func (g *Validate) Logger() *zap.Logger {
+	return g.logger
+}
 
-	entities, err := g.Read(options.Tables, options.FollowFKs, false)
+// AddFlags adds flags to command
+func (g *Validate) AddFlags(command *cobra.Command) {
+	base.AddFlags(command)
+
+	flags := command.Flags()
+	flags.SortFlags = false
+
+	flags.StringP(pkg, "p", util.DefaultPackage, "package for model files")
+}
+
+// ReadFlags read flags from command
+func (g *Validate) ReadFlags(command *cobra.Command) error {
+	var err error
+
+	g.options.URL, g.options.Output, g.options.Tables, g.options.FollowFKs, err = base.ReadFlags(command)
 	if err != nil {
-		return xerrors.Errorf("read database error: %w", err)
+		return err
 	}
 
-	parsed, err := template.New("validate").Parse(templateValidate)
-	if err != nil {
-		return xerrors.Errorf("parsing template error: %w", err)
+	flags := command.Flags()
+
+	if g.options.Package, err = flags.GetString(pkg); err != nil {
+		return err
 	}
 
-	pack := NewTemplatePackage(entities, options)
-
-	var buffer bytes.Buffer
-	if err := parsed.ExecuteTemplate(&buffer, "validate", pack); err != nil {
-		return xerrors.Errorf("processing model template error: %w", err)
-	}
-
-	saved, err := util.FmtAndSave(buffer.Bytes(), options.Output)
-	if err != nil {
-		if !saved {
-			return xerrors.Errorf("saving file error: %w", err)
-		}
-		g.Logger.Error("formatting file error", zap.Error(err), zap.String("file", options.Output))
-	}
-
-	g.Logger.Info(fmt.Sprintf("succesfully generated %d models\n", len(entities)))
+	// setting defaults
+	g.options.Def()
 
 	return nil
+}
+
+// Generate runs whole generation process
+func (g *Validate) Generate() error {
+	return base.NewGenerator(g.options.URL, g.logger).
+		Generate(
+			g.options.Tables,
+			g.options.FollowFKs,
+			false,
+			g.options.Output,
+			templateValidate,
+			g.Packer(),
+		)
+}
+
+// Packer returns packer function for compile entities into package
+func (g *Validate) Packer() base.Packer {
+	return func(entities []model.Entity) interface{} {
+		return NewTemplatePackage(entities, g.options)
+	}
 }
