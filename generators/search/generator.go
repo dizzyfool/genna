@@ -43,11 +43,11 @@ func (g *Search) AddFlags(command *cobra.Command) {
 
 	flags.StringP(pkg, "p", util.DefaultPackage, "package for model files")
 
-	flags.Bool(keepPK, false, "keep primary key name as is (by default it should be converted to 'ID')")
+	flags.BoolP(keepPK, "k", false, "keep primary key name as is (by default it should be converted to 'ID')")
 
-	flags.Bool(noAlias, false, `do not set 'alias' tag to "t"`)
+	flags.BoolP(noAlias, "w", false, `do not set 'alias' tag to "t"`)
 
-	flags.Bool(relaxed, false, "use interface{} type in search filters\n")
+	flags.BoolP(relaxed, "r", false, "use interface{} type in search filters\n")
 }
 
 // ReadFlags read flags from command

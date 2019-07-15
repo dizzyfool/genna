@@ -10,14 +10,11 @@ import (
 )
 
 const (
-	pkg          = "pkg"
-	keepPK       = "keep-pk"
-	noDiscard    = "no-discard"
-	noAlias      = "no-alias"
-	withSearch   = "with-search"
-	strictSearch = "strict-search"
-	softDelete   = "soft-delete"
-	validator    = "validator"
+	pkg        = "pkg"
+	keepPK     = "keep-pk"
+	noDiscard  = "no-discard"
+	noAlias    = "no-alias"
+	softDelete = "soft-delete"
 )
 
 // Basic represents basic generator
@@ -47,16 +44,11 @@ func (g *Basic) AddFlags(command *cobra.Command) {
 
 	flags.StringP(pkg, "p", util.DefaultPackage, "package for model files")
 
-	flags.Bool(keepPK, false, "keep primary key name as is (by default it should be converted to 'ID')")
-	flags.String(softDelete, "", "field for soft_delete tag\n")
+	flags.BoolP(keepPK, "k", false, "keep primary key name as is (by default it should be converted to 'ID')")
+	flags.StringP(softDelete, "s", "", "field for soft_delete tag\n")
 
-	flags.Bool(noAlias, false, `do not set 'alias' tag to "t"`)
-	flags.Bool(noDiscard, false, "do not use 'discard_unknown_columns' tag\n")
-
-	flags.BoolP(withSearch, "s", false, "generate search filters")
-	flags.Bool(strictSearch, false, "use exact type (with pointer) in search filters\n")
-
-	flags.Bool(validator, false, "generate validator functions")
+	flags.BoolP(noAlias, "w", false, `do not set 'alias' tag to "t"`)
+	flags.BoolP(noDiscard, "d", false, "do not use 'discard_unknown_columns' tag\n")
 }
 
 // ReadFlags read flags from command
