@@ -44,7 +44,7 @@ func init() {
 		CreateCommand("model", "Basic go-pg model generator", model.New(logger)),
 		CreateCommand("search", "Search generator for go-pg models", search.New(logger)),
 		CreateCommand("validation", "Validation generator for go-pg models", validate.New(logger)),
-		CreateCommand("model-named", "Basic go-pg model generator with named structure", model_named.New(logger)),
+		CreateCommand("model-named", "Basic go-pg model generator with named structures", model_named.New(logger)),
 	)
 }
 
