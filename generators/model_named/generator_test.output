@@ -1,0 +1,102 @@
+//lint:file-ignore U1000 ignore unused code, it's generated
+package model
+
+type ColumnsProject struct {
+	ID, Name string
+}
+
+type ColumnsUser struct {
+	ID, Activated, CountryID, Email, Name string
+	Country                               string
+}
+
+type ColumnsGeoCountry struct {
+	ID, Code, Coords string
+}
+
+type ColumnsSt struct {
+	Project    ColumnsProject
+	User       ColumnsUser
+	GeoCountry ColumnsGeoCountry
+}
+
+var Columns = ColumnsSt{
+	Project: ColumnsProject{
+		ID:   "projectId",
+		Name: "name",
+	},
+	User: ColumnsUser{
+		ID:        "userId",
+		Activated: "activated",
+		CountryID: "countryId",
+		Email:     "email",
+		Name:      "name",
+
+		Country: "Country",
+	},
+	GeoCountry: ColumnsGeoCountry{
+		ID:     "countryId",
+		Code:   "code",
+		Coords: "coords",
+	},
+}
+
+type TableProject struct {
+	Name, Alias string
+}
+
+type TableUser struct {
+	Name, Alias string
+}
+
+type TableGeoCountry struct {
+	Name, Alias string
+}
+
+type TablesSt struct {
+	Project    TableProject
+	User       TableUser
+	GeoCountry TableGeoCountry
+}
+
+var Tables = TablesSt{
+	Project: TableProject{
+		Name:  "projects",
+		Alias: "t",
+	},
+	User: TableUser{
+		Name:  "users",
+		Alias: "t",
+	},
+	GeoCountry: TableGeoCountry{
+		Name:  "geo.countries",
+		Alias: "t",
+	},
+}
+
+type Project struct {
+	tableName struct{} `sql:"projects,alias:t" pg:",discard_unknown_columns"`
+
+	ID   int    `sql:"projectId,pk"`
+	Name string `sql:"name,notnull"`
+}
+
+type User struct {
+	tableName struct{} `sql:"users,alias:t" pg:",discard_unknown_columns"`
+
+	ID        int     `sql:"userId,pk"`
+	Activated bool    `sql:"activated,notnull"`
+	CountryID *int    `sql:"countryId"`
+	Email     string  `sql:"email,notnull"`
+	Name      *string `sql:"name"`
+
+	Country *GeoCountry `pg:"fk:countryId"`
+}
+
+type GeoCountry struct {
+	tableName struct{} `sql:"geo.countries,alias:t" pg:",discard_unknown_columns"`
+
+	ID     int    `sql:"countryId,pk"`
+	Code   string `sql:"code,notnull"`
+	Coords []int  `sql:"coords,array"`
+}

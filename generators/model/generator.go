@@ -35,6 +35,11 @@ func (g *Basic) Logger() *zap.Logger {
 	return g.logger
 }
 
+// Options gets options
+func (g *Basic) Options() *Options {
+	return &g.options
+}
+
 // AddFlags adds flags to command
 func (g *Basic) AddFlags(command *cobra.Command) {
 	base.AddFlags(command)
