@@ -456,3 +456,34 @@ func TestUnderscore(t *testing.T) {
 		})
 	}
 }
+
+func TestLowerFirst(t *testing.T) {
+	tests := []struct {
+		name string
+		s    string
+		want string
+	}{
+		{
+			name: "Should convert Word to word",
+			s:    "Word",
+			want: "word",
+		},
+		{
+			name: "Should convert WordWord to wordWord",
+			s:    "WordWord",
+			want: "wordWord",
+		},
+		{
+			name: "Should convert 1WordWord to 1WordWord",
+			s:    "1WordWord",
+			want: "1WordWord",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := LowerFirst(tt.s); got != tt.want {
+				t.Errorf("LowerFirst() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

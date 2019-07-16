@@ -3,6 +3,8 @@ package util
 import (
 	"regexp"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/fatih/camelcase"
 	"github.com/jinzhu/inflection"
@@ -135,10 +137,19 @@ func HasUpper(s string) bool {
 	return false
 }
 
-// ReplaceSuffix replaces substirng on the end of string
+// ReplaceSuffix replaces substring on the end of string
 func ReplaceSuffix(in, suffix, replace string) string {
 	if strings.HasSuffix(in, suffix) {
 		in = in[:len(in)-len(suffix)] + replace
 	}
 	return in
+}
+
+// LowerFirst lowers the first letter
+func LowerFirst(s string) string {
+	if s == "" {
+		return ""
+	}
+	r, n := utf8.DecodeRuneInString(s)
+	return string(unicode.ToLower(r)) + s[n:]
 }
