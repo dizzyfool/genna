@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"os"
 
 	"github.com/dizzyfool/genna/lib"
 	"github.com/dizzyfool/genna/model"
@@ -27,6 +28,16 @@ const (
 	// FollowFKs is basic flag (-f) for generate foreign keys models for selected tables
 	FollowFKs = "follow-fk"
 )
+
+// Gen is interface for all generators
+type Gen interface {
+	Logger() *zap.Logger
+
+	AddFlags(command *cobra.Command)
+	ReadFlags(command *cobra.Command) error
+
+	Generate() error
+}
 
 // Packer is a function that compile entities to package
 type Packer func(entities []model.Entity) interface{}
@@ -143,12 +154,39 @@ func (g Generator) Generate(tables []string, followFKs, useSQLNulls bool, output
 	return nil
 }
 
-// Gen is interface for all generators
-type Gen interface {
-	Logger() *zap.Logger
+// CreateCommand creates cobra command
+func CreateCommand(name, description string, generator Gen) *cobra.Command {
+	command := &cobra.Command{
+		Use:   name,
+		Short: description,
+		Long:  "",
+		Run: func(command *cobra.Command, args []string) {
+			logger := generator.Logger()
 
-	AddFlags(command *cobra.Command)
-	ReadFlags(command *cobra.Command) error
+			if !command.HasFlags() {
+				if err := command.Help(); err != nil {
+					logger.Error("help not found", zap.Error(err))
+				}
+				os.Exit(0)
+				return
+			}
 
-	Generate() error
+			if err := generator.ReadFlags(command); err != nil {
+				logger.Error("read flags error", zap.Error(err))
+				return
+			}
+
+			if err := generator.Generate(); err != nil {
+				logger.Error("generate error", zap.Error(err))
+				return
+			}
+		},
+		FParseErrWhitelist: cobra.FParseErrWhitelist{
+			UnknownFlags: true,
+		},
+	}
+
+	generator.AddFlags(command)
+
+	return command
 }

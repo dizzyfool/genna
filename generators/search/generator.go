@@ -16,6 +16,11 @@ const (
 	relaxed = "relaxed"
 )
 
+// CreateCommand creates generator command
+func CreateCommand(logger *zap.Logger) *cobra.Command {
+	return base.CreateCommand("search", "Search generator for go-pg models", New(logger))
+}
+
 // Search represents search generator
 type Search struct {
 	logger  *zap.Logger

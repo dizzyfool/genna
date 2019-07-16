@@ -13,6 +13,11 @@ const (
 	pkg = "pkg"
 )
 
+// CreateCommand creates generator command
+func CreateCommand(logger *zap.Logger) *cobra.Command {
+	return base.CreateCommand("validation", "Validation generator for go-pg models", New(logger))
+}
+
 // Validate represents validate generator
 type Validate struct {
 	logger  *zap.Logger

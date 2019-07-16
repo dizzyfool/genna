@@ -4,8 +4,14 @@ import (
 	"github.com/dizzyfool/genna/generators/base"
 	"github.com/dizzyfool/genna/generators/model"
 
+	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
+
+// CreateCommand creates generator command
+func CreateCommand(logger *zap.Logger) *cobra.Command {
+	return base.CreateCommand("model-named", "Basic go-pg model generator with named structures", New(logger))
+}
 
 // Generator represents basic named generator
 type Generator struct {

@@ -17,6 +17,11 @@ const (
 	softDelete = "soft-delete"
 )
 
+// CreateCommand creates generator command
+func CreateCommand(logger *zap.Logger) *cobra.Command {
+	return base.CreateCommand("model", "Basic go-pg model generator", New(logger))
+}
+
 // Basic represents basic generator
 type Basic struct {
 	logger  *zap.Logger

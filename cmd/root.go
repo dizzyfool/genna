@@ -3,7 +3,6 @@ package cmd
 import (
 	"os"
 
-	"github.com/dizzyfool/genna/generators/base"
 	"github.com/dizzyfool/genna/generators/model"
 	"github.com/dizzyfool/genna/generators/named"
 	"github.com/dizzyfool/genna/generators/search"
@@ -41,10 +40,10 @@ func init() {
 	}
 
 	root.AddCommand(
-		CreateCommand("model", "Basic go-pg model generator", model.New(logger)),
-		CreateCommand("search", "Search generator for go-pg models", search.New(logger)),
-		CreateCommand("validation", "Validation generator for go-pg models", validate.New(logger)),
-		CreateCommand("model-named", "Basic go-pg model generator with named structures", named.New(logger)),
+		model.CreateCommand(logger),
+		search.CreateCommand(logger),
+		validate.CreateCommand(logger),
+		named.CreateCommand(logger),
 	)
 }
 
@@ -53,41 +52,4 @@ func Execute() {
 	if err := root.Execute(); err != nil {
 		os.Exit(1)
 	}
-}
-
-// CreateCommand creates cobra command
-func CreateCommand(name, description string, generator base.Gen) *cobra.Command {
-	command := &cobra.Command{
-		Use:   name,
-		Short: description,
-		Long:  "",
-		Run: func(command *cobra.Command, args []string) {
-			logger := generator.Logger()
-
-			if !command.HasFlags() {
-				if err := command.Help(); err != nil {
-					logger.Error("help not found", zap.Error(err))
-				}
-				os.Exit(0)
-				return
-			}
-
-			if err := generator.ReadFlags(command); err != nil {
-				logger.Error("read flags error", zap.Error(err))
-				return
-			}
-
-			if err := generator.Generate(); err != nil {
-				logger.Error("generate error", zap.Error(err))
-				return
-			}
-		},
-		FParseErrWhitelist: cobra.FParseErrWhitelist{
-			UnknownFlags: true,
-		},
-	}
-
-	generator.AddFlags(command)
-
-	return command
 }
