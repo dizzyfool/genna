@@ -40,16 +40,17 @@ func NewTemplatePackage(entities []model.Entity, options Options) TemplatePackag
 	imports := util.NewSet()
 
 	var models []TemplateEntity
-	for i, entity := range entities {
+	for _, entity := range entities {
 		mdl := NewTemplateEntity(entity, options)
 		if len(mdl.Columns) == 0 {
 			continue
 		}
 
-		models = append(models, mdl)
-		for _, imp := range models[i].Imports {
+		for _, imp := range mdl.Imports {
 			imports.Add(imp)
 		}
+
+		models = append(models, mdl)
 	}
 
 	return TemplatePackage{
