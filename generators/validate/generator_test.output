@@ -14,16 +14,16 @@ const (
 func (m User) Validate() (errors map[string]string, valid bool) {
 	errors = map[string]string{}
 
-	if m.CountryID != nil && *m.CountryID == 0 {
-		errors[Columns.User.CountryID] = ErrEmptyValue
-	}
-
 	if utf8.RuneCountInString(m.Email) > 64 {
 		errors[Columns.User.Email] = ErrMaxLength
 	}
 
 	if m.Name != nil && utf8.RuneCountInString(*m.Name) > 128 {
 		errors[Columns.User.Name] = ErrMaxLength
+	}
+
+	if m.CountryID != nil && *m.CountryID == 0 {
+		errors[Columns.User.CountryID] = ErrEmptyValue
 	}
 
 	return errors, len(errors) == 0

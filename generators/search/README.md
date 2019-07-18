@@ -11,8 +11,8 @@ First create your database and tables in it
 ```sql
 create table "projects"
 (
-    "projectId" serial      not null,
-    "name"      varchar(64) not null,
+    "projectId" serial not null,
+    "name"      text   not null,
 
     primary key ("projectId")
 );
@@ -120,19 +120,19 @@ type UserSearch struct {
 	search
 
 	ID        *int
-	Activated *bool
-	CountryID *int
 	Email     *string
+	Activated *bool
 	Name      *string
+	CountryID *int
 }
 
 func (s *UserSearch) Apply(query *orm.Query) *orm.Query {
 	return s.apply(Tables.User.Alias, map[string]interface{}{
 		Columns.User.ID:        s.ID,
-		Columns.User.Activated: s.Activated,
-		Columns.User.CountryID: s.CountryID,
 		Columns.User.Email:     s.Email,
+		Columns.User.Activated: s.Activated,
 		Columns.User.Name:      s.Name,
+		Columns.User.CountryID: s.CountryID,
 	}, query)
 }
 

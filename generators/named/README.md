@@ -11,8 +11,8 @@ First create your database and tables in it
 ```sql
 create table "projects"
 (
-    "projectId" serial      not null,
-    "name"      varchar(64) not null,
+    "projectId" serial not null,
+    "name"      text   not null,
 
     primary key ("projectId")
 );
@@ -59,7 +59,7 @@ type ColumnsProject struct {
 }
 
 type ColumnsUser struct {
-	ID, Activated, CountryID, Email, Name string
+	ID, Email, Activated, Name, CountryID string
 	Country                               string
 }
 
@@ -80,10 +80,10 @@ var Columns = ColumnsSt{
 	},
 	User: ColumnsUser{
 		ID:        "userId",
-		Activated: "activated",
-		CountryID: "countryId",
 		Email:     "email",
+		Activated: "activated",
 		Name:      "name",
+		CountryID: "countryId",
 
 		Country: "Country",
 	},
@@ -138,10 +138,10 @@ type User struct {
 	tableName struct{} `sql:"users,alias:t" pg:",discard_unknown_columns"`
 
 	ID        int     `sql:"userId,pk"`
-	Activated bool    `sql:"activated,notnull"`
-	CountryID *int    `sql:"countryId"`
 	Email     string  `sql:"email,notnull"`
+	Activated bool    `sql:"activated,notnull"`
 	Name      *string `sql:"name"`
+	CountryID *int    `sql:"countryId"`
 
 	Country *GeoCountry `pg:"fk:countryId"`
 }

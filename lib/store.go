@@ -49,6 +49,8 @@ func (r relation) Target() table {
 }
 
 type column struct {
+	tableName struct{} `pg:",discard_unknown_columns"`
+
 	Schema     string   `sql:"schema_name"`
 	Table      string   `sql:"table_name"`
 	Name       string   `sql:"column_name"`
@@ -215,9 +217,11 @@ func (s store) Columns(tables []table) ([]column, error) {
 				from information_schema.key_column_usage kcu
 				group by kcu.table_schema, kcu.table_name, kcu.column_name
 		    )
-		select distinct c.table_schema                       as schema_name,
-		                c.table_name                         as table_name,
-		                c.column_name                        as column_name,
+		select distinct c.table_schema = 'public' as is_public,
+                        c.table_schema            as schema_name,
+		                c.table_name              as table_name,
+		                c.column_name             as column_name,
+                        c.ordinal_position        as ordinal,
 		                case
 		                when i.constraint_types is null
 		                then false
@@ -231,10 +235,10 @@ func (s store) Columns(tables []table) ([]column, error) {
 		                when e.is_enum = true
 		                then 'varchar'
 		                else ltrim(c.udt_name, '_')
-		                end                                    as type,
-		                c.column_default                       as def,
-                        c.character_maximum_length             as len,
-						e.enum_values 						   as enum
+		                end                         as type,
+		                c.column_default            as def,
+                        c.character_maximum_length  as len,
+						e.enum_values 				as enum
 		from information_schema.tables t
 		left join information_schema.columns c using (table_name, table_schema)
 		left join info i using (table_name, table_schema, column_name)
@@ -242,7 +246,7 @@ func (s store) Columns(tables []table) ([]column, error) {
 		left join enums e using (table_name, table_schema, column_name)
 		where (t.table_schema, t.table_name) in (?)
 		  and t.table_type = 'BASE TABLE'
-		order by 1, 2, 4 desc nulls last
+		order by 1 desc, 2, 3, 5 asc, 6 desc nulls last
 	`
 
 	var columns []column
@@ -257,7 +261,7 @@ func (s store) Columns(tables []table) ([]column, error) {
 func Sort(tables []table) []table {
 	sort.Slice(tables, func(i, j int) bool {
 		ti := tables[i]
-		tj := tables[i]
+		tj := tables[j]
 
 		if ti.Schema == tj.Schema {
 			return ti.Name < tj.Name

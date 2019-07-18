@@ -11,8 +11,8 @@ First create your database and tables in it
 ```sql
 create table "projects"
 (
-    "projectId" serial      not null,
-    "name"      varchar(64) not null,
+    "projectId" serial not null,
+    "name"      text   not null,
 
     primary key ("projectId")
 );
@@ -64,22 +64,8 @@ const (
 	ErrWrongValue = "value"
 )
 
-func (m Project) Validate() (errors map[string]string, valid bool) {
-	errors = map[string]string{}
-
-	if utf8.RuneCountInString(m.Name) > 64 {
-		errors[Columns.Project.Name] = ErrMaxLength
-	}
-
-	return errors, len(errors) == 0
-}
-
 func (m User) Validate() (errors map[string]string, valid bool) {
 	errors = map[string]string{}
-
-	if m.CountryID != nil && *m.CountryID == 0 {
-		errors[Columns.User.CountryID] = ErrEmptyValue
-	}
 
 	if utf8.RuneCountInString(m.Email) > 64 {
 		errors[Columns.User.Email] = ErrMaxLength
@@ -87,6 +73,10 @@ func (m User) Validate() (errors map[string]string, valid bool) {
 
 	if m.Name != nil && utf8.RuneCountInString(*m.Name) > 128 {
 		errors[Columns.User.Name] = ErrMaxLength
+	}
+
+	if m.CountryID != nil && *m.CountryID == 0 {
+		errors[Columns.User.CountryID] = ErrEmptyValue
 	}
 
 	return errors, len(errors) == 0
