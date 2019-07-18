@@ -52,6 +52,10 @@ func (g *Genna) Read(selected []string, followFK bool, useSQLNulls bool) ([]mode
 		return nil, err
 	}
 
+	if len(tables) == 0 {
+		return nil, xerrors.New("no tables found")
+	}
+
 	relations, err := g.Store.Relations(tables)
 	if err != nil {
 		return nil, err

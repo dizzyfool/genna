@@ -72,6 +72,7 @@ func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dim
 	return column
 }
 
+// AddRelation adds relation to column. Should be used if FK
 func (c *Column) AddRelation(relation *Relation) {
 	c.Relation = relation
 }

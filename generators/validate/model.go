@@ -108,7 +108,11 @@ type TemplateColumn struct {
 }
 
 // NewTemplateColumn creates a column for template
-func NewTemplateColumn(column model.Column, _ Options) TemplateColumn {
+func NewTemplateColumn(column model.Column, options Options) TemplateColumn {
+	if !options.KeepPK && column.IsPK {
+		column.GoName = util.ID
+	}
+
 	tmpl := TemplateColumn{
 		Column: column,
 

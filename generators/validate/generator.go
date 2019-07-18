@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	pkg = "pkg"
+	pkg    = "pkg"
+	keepPK = "keep-pk"
 )
 
 // CreateCommand creates generator command
@@ -44,6 +45,8 @@ func (g *Validate) AddFlags(command *cobra.Command) {
 	flags.SortFlags = false
 
 	flags.StringP(pkg, "p", util.DefaultPackage, "package for model files")
+
+	flags.BoolP(keepPK, "k", false, "keep primary key name as is (by default it should be converted to 'ID')")
 }
 
 // ReadFlags read flags from command
@@ -58,6 +61,10 @@ func (g *Validate) ReadFlags(command *cobra.Command) error {
 	flags := command.Flags()
 
 	if g.options.Package, err = flags.GetString(pkg); err != nil {
+		return err
+	}
+
+	if g.options.KeepPK, err = flags.GetBool(keepPK); err != nil {
 		return err
 	}
 

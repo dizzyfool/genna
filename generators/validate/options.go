@@ -14,6 +14,9 @@ type Options struct {
 	// Package sets package name for model
 	// Works only with SchemaPackage = false
 	Package string
+
+	// Do not replace primary key name to ID
+	KeepPK bool
 }
 
 // Def fills default values of an options
