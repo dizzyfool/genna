@@ -1,6 +1,7 @@
 package search
 
 const templateSearch = `//lint:file-ignore U1000 ignore unused code, it's generated
+//nolint
 package {{.Package}}
 
 import ({{if .HasImports}}{{range .Imports}}
