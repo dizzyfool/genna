@@ -11,16 +11,6 @@ const (
 	ErrWrongValue = "value"
 )
 
-func (m Project) Validate() (errors map[string]string, valid bool) {
-	errors = map[string]string{}
-
-	if utf8.RuneCountInString(m.Name) > 64 {
-		errors[Columns.Project.Name] = ErrMaxLength
-	}
-
-	return errors, len(errors) == 0
-}
-
 func (m User) Validate() (errors map[string]string, valid bool) {
 	errors = map[string]string{}
 

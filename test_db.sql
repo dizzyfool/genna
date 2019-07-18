@@ -5,8 +5,8 @@ drop schema if exists "geo" cascade;
 
 create table "projects"
 (
-    "projectId" serial      not null,
-    "name"      varchar(64) not null,
+    "projectId" serial not null,
+    "name"      text   not null,
 
     primary key ("projectId")
 );
