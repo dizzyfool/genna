@@ -40,7 +40,7 @@ type Gen interface {
 }
 
 // Packer is a function that compile entities to package
-type Packer func(entities []model.Entity) interface{}
+type Packer func(entities []model.Entity) (interface{}, error)
 
 // Options is common options for all generators
 type Options struct {
@@ -134,7 +134,10 @@ func (g Generator) Generate(tables []string, followFKs, useSQLNulls bool, output
 		return xerrors.Errorf("parsing template error: %w", err)
 	}
 
-	pack := packer(entities)
+	pack, err := packer(entities)
+	if err != nil {
+		return xerrors.Errorf("packing data error: %w", err)
+	}
 
 	var buffer bytes.Buffer
 	if err := parsed.ExecuteTemplate(&buffer, "base", pack); err != nil {

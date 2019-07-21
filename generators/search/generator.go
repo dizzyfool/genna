@@ -121,7 +121,7 @@ func (g *Search) Repack(packer base.Packer) error {
 
 // Packer returns packer function for compile entities into package
 func (g *Search) Packer() base.Packer {
-	return func(entities []model.Entity) interface{} {
-		return NewTemplatePackage(entities, g.options)
+	return func(entities []model.Entity) (interface{}, error) {
+		return NewTemplatePackage(entities, g.options), nil
 	}
 }

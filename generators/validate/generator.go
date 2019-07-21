@@ -94,7 +94,7 @@ func (g *Validate) Generate() error {
 
 // Packer returns packer function for compile entities into package
 func (g *Validate) Packer() base.Packer {
-	return func(entities []model.Entity) interface{} {
-		return NewTemplatePackage(entities, g.options)
+	return func(entities []model.Entity) (interface{}, error) {
+		return NewTemplatePackage(entities, g.options), nil
 	}
 }
