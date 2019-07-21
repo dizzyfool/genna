@@ -9,37 +9,16 @@ import ({{if .HasImports}}{{range .Imports}}
 	{{end}}
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
+	"github.com/go-pg/pg/types"
 )
 
 // base filters
-
 type applier func(query *orm.Query) (*orm.Query, error)
 
-type search struct {
-	custom map[string][]interface{}
-}
-
-func (s *search) apply(table string, values map[string]interface{}, query *orm.Query) *orm.Query {
-	for field, value := range values {
-		if value != nil {
-			query.Where("?.? = ?", pg.F(table), pg.F(field), value)
-		}
-	}
-
-	if s.custom != nil {
-		for condition, params := range s.custom {
-			query.Where(condition, params...)
-		}
-	}
-
-	return query
-}
-
-func (s *search) with(condition string, params ... interface{}) {
-	if s.custom == nil {
-		s.custom = map[string][]interface{}{}
-	}
-	s.custom[condition] = params
+type filterParams struct {
+	Table types.ValueAppender
+	Field types.ValueAppender
+	Value interface{}
 }
 
 // Searcher is interface for every generated filter
@@ -50,16 +29,23 @@ type Searcher interface {
 
 {{range $model := .Entities}}
 type {{.GoName}}Search struct {
-	search
-
 	{{range .Columns}}
 	{{.GoName}} {{.GoType}}{{end}}
 }
 
-func (s *{{.GoName}}Search) Apply(query *orm.Query) *orm.Query {
-	return s.apply(Tables.{{.GoName}}.{{if not .NoAlias}}Alias{{else}}Name{{end}}, map[string]interface{}{ {{range .Columns}}
-		Columns.{{$model.GoName}}.{{.GoName}}: s.{{.GoName}},{{end}}
-	}, query)
+func (s *{{.GoName}}Search) Apply(query *orm.Query) *orm.Query { {{range .Columns}}{{if .Relaxed}}
+	if !reflect.ValueOf(s.{{.GoName}}).IsNil(){ {{else}}
+	if s.{{.GoName}} != nil { {{end}}
+		query.Where("{{.Condition}}", filterParams{ {{if .TableExpr}}
+			Table: pg.F({{.TableExpr}}),{{else}}
+			Table: pg.F("{{.TableName}}"),{{end}}{{if .FieldExpr}}
+			Field: pg.F({{.FieldExpr}}),{{else}}
+			Field: pg.F("{{.PGName}}"),{{end}}
+			Value: s.{{.GoName}},
+		})
+	}{{end}}
+	
+	return query
 }
 
 func (s *{{.GoName}}Search) Q() applier {

@@ -71,7 +71,7 @@ func NewTemplateEntity(entity model.Entity, options Options) TemplateEntity {
 			continue
 		}
 
-		columns = append(columns, NewTemplateColumn(column, options))
+		columns = append(columns, NewTemplateColumn(entity, column, options))
 		if column.Import != "" {
 			imports.Add(column.Import)
 		}
@@ -91,10 +91,15 @@ func NewTemplateEntity(entity model.Entity, options Options) TemplateEntity {
 // TemplateColumn stores column info
 type TemplateColumn struct {
 	model.Column
+
+	Relaxed   bool
+	FieldExpr string
+	TableExpr string
+	Condition string
 }
 
 // NewTemplateColumn creates a column for template
-func NewTemplateColumn(column model.Column, options Options) TemplateColumn {
+func NewTemplateColumn(entity model.Entity, column model.Column, options Options) TemplateColumn {
 	if !options.KeepPK && column.IsPK {
 		column.GoName = util.ID
 	}
@@ -105,7 +110,16 @@ func NewTemplateColumn(column model.Column, options Options) TemplateColumn {
 		column.GoType = fmt.Sprintf("*%s", column.GoType)
 	}
 
+	tableExpr := fmt.Sprintf("Tables.%s.Alias", entity.GoName)
+	if options.NoAlias {
+		tableExpr = fmt.Sprintf("Tables.%s.Name", entity.GoName)
+	}
+
 	return TemplateColumn{
-		Column: column,
+		Relaxed:   options.Relaxed,
+		Column:    column,
+		Condition: "?table.?field = ?value",
+		TableExpr: tableExpr,
+		FieldExpr: fmt.Sprintf("Columns.%s.%s", entity.GoName, column.GoName),
 	}
 }
