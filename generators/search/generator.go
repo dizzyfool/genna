@@ -44,6 +44,11 @@ func (g *Search) Options() *Options {
 	return &g.options
 }
 
+// SetOptions sets options
+func (g *Search) SetOptions(options Options) {
+	g.options = options
+}
+
 // AddFlags adds flags to command
 func (g *Search) AddFlags(command *cobra.Command) {
 	base.AddFlags(command)

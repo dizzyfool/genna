@@ -42,6 +42,11 @@ func (g *Validate) Options() *Options {
 	return &g.options
 }
 
+// SetOptions sets options
+func (g *Validate) SetOptions(options Options) {
+	g.options = options
+}
+
 // AddFlags adds flags to command
 func (g *Validate) AddFlags(command *cobra.Command) {
 	base.AddFlags(command)

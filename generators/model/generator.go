@@ -41,8 +41,13 @@ func (g *Basic) Logger() *zap.Logger {
 }
 
 // Options gets options
-func (g *Basic) Options() *Options {
-	return &g.options
+func (g *Basic) Options() Options {
+	return g.options
+}
+
+// SetOptions sets options
+func (g *Basic) SetOptions(options Options) {
+	g.options = options
 }
 
 // AddFlags adds flags to command
