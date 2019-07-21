@@ -113,9 +113,9 @@ func NewTemplateColumn(_ model.Entity, column model.Column, options Options) Tem
 	}
 
 	if options.Relaxed {
-		column.GoType = model.TypeInterface
+		column.Type = model.TypeInterface
 	} else {
-		column.GoType = fmt.Sprintf("*%s", column.GoType)
+		column.Type = fmt.Sprintf("*%s", column.GoType)
 	}
 
 	return TemplateColumn{

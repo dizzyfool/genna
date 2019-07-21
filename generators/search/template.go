@@ -23,7 +23,7 @@ type Searcher interface {
 {{range $model := .Entities}}
 type {{.GoName}}Search struct {
 	{{range .Columns}}
-	{{.GoName}} {{.GoType}}{{end}}
+	{{.GoName}} {{.Type}}{{end}}
 }
 
 func (s *{{.GoName}}Search) Apply(query *orm.Query) *orm.Query { {{range .Columns}}{{if .Relaxed}}
