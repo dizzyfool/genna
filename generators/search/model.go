@@ -2,6 +2,7 @@ package search
 
 import (
 	"fmt"
+	"html/template"
 
 	"github.com/dizzyfool/genna/model"
 	"github.com/dizzyfool/genna/util"
@@ -23,16 +24,23 @@ func NewTemplatePackage(entities []model.Entity, options Options) TemplatePackag
 	imports := util.NewSet()
 
 	var models []TemplateEntity
-	for i, entity := range entities {
+	for _, entity := range entities {
 		mdl := NewTemplateEntity(entity, options)
 		if len(mdl.Columns) == 0 {
 			continue
 		}
 
-		models = append(models, mdl)
-		for _, imp := range models[i].Imports {
+		for _, imp := range mdl.Imports {
 			imports.Add(imp)
 		}
+
+		for _, col := range mdl.Columns {
+			if col.Relaxed {
+				imports.Add("reflect")
+			}
+		}
+
+		models = append(models, mdl)
 	}
 
 	return TemplatePackage{
@@ -92,14 +100,14 @@ func NewTemplateEntity(entity model.Entity, options Options) TemplateEntity {
 type TemplateColumn struct {
 	model.Column
 
-	Relaxed   bool
-	FieldExpr string
-	TableExpr string
-	Condition string
+	Relaxed bool
+
+	UseWhereRender bool
+	WhereRender    template.HTML
 }
 
 // NewTemplateColumn creates a column for template
-func NewTemplateColumn(entity model.Entity, column model.Column, options Options) TemplateColumn {
+func NewTemplateColumn(_ model.Entity, column model.Column, options Options) TemplateColumn {
 	if !options.KeepPK && column.IsPK {
 		column.GoName = util.ID
 	}
@@ -110,16 +118,8 @@ func NewTemplateColumn(entity model.Entity, column model.Column, options Options
 		column.GoType = fmt.Sprintf("*%s", column.GoType)
 	}
 
-	tableExpr := fmt.Sprintf("Tables.%s.Alias", entity.GoName)
-	if options.NoAlias {
-		tableExpr = fmt.Sprintf("Tables.%s.Name", entity.GoName)
-	}
-
 	return TemplateColumn{
-		Relaxed:   options.Relaxed,
-		Column:    column,
-		Condition: "?table.?field = ?value",
-		TableExpr: tableExpr,
-		FieldExpr: fmt.Sprintf("Columns.%s.%s", entity.GoName, column.GoName),
+		Relaxed: options.Relaxed,
+		Column:  column,
 	}
 }

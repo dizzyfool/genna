@@ -5,17 +5,10 @@ package model
 import (
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
-	"github.com/go-pg/pg/types"
 )
 
 // base filters
 type applier func(query *orm.Query) (*orm.Query, error)
-
-type filterParams struct {
-	Table types.ValueAppender
-	Field types.ValueAppender
-	Value interface{}
-}
 
 // Searcher is interface for every generated filter
 type Searcher interface {
@@ -30,18 +23,10 @@ type ProjectSearch struct {
 
 func (s *ProjectSearch) Apply(query *orm.Query) *orm.Query {
 	if s.ID != nil {
-		query.Where("?table.?field = ?value", filterParams{
-			Table: pg.F(Tables.Project.Alias),
-			Field: pg.F(Columns.Project.ID),
-			Value: s.ID,
-		})
+		query.Where("?.? = ?", pg.F(Tables.Project.Alias), pg.F(Columns.Project.ID), s.ID)
 	}
 	if s.Name != nil {
-		query.Where("?table.?field = ?value", filterParams{
-			Table: pg.F(Tables.Project.Alias),
-			Field: pg.F(Columns.Project.Name),
-			Value: s.Name,
-		})
+		query.Where("?.? = ?", pg.F(Tables.Project.Alias), pg.F(Columns.Project.Name), s.Name)
 	}
 
 	return query
@@ -63,39 +48,19 @@ type UserSearch struct {
 
 func (s *UserSearch) Apply(query *orm.Query) *orm.Query {
 	if s.ID != nil {
-		query.Where("?table.?field = ?value", filterParams{
-			Table: pg.F(Tables.User.Alias),
-			Field: pg.F(Columns.User.ID),
-			Value: s.ID,
-		})
+		query.Where("?.? = ?", pg.F(Tables.User.Alias), pg.F(Columns.User.ID), s.ID)
 	}
 	if s.Email != nil {
-		query.Where("?table.?field = ?value", filterParams{
-			Table: pg.F(Tables.User.Alias),
-			Field: pg.F(Columns.User.Email),
-			Value: s.Email,
-		})
+		query.Where("?.? = ?", pg.F(Tables.User.Alias), pg.F(Columns.User.Email), s.Email)
 	}
 	if s.Activated != nil {
-		query.Where("?table.?field = ?value", filterParams{
-			Table: pg.F(Tables.User.Alias),
-			Field: pg.F(Columns.User.Activated),
-			Value: s.Activated,
-		})
+		query.Where("?.? = ?", pg.F(Tables.User.Alias), pg.F(Columns.User.Activated), s.Activated)
 	}
 	if s.Name != nil {
-		query.Where("?table.?field = ?value", filterParams{
-			Table: pg.F(Tables.User.Alias),
-			Field: pg.F(Columns.User.Name),
-			Value: s.Name,
-		})
+		query.Where("?.? = ?", pg.F(Tables.User.Alias), pg.F(Columns.User.Name), s.Name)
 	}
 	if s.CountryID != nil {
-		query.Where("?table.?field = ?value", filterParams{
-			Table: pg.F(Tables.User.Alias),
-			Field: pg.F(Columns.User.CountryID),
-			Value: s.CountryID,
-		})
+		query.Where("?.? = ?", pg.F(Tables.User.Alias), pg.F(Columns.User.CountryID), s.CountryID)
 	}
 
 	return query
@@ -114,18 +79,10 @@ type GeoCountrySearch struct {
 
 func (s *GeoCountrySearch) Apply(query *orm.Query) *orm.Query {
 	if s.ID != nil {
-		query.Where("?table.?field = ?value", filterParams{
-			Table: pg.F(Tables.GeoCountry.Alias),
-			Field: pg.F(Columns.GeoCountry.ID),
-			Value: s.ID,
-		})
+		query.Where("?.? = ?", pg.F(Tables.GeoCountry.Alias), pg.F(Columns.GeoCountry.ID), s.ID)
 	}
 	if s.Code != nil {
-		query.Where("?table.?field = ?value", filterParams{
-			Table: pg.F(Tables.GeoCountry.Alias),
-			Field: pg.F(Columns.GeoCountry.Code),
-			Value: s.Code,
-		})
+		query.Where("?.? = ?", pg.F(Tables.GeoCountry.Alias), pg.F(Columns.GeoCountry.Code), s.Code)
 	}
 
 	return query
