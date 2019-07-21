@@ -101,6 +101,19 @@ func (g *Search) Generate() error {
 		)
 }
 
+// Repack runs generator with custom packer
+func (g *Search) Repack(packer base.Packer) error {
+	return base.NewGenerator(g.options.URL, g.logger).
+		Generate(
+			g.options.Tables,
+			g.options.FollowFKs,
+			false,
+			g.options.Output,
+			templateSearch,
+			packer,
+		)
+}
+
 // Packer returns packer function for compile entities into package
 func (g *Search) Packer() base.Packer {
 	return func(entities []model.Entity) interface{} {
