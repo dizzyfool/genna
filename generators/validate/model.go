@@ -73,6 +73,10 @@ type TemplateEntity struct {
 
 // NewTemplateEntity creates an entity for template
 func NewTemplateEntity(entity model.Entity, options Options) TemplateEntity {
+	if entity.HasMultiplePKs() {
+		options.KeepPK = true
+	}
+
 	imports := util.NewSet()
 
 	var columns []TemplateColumn

@@ -1,7 +1,7 @@
 package named
 
-const templateModel = `//lint:file-ignore U1000 ignore unused code, it's generated
-//nolint
+const templateModel = `//nolint
+//lint:file-ignore U1000 ignore unused code, it's generated
 package {{.Package}}{{if .HasImports}}
 
 import ({{range .Imports}}
