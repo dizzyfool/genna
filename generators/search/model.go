@@ -102,8 +102,8 @@ type TemplateColumn struct {
 
 	Relaxed bool
 
-	UseWhereRender bool
-	WhereRender    template.HTML
+	UseCustomRender bool
+	CustomRender    template.HTML
 }
 
 // NewTemplateColumn creates a column for template
