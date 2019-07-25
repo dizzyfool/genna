@@ -116,24 +116,32 @@ func NewTemplateColumn(column model.Column, options Options) TemplateColumn {
 	tags := util.NewAnnotation()
 	tags.AddTag("sql", column.PGName)
 
+	// pk tag
 	if column.IsPK {
 		tags.AddTag("sql", "pk")
 	}
 
+	// types tag
 	if column.PGType == model.TypePGHstore {
 		tags.AddTag("sql", "hstore")
 	} else if column.IsArray {
 		tags.AddTag("sql", "array")
 	}
+	if column.PGType == model.TypePGUuid {
+		tags.AddTag("sql", "type:uuid")
+	}
 
+	// nullable tag
 	if !column.Nullable && !column.IsPK {
 		tags.AddTag("sql", "notnull")
 	}
 
+	// soft_delete tag
 	if options.SoftDelete == column.PGName && column.Nullable && column.GoType == model.TypeTime && !column.IsArray {
 		tags.AddTag("pg", ",soft_delete")
 	}
 
+	// ignore tag
 	if column.GoType == model.TypeInterface {
 		comment = "// unsupported"
 		tags = util.NewAnnotation().AddTag("sql", "-")
