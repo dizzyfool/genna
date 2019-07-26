@@ -2,7 +2,7 @@ module github.com/dizzyfool/genna
 
 require (
 	github.com/fatih/camelcase v1.0.0
-	github.com/go-pg/pg v0.0.0-20190630070041-250e2a30e855
+	github.com/go-pg/pg v8.0.4+incompatible
 	github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/spf13/cobra v0.0.5
