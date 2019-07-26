@@ -29,6 +29,11 @@ func TestSingular(t *testing.T) {
 			want: "fish",
 		},
 		{
+			name: "Should get added non-countable",
+			args: args{"sms"},
+			want: "sms",
+		},
+		{
 			name: "Should ignore non plural",
 			args: args{"test"},
 			want: "test",

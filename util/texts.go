@@ -19,6 +19,10 @@ const (
 	Rel = "Rel"
 )
 
+func init() {
+	inflection.AddUncountable("sms", "mms", "rls")
+}
+
 // Singular makes singular of plural english word
 func Singular(s string) string {
 	return inflection.Singular(s)
