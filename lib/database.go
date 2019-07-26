@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-pg/pg"
-	"github.com/go-pg/pg/orm"
+	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/v9/orm"
 	"go.uber.org/zap"
 	"golang.org/x/xerrors"
 )

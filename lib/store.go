@@ -7,8 +7,8 @@ import (
 	"github.com/dizzyfool/genna/model"
 	"github.com/dizzyfool/genna/util"
 
-	"github.com/go-pg/pg"
-	"github.com/go-pg/pg/orm"
+	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/v9/orm"
 	"golang.org/x/xerrors"
 )
 

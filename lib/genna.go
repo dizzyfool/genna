@@ -4,7 +4,7 @@ import (
 	"github.com/dizzyfool/genna/model"
 	"github.com/dizzyfool/genna/util"
 
-	"github.com/go-pg/pg/orm"
+	"github.com/go-pg/pg/v9/orm"
 	"go.uber.org/zap"
 	"golang.org/x/xerrors"
 )
