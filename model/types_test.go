@@ -86,13 +86,13 @@ func Test_goType(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			for _, typ := range tt.pgTypes {
-				got, err := goType(typ)
+				got, err := GoType(typ)
 				if (err != nil) != tt.wantErr {
-					t.Errorf("goType() error = %v, wantErr %v", err, tt.wantErr)
+					t.Errorf("GoType() error = %v, wantErr %v", err, tt.wantErr)
 					return
 				}
 				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("goType() = %v, want %v", got, tt.want)
+					t.Errorf("GoType() = %v, want %v", got, tt.want)
 				}
 			}
 		})
@@ -198,13 +198,13 @@ func Test_goSlice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := goSlice(tt.args.pgType, tt.args.dimensions)
+			got, err := GoSlice(tt.args.pgType, tt.args.dimensions)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("goSlice() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GoSlice() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if err == nil && got != tt.want {
-				t.Errorf("goSlice() = %v, want %v", got, tt.want)
+				t.Errorf("GoSlice() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -346,13 +346,13 @@ func Test_goNullable(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := goNullable(tt.pgType, tt.avoidPointers)
+			got, err := GoNullable(tt.pgType, tt.avoidPointers)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("goNullable() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GoNullable() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if err == nil && got != tt.want {
-				t.Errorf("goNullable() = %v, want %v", got, tt.want)
+				t.Errorf("GoNullable() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -457,8 +457,8 @@ func Test_goImport(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			for _, pgType := range tt.args.pgTypes {
-				if got := goImport(pgType, tt.args.nullable, tt.args.avoidPointers); got != tt.want {
-					t.Errorf("goImport() = %v, want %v", got, tt.want)
+				if got := GoImport(pgType, tt.args.nullable, tt.args.avoidPointers); got != tt.want {
+					t.Errorf("GoImport() = %v, want %v", got, tt.want)
 				}
 			}
 		})

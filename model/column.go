@@ -49,16 +49,16 @@ func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dim
 
 	column.GoName = util.ColumnName(pgName)
 
-	column.GoType, err = goType(pgType)
+	column.GoType, err = GoType(pgType)
 	if err != nil {
 		column.GoType = "interface{}"
 	}
 
 	switch {
 	case column.IsArray:
-		column.Type, err = goSlice(pgType, dims)
+		column.Type, err = GoSlice(pgType, dims)
 	case column.Nullable:
-		column.Type, err = goNullable(pgType, sqlNulls)
+		column.Type, err = GoNullable(pgType, sqlNulls)
 	default:
 		column.Type = column.GoType
 	}
@@ -67,7 +67,7 @@ func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dim
 		column.Type = column.GoType
 	}
 
-	column.Import = goImport(pgType, nullable, sqlNulls)
+	column.Import = GoImport(pgType, nullable, sqlNulls)
 
 	return column
 }

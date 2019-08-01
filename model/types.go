@@ -97,8 +97,8 @@ func fixIsArray(pgType string, isArray bool, dimensions int) (bool, int) {
 	return isArray, dimensions
 }
 
-// goType generates simple go type from pg type
-func goType(pgType string) (string, error) {
+// GoType generates simple go type from pg type
+func GoType(pgType string) (string, error) {
 	switch pgType {
 	case TypePGInt2, TypePGInt4:
 		return TypeInt, nil
@@ -131,15 +131,15 @@ func goType(pgType string) (string, error) {
 	return "", xerrors.Errorf("unsupported type: %s", pgType)
 }
 
-// goSlice generates go slice type from pg array
-func goSlice(pgType string, dimensions int) (string, error) {
+// GoSlice generates go slice type from pg array
+func GoSlice(pgType string, dimensions int) (string, error) {
 	switch pgType {
 	case TypePGTimestamp, TypePGTimestamptz, TypePGDate, TypePGTime, TypePGTimetz,
 		TypePGInterval, TypePGHstore, TypePGInet, TypePGCidr:
 		return "", xerrors.Errorf("unsupported array type: %s", pgType)
 	}
 
-	typ, err := goType(pgType)
+	typ, err := GoType(pgType)
 	if err != nil {
 		return "", err
 	}
@@ -151,8 +151,8 @@ func goSlice(pgType string, dimensions int) (string, error) {
 	return typ, nil
 }
 
-// goNullable generates all go types from pg type with pointer
-func goNullable(pgType string, useSQLNull bool) (string, error) {
+// GoNullable generates all go types from pg type with pointer
+func GoNullable(pgType string, useSQLNull bool) (string, error) {
 	// avoiding pointers with sql.Null... types
 	if useSQLNull {
 		switch pgType {
@@ -169,7 +169,7 @@ func goNullable(pgType string, useSQLNull bool) (string, error) {
 		}
 	}
 
-	typ, err := goType(pgType)
+	typ, err := GoType(pgType)
 	if err != nil {
 		return "", err
 	}
@@ -183,8 +183,8 @@ func goNullable(pgType string, useSQLNull bool) (string, error) {
 	}
 }
 
-// goImport generates import from go type
-func goImport(pgType string, nullable, useSQLNull bool) string {
+// GoImport generates import from go type
+func GoImport(pgType string, nullable, useSQLNull bool) string {
 	if nullable && useSQLNull {
 		switch pgType {
 		case TypePGInt2, TypePGInt4, TypePGInt8,
