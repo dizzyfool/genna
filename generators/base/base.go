@@ -129,6 +129,10 @@ func (g Generator) Generate(tables []string, followFKs, useSQLNulls bool, output
 		return xerrors.Errorf("read database error: %w", err)
 	}
 
+	return g.GenerateFromEntities(entities, output, tmpl, packer)
+}
+
+func (g Generator) GenerateFromEntities(entities []model.Entity, output, tmpl string, packer Packer) error {
 	parsed, err := template.New("base").Parse(tmpl)
 	if err != nil {
 		return xerrors.Errorf("parsing template error: %w", err)
