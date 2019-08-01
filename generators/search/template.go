@@ -1,6 +1,6 @@
 package search
 
-const templateSearch = `//nolint
+const Template = `//nolint
 //lint:file-ignore U1000 ignore unused code, it's generated
 package {{.Package}}
 

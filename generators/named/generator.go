@@ -36,7 +36,7 @@ func (g *Generator) Generate() error {
 			options.FollowFKs,
 			options.UseSQLNulls,
 			options.Output,
-			templateModel,
+			Template,
 			g.Packer(),
 		)
 }

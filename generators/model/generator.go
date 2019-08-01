@@ -111,7 +111,7 @@ func (g *Basic) Generate() error {
 			g.options.FollowFKs,
 			g.options.UseSQLNulls,
 			g.options.Output,
-			templateModel,
+			Template,
 			g.Packer(),
 		)
 }

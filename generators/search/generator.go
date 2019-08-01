@@ -106,7 +106,7 @@ func (g *Search) Generate() error {
 			g.options.FollowFKs,
 			false,
 			g.options.Output,
-			templateSearch,
+			Template,
 			g.Packer(),
 		)
 }
@@ -119,7 +119,7 @@ func (g *Search) Repack(packer base.Packer) error {
 			g.options.FollowFKs,
 			false,
 			g.options.Output,
-			templateSearch,
+			Template,
 			packer,
 		)
 }

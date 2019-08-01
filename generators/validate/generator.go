@@ -92,7 +92,7 @@ func (g *Validate) Generate() error {
 			g.options.FollowFKs,
 			false,
 			g.options.Output,
-			templateValidate,
+			Template,
 			g.Packer(),
 		)
 }
