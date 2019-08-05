@@ -29,6 +29,9 @@ type Options struct {
 
 	// Do not generate discard_unknown_columns tag
 	NoDiscard bool
+
+	// Override type for json/jsonb
+	JSONTypes map[string]string
 }
 
 // Def fills default values of an options

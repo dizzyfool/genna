@@ -28,9 +28,7 @@ func New(logger *zap.Logger) *Generator {
 // Generate runs whole generation process
 func (g *Generator) Generate() error {
 	options := g.Options()
-	logger := g.Logger()
-
-	return base.NewGenerator(options.URL, logger).
+	return base.NewGenerator(options.URL, g.Logger()).
 		Generate(
 			options.Tables,
 			options.FollowFKs,

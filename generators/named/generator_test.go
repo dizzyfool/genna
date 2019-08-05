@@ -24,6 +24,8 @@ func TestGenerator_Generate(t *testing.T) {
 	options.Output = path.Join(os.TempDir(), "model_test.go")
 	options.FollowFKs = true
 
+	generator.SetOptions(options)
+
 	if err := generator.Generate(); err != nil {
 		t.Errorf("generate error = %v", err)
 		return

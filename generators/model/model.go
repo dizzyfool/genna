@@ -65,7 +65,7 @@ func NewTemplateEntity(entity model.Entity, options Options) TemplateEntity {
 
 	columns := make([]TemplateColumn, len(entity.Columns))
 	for i, column := range entity.Columns {
-		columns[i] = NewTemplateColumn(column, options)
+		columns[i] = NewTemplateColumn(entity, column, options)
 	}
 
 	relations := make([]TemplateRelation, len(entity.Relations))
@@ -107,9 +107,15 @@ type TemplateColumn struct {
 }
 
 // NewTemplateColumn creates a column for template
-func NewTemplateColumn(column model.Column, options Options) TemplateColumn {
+func NewTemplateColumn(entity model.Entity, column model.Column, options Options) TemplateColumn {
 	if !options.KeepPK && column.IsPK {
 		column.GoName = util.ID
+	}
+
+	if column.PGType == model.TypePGJSON || column.PGType == model.TypePGJSONB {
+		if typ, ok := jsonType(options.JSONTypes, entity.PGSchema, entity.PGName, column.PGName); ok {
+			column.Type = typ
+		}
 	}
 
 	comment := ""
@@ -178,4 +184,32 @@ func NewTemplateRelation(relation model.Relation) TemplateRelation {
 		Tag:     template.HTML(fmt.Sprintf("`%s`", tags.String())),
 		Comment: template.HTML(comment),
 	}
+}
+
+func jsonType(mp map[string]string, schema, table, field string) (string, bool) {
+	if mp == nil {
+		return "", false
+	}
+
+	patterns := [][3]string{
+		{schema, table, field},
+		{schema, "*", field},
+		{schema, table, "*"},
+		{schema, "*", "*"},
+	}
+
+	var names []string
+	for _, parts := range patterns {
+		names = append(names, fmt.Sprintf("%s.%s", util.Join(parts[0], parts[1]), parts[2]))
+		names = append(names, fmt.Sprintf("%s.%s", util.JoinF(parts[0], parts[1]), parts[2]))
+	}
+	names = append(names, util.Join(schema, table), "*")
+
+	for _, name := range names {
+		if v, ok := mp[name]; ok {
+			return v, true
+		}
+	}
+
+	return "", false
 }

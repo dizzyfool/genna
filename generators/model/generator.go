@@ -4,7 +4,6 @@ import (
 	"github.com/dizzyfool/genna/generators/base"
 	"github.com/dizzyfool/genna/model"
 	"github.com/dizzyfool/genna/util"
-
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -15,6 +14,7 @@ const (
 	noDiscard  = "no-discard"
 	noAlias    = "no-alias"
 	softDelete = "soft-delete"
+	json       = "json"
 )
 
 // CreateCommand creates generator command
@@ -64,6 +64,8 @@ func (g *Basic) AddFlags(command *cobra.Command) {
 
 	flags.BoolP(noAlias, "w", false, `do not set 'alias' tag to "t"`)
 	flags.BoolP(noDiscard, "d", false, "do not use 'discard_unknown_columns' tag\n")
+
+	flags.StringToStringP(json, "j", map[string]string{"*": "map[string]interface{}"}, "type for json columns\nuse format: table.column=type, separate by comma\nuse asterisk as wildcard in table name")
 }
 
 // ReadFlags read flags from command
@@ -94,6 +96,10 @@ func (g *Basic) ReadFlags(command *cobra.Command) error {
 	}
 
 	if g.options.NoAlias, err = flags.GetBool(noAlias); err != nil {
+		return err
+	}
+
+	if g.options.JSONTypes, err = flags.GetStringToString(json); err != nil {
 		return err
 	}
 
