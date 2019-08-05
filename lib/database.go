@@ -28,7 +28,7 @@ func (ql queryLogger) BeforeQuery(ctx context.Context, event *pg.QueryEvent) (co
 }
 
 // AfterQuery calculates execution time and print it with formatted query
-func (ql queryLogger) AfterQuery(ctx context.Context, event *pg.QueryEvent) (context.Context, error) {
+func (ql queryLogger) AfterQuery(ctx context.Context, event *pg.QueryEvent) error {
 	query, err := event.FormattedQuery()
 	if err != nil {
 		ql.logger.Error("formatted query error", zap.Error(err))
@@ -44,7 +44,7 @@ func (ql queryLogger) AfterQuery(ctx context.Context, event *pg.QueryEvent) (con
 	}
 
 	ql.logger.Debug(query, zap.Duration("duration", since))
-	return ctx, nil
+	return nil
 }
 
 // newDatabase creates database connection
