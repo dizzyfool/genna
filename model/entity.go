@@ -31,9 +31,14 @@ func NewEntity(schema, pgName string, columns []Column, relations []Relation) En
 		goName = util.CamelCased(schema) + goName
 	}
 
+	goNamePlural := util.CamelCased(util.Sanitize(pgName))
+	if schema != util.PublicSchema {
+		goNamePlural = util.CamelCased(schema) + goNamePlural
+	}
+
 	entity := Entity{
 		GoName:       goName,
-		GoNamePlural: util.CamelCased(util.Sanitize(pgName)),
+		GoNamePlural: goNamePlural,
 		PGName:       pgName,
 		PGSchema:     schema,
 		PGFullName:   util.JoinF(schema, pgName),
