@@ -44,6 +44,6 @@ func NewRelation(sourceColumns []string, targetSchema, targetTable string) Relat
 	}
 }
 
-func (r Relation) AddEntity(entity *Entity) {
+func (r *Relation) AddEntity(entity *Entity) {
 	r.TargetEntity = entity
 }
