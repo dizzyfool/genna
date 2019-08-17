@@ -13,8 +13,12 @@ import (
 const (
 	// Id is camelCased Id
 	Id = "Id"
+	// Ids is camelCased Ids
+	Ids = "Ids"
 	// ID is golang ID
 	ID = "ID"
+	// IDs is golang IDs
+	IDs = "IDs"
 	// Rel if suffix for Relation
 	Rel = "Rel"
 )
@@ -125,7 +129,8 @@ func EntityName(s string) string {
 
 // ColumnName gets string usable as struct field name
 func ColumnName(s string) string {
-	camelCased := ReplaceSuffix(CamelCased(Sanitize(s)), Id, ID)
+	camelCased := CamelCased(Sanitize(s))
+	camelCased = ReplaceSuffix(ReplaceSuffix(camelCased, Id, ID), Ids, IDs)
 
 	return strings.Title(camelCased)
 }
