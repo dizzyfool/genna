@@ -15,7 +15,7 @@ type Relation struct {
 	TargetPGSchema   string
 	TargetPGFullName string
 
-	TargetEntities []*Entity
+	TargetEntity *Entity
 
 	GoType string
 }
@@ -45,9 +45,5 @@ func NewRelation(sourceColumns []string, targetSchema, targetTable string) Relat
 }
 
 func (r Relation) AddEntity(entity *Entity) {
-	if r.TargetEntities == nil {
-		r.TargetEntities = []*Entity{}
-	}
-
-	r.TargetEntities = append(r.TargetEntities, entity)
+	r.TargetEntity = entity
 }
