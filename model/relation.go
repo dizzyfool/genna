@@ -15,6 +15,8 @@ type Relation struct {
 	TargetPGSchema   string
 	TargetPGFullName string
 
+	TargetEntity *Entity
+
 	GoType string
 }
 
@@ -40,4 +42,8 @@ func NewRelation(sourceColumns []string, targetSchema, targetTable string) Relat
 
 		GoType: typ,
 	}
+}
+
+func (r Relation) AddEntity(entity *Entity) {
+	r.TargetEntity = entity
 }

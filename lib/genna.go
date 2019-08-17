@@ -96,8 +96,14 @@ func (g *Genna) Read(selected []string, followFK bool, useSQLNulls bool) ([]mode
 	}
 
 	for _, r := range relations {
+		rel := r.Relation()
 		if i, ok := index[util.Join(r.SourceSchema, r.SourceTable)]; ok {
-			entities[i].AddRelation(r.Relation())
+			entities[i].AddRelation(rel)
+		}
+		for _, c := range r.TargetColumns {
+			if i, ok := index[util.Join(r.TargetSchema, c)]; ok {
+				rel.AddEntity(&entities[i])
+			}
 		}
 	}
 
