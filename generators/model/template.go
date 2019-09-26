@@ -34,7 +34,7 @@ var Tables = struct { {{range .Entities}}
 	{{.GoName}}: struct {
 		Name{{if not .NoAlias}}, Alias{{end}} string
 	}{ 
-		Name: "{{.PGFullName}}"{{if not .NoAlias}},
+		Name: "{{.PGFullName}}",{{if not .NoAlias}}
 		Alias: "{{.Alias}}",{{end}}
 	},{{end}}
 }
