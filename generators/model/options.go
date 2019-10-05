@@ -32,6 +32,9 @@ type Options struct {
 
 	// Override type for json/jsonb
 	JSONTypes map[string]string
+
+	// go-pg version
+	GoPgVer int
 }
 
 // Def fills default values of an options

@@ -4,6 +4,8 @@ import (
 	"github.com/dizzyfool/genna/generators/base"
 	"github.com/dizzyfool/genna/model"
 	"github.com/dizzyfool/genna/util"
+	"github.com/pkg/errors"
+
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -15,6 +17,7 @@ const (
 	noAlias    = "no-alias"
 	softDelete = "soft-delete"
 	json       = "json"
+	gopg       = "gopg"
 )
 
 // CreateCommand creates generator command
@@ -66,6 +69,8 @@ func (g *Basic) AddFlags(command *cobra.Command) {
 	flags.BoolP(noDiscard, "d", false, "do not use 'discard_unknown_columns' tag\n")
 
 	flags.StringToStringP(json, "j", map[string]string{"*": "map[string]interface{}"}, "type for json columns\nuse format: table.column=type, separate by comma\nuse asterisk as wildcard in table name")
+
+	flags.IntP(gopg, "g", 8, "specify go-pg version (8 and 9 supported)\n")
 }
 
 // ReadFlags read flags from command
@@ -101,6 +106,14 @@ func (g *Basic) ReadFlags(command *cobra.Command) error {
 
 	if g.options.JSONTypes, err = flags.GetStringToString(json); err != nil {
 		return err
+	}
+
+	if g.options.GoPgVer, err = flags.GetInt(gopg); err != nil {
+		return err
+	}
+
+	if g.options.GoPgVer != 8 && g.options.GoPgVer != 9 {
+		return errors.Errorf("version %d not supported", g.options.GoPgVer)
 	}
 
 	// setting defaults

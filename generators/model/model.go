@@ -70,13 +70,14 @@ func NewTemplateEntity(entity model.Entity, options Options) TemplateEntity {
 
 	relations := make([]TemplateRelation, len(entity.Relations))
 	for i, relation := range entity.Relations {
-		relations[i] = NewTemplateRelation(relation)
+		relations[i] = NewTemplateRelation(relation, options)
 	}
 
+	tagName := tagName(options)
 	tags := util.NewAnnotation()
-	tags.AddTag("sql", util.Quoted(entity.PGFullName, true))
+	tags.AddTag(tagName, util.Quoted(entity.PGFullName, true))
 	if !options.NoAlias {
-		tags.AddTag("sql", fmt.Sprintf("alias:%s", util.DefaultAlias))
+		tags.AddTag(tagName, fmt.Sprintf("alias:%s", util.DefaultAlias))
 	}
 
 	if !options.NoDiscard {
@@ -119,27 +120,32 @@ func NewTemplateColumn(entity model.Entity, column model.Column, options Options
 	}
 
 	comment := ""
+	tagName := tagName(options)
 	tags := util.NewAnnotation()
-	tags.AddTag("sql", column.PGName)
+	tags.AddTag(tagName, column.PGName)
 
 	// pk tag
 	if column.IsPK {
-		tags.AddTag("sql", "pk")
+		tags.AddTag(tagName, "pk")
 	}
 
 	// types tag
 	if column.PGType == model.TypePGHstore {
-		tags.AddTag("sql", "hstore")
+		tags.AddTag(tagName, "hstore")
 	} else if column.IsArray {
-		tags.AddTag("sql", "array")
+		tags.AddTag(tagName, "array")
 	}
 	if column.PGType == model.TypePGUuid {
-		tags.AddTag("sql", "type:uuid")
+		tags.AddTag(tagName, "type:uuid")
 	}
 
 	// nullable tag
 	if !column.Nullable && !column.IsPK {
-		tags.AddTag("sql", "notnull")
+		if options.GoPgVer == 9 {
+			tags.AddTag(tagName, "use_zero")
+		} else {
+			tags.AddTag(tagName, "notnull")
+		}
 	}
 
 	// soft_delete tag
@@ -150,7 +156,7 @@ func NewTemplateColumn(entity model.Entity, column model.Column, options Options
 	// ignore tag
 	if column.GoType == model.TypeInterface {
 		comment = "// unsupported"
-		tags = util.NewAnnotation().AddTag("sql", "-")
+		tags = util.NewAnnotation().AddTag(tagName, "-")
 	}
 
 	return TemplateColumn{
@@ -170,12 +176,13 @@ type TemplateRelation struct {
 }
 
 // NewTemplateRelation creates relation for template
-func NewTemplateRelation(relation model.Relation) TemplateRelation {
+func NewTemplateRelation(relation model.Relation, options Options) TemplateRelation {
 	comment := ""
+	tagName := tagName(options)
 	tags := util.NewAnnotation().AddTag("pg", "fk:"+strings.Join(relation.FKFields, ","))
 	if len(relation.FKFields) > 1 {
 		comment = "// unsupported"
-		tags.AddTag("sql", "-")
+		tags.AddTag(tagName, "-")
 	}
 
 	return TemplateRelation{
@@ -212,4 +219,11 @@ func jsonType(mp map[string]string, schema, table, field string) (string, bool) 
 	}
 
 	return "", false
+}
+
+func tagName(options Options) string {
+	if options.GoPgVer == 9 {
+		return "pg"
+	}
+	return "sql"
 }
