@@ -6,7 +6,7 @@ import (
 
 	"github.com/dizzyfool/genna/model"
 
-	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg"
 )
 
 func prepareStore() (*store, error) {

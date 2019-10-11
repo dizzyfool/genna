@@ -1,11 +1,10 @@
 package genna
 
 import (
-	"context"
 	"time"
 
-	"github.com/go-pg/pg/v9"
-	"github.com/go-pg/pg/v9/orm"
+	"github.com/go-pg/pg"
+	"github.com/go-pg/pg/orm"
 	"go.uber.org/zap"
 	"golang.org/x/xerrors"
 )
@@ -21,22 +20,21 @@ func newQueryLogger(logger *zap.Logger) queryLogger {
 }
 
 // BeforeQuery stores start time in custom data array
-func (ql queryLogger) BeforeQuery(ctx context.Context, event *pg.QueryEvent) (context.Context, error) {
-	event.Stash = make(map[interface{}]interface{})
-	event.Stash["startedAt"] = time.Now()
-	return ctx, nil
+func (ql queryLogger) BeforeQuery(event *pg.QueryEvent) {
+	event.Data = make(map[interface{}]interface{})
+	event.Data["startedAt"] = time.Now()
 }
 
 // AfterQuery calculates execution time and print it with formatted query
-func (ql queryLogger) AfterQuery(ctx context.Context, event *pg.QueryEvent) error {
+func (ql queryLogger) AfterQuery(event *pg.QueryEvent) {
 	query, err := event.FormattedQuery()
 	if err != nil {
 		ql.logger.Error("formatted query error", zap.Error(err))
 	}
 
 	var since time.Duration
-	if event.Stash != nil {
-		if v, ok := event.Stash["startedAt"]; ok {
+	if event.Data != nil {
+		if v, ok := event.Data["startedAt"]; ok {
 			if startAt, ok := v.(time.Time); ok {
 				since = time.Since(startAt)
 			}
@@ -44,7 +42,6 @@ func (ql queryLogger) AfterQuery(ctx context.Context, event *pg.QueryEvent) erro
 	}
 
 	ql.logger.Debug(query, zap.Duration("duration", since))
-	return nil
 }
 
 // newDatabase creates database connection
