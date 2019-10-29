@@ -37,5 +37,5 @@ func File(filename string) (*os.File, error) {
 		return nil, err
 	}
 
-	return os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	return os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 }
