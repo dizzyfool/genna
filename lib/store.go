@@ -7,8 +7,8 @@ import (
 	"github.com/dizzyfool/genna/model"
 	"github.com/dizzyfool/genna/util"
 
-	"github.com/go-pg/pg"
-	"github.com/go-pg/pg/orm"
+	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/v9/orm"
 	"golang.org/x/xerrors"
 )
 
@@ -19,8 +19,8 @@ func format(pattern string, values ...interface{}) string {
 }
 
 type table struct {
-	Schema string `sql:"table_schema"`
-	Name   string `sql:"table_name"`
+	Schema string `pg:"table_schema"`
+	Name   string `pg:"table_name"`
 }
 
 func (t table) Entity() model.Entity {
@@ -28,13 +28,13 @@ func (t table) Entity() model.Entity {
 }
 
 type relation struct {
-	Constraint    string   `sql:"constraint_name"`
-	SourceSchema  string   `sql:"schema_name"`
-	SourceTable   string   `sql:"table_name"`
-	SourceColumns []string `sql:"columns,array"`
-	TargetSchema  string   `sql:"target_schema"`
-	TargetTable   string   `sql:"target_table"`
-	TargetColumns []string `sql:"target_columns,array"`
+	Constraint    string   `pg:"constraint_name"`
+	SourceSchema  string   `pg:"schema_name"`
+	SourceTable   string   `pg:"table_name"`
+	SourceColumns []string `pg:"columns,array"`
+	TargetSchema  string   `pg:"target_schema"`
+	TargetTable   string   `pg:"target_table"`
+	TargetColumns []string `pg:"target_columns,array"`
 }
 
 func (r relation) Relation() model.Relation {
@@ -51,18 +51,18 @@ func (r relation) Target() table {
 type column struct {
 	tableName struct{} `pg:",discard_unknown_columns"`
 
-	Schema     string   `sql:"schema_name"`
-	Table      string   `sql:"table_name"`
-	Name       string   `sql:"column_name"`
-	IsNullable bool     `sql:"nullable"`
-	IsArray    bool     `sql:"array"`
-	Dimensions int      `sql:"dims"`
-	Type       string   `sql:"type"`
-	Default    string   `sql:"def"`
-	IsPK       bool     `sql:"pk"`
-	IsFK       bool     `sql:"fk"`
-	MaxLen     int      `sql:"len"`
-	Values     []string `sql:"enum,array"`
+	Schema     string   `pg:"schema_name"`
+	Table      string   `pg:"table_name"`
+	Name       string   `pg:"column_name"`
+	IsNullable bool     `pg:"nullable"`
+	IsArray    bool     `pg:"array"`
+	Dimensions int      `pg:"dims"`
+	Type       string   `pg:"type"`
+	Default    string   `pg:"def"`
+	IsPK       bool     `pg:"pk"`
+	IsFK       bool     `pg:"fk"`
+	MaxLen     int      `pg:"len"`
+	Values     []string `pg:"enum,array"`
 }
 
 func (c column) Column(useSQLNulls bool) model.Column {

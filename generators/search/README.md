@@ -55,8 +55,8 @@ You should get following search structs on model package:
 package model
 
 import (
-	"github.com/go-pg/pg"
-	"github.com/go-pg/pg/orm"
+	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/v9/orm"
 )
 
 // base filters
@@ -173,7 +173,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/go-pg/pg"
+	"github.com/go-pg/pg/v9"
 )
 
 func TestModel(t *testing.T) {

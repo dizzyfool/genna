@@ -53,7 +53,7 @@ func ToLower(c byte) byte {
 }
 
 // CamelCased converts string to camelCase
-// from github.com/go-pg/pg/internal
+// from github.com/go-pg/pg/v9/internal
 func CamelCased(s string) string {
 	r := make([]byte, 0, len(s))
 	upperNext := true
@@ -75,7 +75,7 @@ func CamelCased(s string) string {
 }
 
 // Underscore converts string to under_scored
-// from github.com/go-pg/pg/internal
+// from github.com/go-pg/pg/v9/internal
 func Underscore(s string) string {
 	r := make([]byte, 0, len(s)+5)
 	for i := 0; i < len(s); i++ {

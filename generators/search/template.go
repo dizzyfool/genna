@@ -7,8 +7,8 @@ package {{.Package}}
 import ({{if .HasImports}}{{range .Imports}}
 	"{{.}}"{{end}}
 	{{end}}
-	"github.com/go-pg/pg"
-	"github.com/go-pg/pg/orm"
+	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/v9/orm"
 )
 
 const condition =  "?.? = ?"

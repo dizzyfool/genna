@@ -162,7 +162,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/go-pg/pg"
+	"github.com/go-pg/pg/v9"
 )
 
 const AllColumns = "t.*"

@@ -451,7 +451,7 @@ func Test_goImport(t *testing.T) {
 				nullable:      true,
 				avoidPointers: true,
 			},
-			want: "github.com/go-pg/pg",
+			want: "github.com/go-pg/pg/v9",
 		},
 	}
 	for _, tt := range tests {
