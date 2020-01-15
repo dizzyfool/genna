@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
 )
 
 const (
@@ -21,26 +20,18 @@ const (
 )
 
 // CreateCommand creates generator command
-func CreateCommand(logger *zap.Logger) *cobra.Command {
-	return base.CreateCommand("model", "Basic go-pg model generator", New(logger))
+func CreateCommand() *cobra.Command {
+	return base.CreateCommand("model", "Basic go-pg model generator", New())
 }
 
 // Basic represents basic generator
 type Basic struct {
-	logger  *zap.Logger
 	options Options
 }
 
 // New creates basic generator
-func New(logger *zap.Logger) *Basic {
-	return &Basic{
-		logger: logger,
-	}
-}
-
-// Logger gets logger
-func (g *Basic) Logger() *zap.Logger {
-	return g.logger
+func New() *Basic {
+	return &Basic{}
 }
 
 // Options gets options
@@ -124,7 +115,7 @@ func (g *Basic) ReadFlags(command *cobra.Command) error {
 
 // Generate runs whole generation process
 func (g *Basic) Generate() error {
-	return base.NewGenerator(g.options.URL, g.logger).
+	return base.NewGenerator(g.options.URL).
 		Generate(
 			g.options.Tables,
 			g.options.FollowFKs,

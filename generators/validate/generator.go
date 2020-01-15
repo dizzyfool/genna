@@ -6,7 +6,6 @@ import (
 	"github.com/dizzyfool/genna/util"
 
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
 )
 
 const (
@@ -15,26 +14,18 @@ const (
 )
 
 // CreateCommand creates generator command
-func CreateCommand(logger *zap.Logger) *cobra.Command {
-	return base.CreateCommand("validation", "Validation generator for go-pg models", New(logger))
+func CreateCommand() *cobra.Command {
+	return base.CreateCommand("validation", "Validation generator for go-pg models", New())
 }
 
 // Validate represents validate generator
 type Validate struct {
-	logger  *zap.Logger
 	options Options
 }
 
 // New creates generator
-func New(logger *zap.Logger) *Validate {
-	return &Validate{
-		logger: logger,
-	}
-}
-
-// Logger gets logger
-func (g *Validate) Logger() *zap.Logger {
-	return g.logger
+func New() *Validate {
+	return &Validate{}
 }
 
 // Options gets options
@@ -86,7 +77,7 @@ func (g *Validate) ReadFlags(command *cobra.Command) error {
 
 // Generate runs whole generation process
 func (g *Validate) Generate() error {
-	return base.NewGenerator(g.options.URL, g.logger).
+	return base.NewGenerator(g.options.URL).
 		Generate(
 			g.options.Tables,
 			g.options.FollowFKs,

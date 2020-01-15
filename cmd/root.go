@@ -9,7 +9,6 @@ import (
 	"github.com/dizzyfool/genna/generators/validate"
 
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
 )
 
 var root = &cobra.Command{
@@ -31,19 +30,11 @@ to quickly create a models for go-pg https://github.com/go-pg/pg/v9`,
 }
 
 func init() {
-	config := zap.NewProductionConfig()
-	config.OutputPaths = []string{"stdout"}
-	config.Encoding = "console"
-	logger, err := config.Build()
-	if err != nil {
-		panic(err)
-	}
-
 	root.AddCommand(
-		model.CreateCommand(logger),
-		search.CreateCommand(logger),
-		validate.CreateCommand(logger),
-		named.CreateCommand(logger),
+		model.CreateCommand(),
+		search.CreateCommand(),
+		validate.CreateCommand(),
+		named.CreateCommand(),
 	)
 }
 

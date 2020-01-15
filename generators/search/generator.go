@@ -6,7 +6,6 @@ import (
 	"github.com/dizzyfool/genna/util"
 
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
 )
 
 const (
@@ -17,26 +16,18 @@ const (
 )
 
 // CreateCommand creates generator command
-func CreateCommand(logger *zap.Logger) *cobra.Command {
-	return base.CreateCommand("search", "Search generator for go-pg models", New(logger))
+func CreateCommand() *cobra.Command {
+	return base.CreateCommand("search", "Search generator for go-pg models", New())
 }
 
 // Search represents search generator
 type Search struct {
-	logger  *zap.Logger
 	options Options
 }
 
 // New creates generator
-func New(logger *zap.Logger) *Search {
-	return &Search{
-		logger: logger,
-	}
-}
-
-// Logger gets logger
-func (g *Search) Logger() *zap.Logger {
-	return g.logger
+func New() *Search {
+	return &Search{}
 }
 
 // Options gets options
@@ -100,7 +91,7 @@ func (g *Search) ReadFlags(command *cobra.Command) error {
 
 // Generate runs whole generation process
 func (g *Search) Generate() error {
-	return base.NewGenerator(g.options.URL, g.logger).
+	return base.NewGenerator(g.options.URL).
 		Generate(
 			g.options.Tables,
 			g.options.FollowFKs,
@@ -113,7 +104,7 @@ func (g *Search) Generate() error {
 
 // Repack runs generator with custom packer
 func (g *Search) Repack(packer base.Packer) error {
-	return base.NewGenerator(g.options.URL, g.logger).
+	return base.NewGenerator(g.options.URL).
 		Generate(
 			g.options.Tables,
 			g.options.FollowFKs,

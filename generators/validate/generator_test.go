@@ -6,17 +6,10 @@ import (
 	"path"
 	"runtime"
 	"testing"
-
-	"go.uber.org/zap"
 )
 
 func TestGenerator_Generate(t *testing.T) {
-	config := zap.NewProductionConfig()
-	config.OutputPaths = []string{"stdout"}
-	config.Encoding = "console"
-	logger, _ := config.Build()
-
-	generator := New(logger)
+	generator := New()
 
 	generator.options.Def()
 	generator.options.URL = `postgres://genna:genna@localhost:5432/genna?sslmode=disable`

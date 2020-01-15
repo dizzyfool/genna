@@ -2,21 +2,21 @@ package genna
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/go-pg/pg/v9"
 	"github.com/go-pg/pg/v9/orm"
-	"go.uber.org/zap"
 	"golang.org/x/xerrors"
 )
 
 // queryLogger helper struct for query logging
 type queryLogger struct {
-	logger *zap.Logger
+	logger log.Logger
 }
 
 // newQueryLogger creates new helper struct for query logging
-func newQueryLogger(logger *zap.Logger) queryLogger {
+func newQueryLogger(logger log.Logger) queryLogger {
 	return queryLogger{logger: logger}
 }
 
@@ -32,7 +32,7 @@ func (ql queryLogger) BeforeQuery(ctx context.Context, event *pg.QueryEvent) (co
 func (ql queryLogger) AfterQuery(ctx context.Context, event *pg.QueryEvent) error {
 	query, err := event.FormattedQuery()
 	if err != nil {
-		ql.logger.Error("formatted query error", zap.Error(err))
+		ql.logger.Printf("formatted query error: %s", err)
 	}
 
 	var since time.Duration
@@ -44,13 +44,12 @@ func (ql queryLogger) AfterQuery(ctx context.Context, event *pg.QueryEvent) erro
 		}
 	}
 
-	ql.logger.Debug(query, zap.Duration("duration", since))
-
+	ql.logger.Printf("query: %s, duration: %d", query, since)
 	return nil
 }
 
 // newDatabase creates database connection
-func newDatabase(url string, logger *zap.Logger) (orm.DB, error) {
+func newDatabase(url string, logger *log.Logger) (orm.DB, error) {
 	options, err := pg.ParseURL(url)
 	if err != nil {
 		return nil, xerrors.Errorf("parsing connection url error: %w", err)
@@ -59,7 +58,7 @@ func newDatabase(url string, logger *zap.Logger) (orm.DB, error) {
 	client := pg.Connect(options)
 
 	if logger != nil {
-		client.AddQueryHook(newQueryLogger(logger))
+		client.AddQueryHook(newQueryLogger(*logger))
 	}
 
 	return client, nil

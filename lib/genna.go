@@ -3,9 +3,9 @@ package genna
 import (
 	"github.com/dizzyfool/genna/model"
 	"github.com/dizzyfool/genna/util"
+	"log"
 
 	"github.com/go-pg/pg/v9/orm"
-	"go.uber.org/zap"
 	"golang.org/x/xerrors"
 )
 
@@ -16,11 +16,11 @@ type Genna struct {
 	DB    orm.DB
 	Store *store
 
-	Logger *zap.Logger
+	Logger *log.Logger
 }
 
 // New creates Genna
-func New(url string, logger *zap.Logger) Genna {
+func New(url string, logger *log.Logger) Genna {
 	return Genna{
 		url:    url,
 		Logger: logger,

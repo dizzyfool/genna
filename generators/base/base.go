@@ -2,8 +2,8 @@ package base
 
 import (
 	"bytes"
-	"fmt"
 	"html/template"
+	"log"
 	"os"
 
 	"github.com/dizzyfool/genna/lib"
@@ -11,7 +11,6 @@ import (
 	"github.com/dizzyfool/genna/util"
 
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
 	"golang.org/x/xerrors"
 )
 
@@ -31,8 +30,6 @@ const (
 
 // Gen is interface for all generators
 type Gen interface {
-	Logger() *zap.Logger
-
 	AddFlags(command *cobra.Command)
 	ReadFlags(command *cobra.Command) error
 
@@ -73,9 +70,9 @@ type Generator struct {
 }
 
 // NewGenerator creates generator
-func NewGenerator(url string, log *zap.Logger) Generator {
+func NewGenerator(url string) Generator {
 	return Generator{
-		Genna: genna.New(url, log),
+		Genna: genna.New(url, nil),
 	}
 }
 
@@ -153,10 +150,10 @@ func (g Generator) GenerateFromEntities(entities []model.Entity, output, tmpl st
 		if !saved {
 			return xerrors.Errorf("saving file error: %w", err)
 		}
-		g.Logger.Error("formatting file error", zap.Error(err), zap.String("file", output))
+		log.Printf("formatting file %s error: %s", output, err)
 	}
 
-	g.Logger.Info(fmt.Sprintf("successfully generated %d models\n", len(entities)))
+	log.Printf("successfully generated %d models", len(entities))
 
 	return nil
 }
@@ -168,23 +165,21 @@ func CreateCommand(name, description string, generator Gen) *cobra.Command {
 		Short: description,
 		Long:  "",
 		Run: func(command *cobra.Command, args []string) {
-			logger := generator.Logger()
-
 			if !command.HasFlags() {
 				if err := command.Help(); err != nil {
-					logger.Error("help not found", zap.Error(err))
+					log.Printf("help not found, error: %s", err)
 				}
 				os.Exit(0)
 				return
 			}
 
 			if err := generator.ReadFlags(command); err != nil {
-				logger.Error("read flags error", zap.Error(err))
+				log.Printf("read flags error: %s", err)
 				return
 			}
 
 			if err := generator.Generate(); err != nil {
-				logger.Error("generate error", zap.Error(err))
+				log.Printf("generate error: %s", err)
 				return
 			}
 		},

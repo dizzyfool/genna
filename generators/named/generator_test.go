@@ -6,17 +6,10 @@ import (
 	"path"
 	"runtime"
 	"testing"
-
-	"go.uber.org/zap"
 )
 
 func TestGenerator_Generate(t *testing.T) {
-	config := zap.NewProductionConfig()
-	config.OutputPaths = []string{"stdout"}
-	config.Encoding = "console"
-	logger, _ := config.Build()
-
-	generator := New(logger)
+	generator := New()
 	options := generator.Options()
 
 	options.Def()
