@@ -123,6 +123,7 @@ func (g *Basic) Generate() error {
 			g.options.Output,
 			Template,
 			g.Packer(),
+			g.options.GoPgVer,
 		)
 }
 

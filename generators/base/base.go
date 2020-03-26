@@ -2,6 +2,7 @@ package base
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"log"
 	"os"
@@ -11,7 +12,6 @@ import (
 	"github.com/dizzyfool/genna/util"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/xerrors"
 )
 
 const (
@@ -55,6 +55,9 @@ type Options struct {
 	// even if Tables not listed in Tables param
 	// will not generate fks if schema not listed
 	FollowFKs bool
+
+	// go-pg version
+	GoPgVer int
 }
 
 // Def sets default options if empty
@@ -120,10 +123,10 @@ func ReadFlags(command *cobra.Command) (conn, output string, tables []string, fo
 }
 
 // Generate runs whole generation process
-func (g Generator) Generate(tables []string, followFKs, useSQLNulls bool, output, tmpl string, packer Packer) error {
-	entities, err := g.Read(tables, followFKs, useSQLNulls)
+func (g Generator) Generate(tables []string, followFKs, useSQLNulls bool, output, tmpl string, packer Packer, goPGVer int) error {
+	entities, err := g.Read(tables, followFKs, useSQLNulls, goPGVer)
 	if err != nil {
-		return xerrors.Errorf("read database error: %w", err)
+		return fmt.Errorf("read database error: %w", err)
 	}
 
 	return g.GenerateFromEntities(entities, output, tmpl, packer)
@@ -132,23 +135,23 @@ func (g Generator) Generate(tables []string, followFKs, useSQLNulls bool, output
 func (g Generator) GenerateFromEntities(entities []model.Entity, output, tmpl string, packer Packer) error {
 	parsed, err := template.New("base").Parse(tmpl)
 	if err != nil {
-		return xerrors.Errorf("parsing template error: %w", err)
+		return fmt.Errorf("parsing template error: %w", err)
 	}
 
 	pack, err := packer(entities)
 	if err != nil {
-		return xerrors.Errorf("packing data error: %w", err)
+		return fmt.Errorf("packing data error: %w", err)
 	}
 
 	var buffer bytes.Buffer
 	if err := parsed.ExecuteTemplate(&buffer, "base", pack); err != nil {
-		return xerrors.Errorf("processing model template error: %w", err)
+		return fmt.Errorf("processing model template error: %w", err)
 	}
 
 	saved, err := util.FmtAndSave(buffer.Bytes(), output)
 	if err != nil {
 		if !saved {
-			return xerrors.Errorf("saving file error: %w", err)
+			return fmt.Errorf("saving file error: %w", err)
 		}
 		log.Printf("formatting file %s error: %s", output, err)
 	}

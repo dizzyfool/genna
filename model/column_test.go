@@ -38,7 +38,7 @@ func TestColumn_GoName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := NewColumn(tt.pgName, TypePGText, false, false, false, 0, false, false, 0, []string{})
+			c := NewColumn(tt.pgName, TypePGText, false, false, false, 0, false, false, 0, []string{}, 9)
 			if c.GoName != tt.want {
 				t.Errorf("Column.Name = %v, want %v", c.GoName, tt.want)
 			}
@@ -123,7 +123,7 @@ func TestColumn_GoType(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := NewColumn("test", tt.fields.pgType, tt.fields.nullable, tt.fields.sqlNulls, tt.fields.array, tt.fields.dims, false, false, 0, []string{})
+			c := NewColumn("test", tt.fields.pgType, tt.fields.nullable, tt.fields.sqlNulls, tt.fields.array, tt.fields.dims, false, false, 0, []string{}, 9)
 			if got := c.Type; got != tt.want {
 				t.Errorf("Column.Type = %v, want %v", got, tt.want)
 			}

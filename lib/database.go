@@ -2,12 +2,12 @@ package genna
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/go-pg/pg/v9"
 	"github.com/go-pg/pg/v9/orm"
-	"golang.org/x/xerrors"
 )
 
 // queryLogger helper struct for query logging
@@ -52,7 +52,7 @@ func (ql queryLogger) AfterQuery(ctx context.Context, event *pg.QueryEvent) erro
 func newDatabase(url string, logger *log.Logger) (orm.DB, error) {
 	options, err := pg.ParseURL(url)
 	if err != nil {
-		return nil, xerrors.Errorf("parsing connection url error: %w", err)
+		return nil, fmt.Errorf("parsing connection url error: %w", err)
 	}
 
 	client := pg.Connect(options)

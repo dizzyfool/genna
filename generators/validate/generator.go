@@ -85,6 +85,7 @@ func (g *Validate) Generate() error {
 			g.options.Output,
 			Template,
 			g.Packer(),
+			g.options.GoPgVer,
 		)
 }
 

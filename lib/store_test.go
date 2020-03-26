@@ -210,7 +210,7 @@ func Test_column_Column(t *testing.T) {
 				MaxLen:     0,
 				Values:     []string{},
 			},
-			want: model.NewColumn("userId", model.TypePGInt8, false, false, false, 0, true, false, 0, []string{}),
+			want: model.NewColumn("userId", model.TypePGInt8, false, false, false, 0, true, false, 0, []string{}, 9),
 		},
 	}
 	for _, tt := range tests {
@@ -229,7 +229,7 @@ func Test_column_Column(t *testing.T) {
 				MaxLen:     tt.fields.MaxLen,
 				Values:     tt.fields.Values,
 			}
-			if got := c.Column(false); !reflect.DeepEqual(got, tt.want) {
+			if got := c.Column(false, 9); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("column.Column() = %v, want %v", got, tt.want)
 			}
 		})

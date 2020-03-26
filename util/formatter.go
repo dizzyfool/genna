@@ -1,8 +1,8 @@
 package util
 
 import (
+	"fmt"
 	"go/format"
-	"golang.org/x/xerrors"
 	"os"
 	"path"
 )
@@ -19,11 +19,11 @@ func FmtAndSave(unformatted []byte, filename string) (bool, error) {
 
 	file, err := File(filename)
 	if err != nil {
-		return false, xerrors.Errorf("open model file error: %w", err)
+		return false, fmt.Errorf("open model file error: %w", err)
 	}
 
 	if _, err := file.Write(content); err != nil {
-		return false, xerrors.Errorf("writing content to file error: %w", err)
+		return false, fmt.Errorf("writing content to file error: %w", err)
 	}
 
 	return true, fmtErr

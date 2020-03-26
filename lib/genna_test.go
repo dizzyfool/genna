@@ -17,7 +17,7 @@ func TestGenna_Read(t *testing.T) {
 	genna := New(prepareReq())
 
 	t.Run("Should read DB", func(t *testing.T) {
-		entities, err := genna.Read([]string{"public.*"}, true, false)
+		entities, err := genna.Read([]string{"public.*"}, true, false, 9)
 		if err != nil {
 			t.Errorf("Genna.Read error %v", err)
 			return

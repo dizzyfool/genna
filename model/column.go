@@ -30,7 +30,7 @@ type Column struct {
 }
 
 // NewColumn creates Column from pg info
-func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dims int, pk, fk bool, len int, values []string) Column {
+func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dims int, pk, fk bool, len int, values []string, goPGVer int) Column {
 	var err error
 
 	array, dims = fixIsArray(pgType, array, dims)
@@ -67,7 +67,7 @@ func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dim
 		column.Type = column.GoType
 	}
 
-	column.Import = GoImport(pgType, nullable, sqlNulls)
+	column.Import = GoImport(pgType, nullable, sqlNulls, goPGVer)
 
 	return column
 }

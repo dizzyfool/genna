@@ -99,6 +99,7 @@ func (g *Search) Generate() error {
 			g.options.Output,
 			Template,
 			g.Packer(),
+			g.options.GoPgVer,
 		)
 }
 
@@ -112,6 +113,7 @@ func (g *Search) Repack(packer base.Packer) error {
 			g.options.Output,
 			Template,
 			packer,
+			g.options.GoPgVer,
 		)
 }
 

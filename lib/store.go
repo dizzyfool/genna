@@ -1,6 +1,7 @@
 package genna
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 
@@ -9,7 +10,6 @@ import (
 
 	"github.com/go-pg/pg/v9"
 	"github.com/go-pg/pg/v9/orm"
-	"golang.org/x/xerrors"
 )
 
 var formatter = orm.Formatter{}
@@ -65,8 +65,8 @@ type column struct {
 	Values     []string `pg:"enum,array"`
 }
 
-func (c column) Column(useSQLNulls bool) model.Column {
-	return model.NewColumn(c.Name, c.Type, c.IsNullable, useSQLNulls, c.IsArray, c.Dimensions, c.IsPK, c.IsFK, c.MaxLen, c.Values)
+func (c column) Column(useSQLNulls bool, goPGVer int) model.Column {
+	return model.NewColumn(c.Name, c.Type, c.IsNullable, useSQLNulls, c.IsArray, c.Dimensions, c.IsPK, c.IsFK, c.MaxLen, c.Values, goPGVer)
 }
 
 // Store is database helper
@@ -113,7 +113,7 @@ func (s *store) Tables(selected []string) ([]table, error) {
 
 	var result []table
 	if _, err := s.db.Query(&result, query); err != nil {
-		return nil, xerrors.Errorf("getting tables info error: %w", err)
+		return nil, fmt.Errorf("getting tables info error: %w", err)
 	}
 
 	return result, nil
@@ -165,7 +165,7 @@ func (s *store) Relations(tables []table) ([]relation, error) {
 
 	var relations []relation
 	if _, err := s.db.Query(&relations, query, pg.InMulti(ts...)); err != nil {
-		return nil, xerrors.Errorf("getting relations info error: %w", err)
+		return nil, fmt.Errorf("getting relations info error: %w", err)
 	}
 
 	return relations, nil
@@ -251,7 +251,7 @@ func (s store) Columns(tables []table) ([]column, error) {
 
 	var columns []column
 	if _, err := s.db.Query(&columns, query, pg.InMulti(ts...)); err != nil {
-		return nil, xerrors.Errorf("getting columns info error: %w", err)
+		return nil, fmt.Errorf("getting columns info error: %w", err)
 	}
 
 	return columns, nil

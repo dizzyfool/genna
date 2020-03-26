@@ -74,10 +74,10 @@ func TestEntity_AddColumn(t *testing.T) {
 	entity := NewEntity(util.PublicSchema, "test", nil, nil)
 
 	t.Run("Should add column", func(t *testing.T) {
-		column1 := NewColumn("name", TypePGText, false, false, false, 0, false, false, 0, []string{})
-		column2 := NewColumn("name_", TypePGText, false, false, false, 0, false, false, 0, []string{})
-		column3 := NewColumn("timeout", TypePGInterval, false, false, false, 0, false, false, 0, []string{})
-		column4 := NewColumn("duration", TypePGInterval, false, false, false, 0, false, false, 0, []string{})
+		column1 := NewColumn("name", TypePGText, false, false, false, 0, false, false, 0, []string{}, 9)
+		column2 := NewColumn("name_", TypePGText, false, false, false, 0, false, false, 0, []string{}, 9)
+		column3 := NewColumn("timeout", TypePGInterval, false, false, false, 0, false, false, 0, []string{}, 9)
+		column4 := NewColumn("duration", TypePGInterval, false, false, false, 0, false, false, 0, []string{}, 9)
 
 		t.Run("Should add first column", func(t *testing.T) {
 			entity.AddColumn(column1)
@@ -113,7 +113,7 @@ func TestEntity_AddColumn(t *testing.T) {
 }
 
 func TestEntity_AddRelation(t *testing.T) {
-	column1 := NewColumn("test", TypePGText, false, false, false, 0, false, false, 0, []string{})
+	column1 := NewColumn("test", TypePGText, false, false, false, 0, false, false, 0, []string{}, 9)
 	relation1 := NewRelation([]string{"userId"}, util.PublicSchema, "users")
 
 	entity := NewEntity(util.PublicSchema, "test", []Column{column1}, []Relation{relation1})
@@ -156,8 +156,8 @@ func TestEntity_HasMultiplePKs(t *testing.T) {
 	entity := NewEntity(util.PublicSchema, "test", nil, nil)
 
 	t.Run("Should add column", func(t *testing.T) {
-		column1 := NewColumn("userId", TypePGText, false, false, false, 0, true, false, 0, []string{})
-		column2 := NewColumn("locationId", TypePGText, false, false, false, 0, true, false, 0, []string{})
+		column1 := NewColumn("userId", TypePGText, false, false, false, 0, true, false, 0, []string{}, 9)
+		column2 := NewColumn("locationId", TypePGText, false, false, false, 0, true, false, 0, []string{}, 9)
 
 		t.Run("Should check for one key", func(t *testing.T) {
 			entity.AddColumn(column1)

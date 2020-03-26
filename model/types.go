@@ -2,8 +2,6 @@ package model
 
 import (
 	"fmt"
-
-	"golang.org/x/xerrors"
 )
 
 const (
@@ -128,7 +126,7 @@ func GoType(pgType string) (string, error) {
 		return TypeIPNet, nil
 	}
 
-	return "", xerrors.Errorf("unsupported type: %s", pgType)
+	return "", fmt.Errorf("unsupported type: %s", pgType)
 }
 
 // GoSlice generates go slice type from pg array
@@ -136,7 +134,7 @@ func GoSlice(pgType string, dimensions int) (string, error) {
 	switch pgType {
 	case TypePGTimestamp, TypePGTimestamptz, TypePGDate, TypePGTime, TypePGTimetz,
 		TypePGInterval, TypePGHstore, TypePGInet, TypePGCidr:
-		return "", xerrors.Errorf("unsupported array type: %s", pgType)
+		return "", fmt.Errorf("unsupported array type: %s", pgType)
 	}
 
 	typ, err := GoType(pgType)
@@ -184,7 +182,7 @@ func GoNullable(pgType string, useSQLNull bool) (string, error) {
 }
 
 // GoImport generates import from go type
-func GoImport(pgType string, nullable, useSQLNull bool) string {
+func GoImport(pgType string, nullable, useSQLNull bool, ver int) string {
 	if nullable && useSQLNull {
 		switch pgType {
 		case TypePGInt2, TypePGInt4, TypePGInt8,
@@ -193,7 +191,11 @@ func GoImport(pgType string, nullable, useSQLNull bool) string {
 			TypePGText, TypePGVarchar, TypePGUuid, TypePGBpchar, TypePGPoint:
 			return "database/sql"
 		case TypePGTimestamp, TypePGTimestamptz, TypePGDate, TypePGTime, TypePGTimetz:
-			return "github.com/go-pg/pg/v9"
+			if ver == 9 {
+				return "github.com/go-pg/pg/v9"
+			} else {
+				return "github.com/go-pg/pg"
+			}
 		}
 	}
 

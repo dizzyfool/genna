@@ -15,6 +15,8 @@ type TemplatePackage struct {
 	HasImports bool
 	Imports    []string
 
+	GoPGVer string
+
 	Entities []TemplateEntity
 }
 
@@ -43,11 +45,18 @@ func NewTemplatePackage(entities []model.Entity, options Options) TemplatePackag
 		models = append(models, mdl)
 	}
 
+	goPGVer := ""
+	if options.GoPgVer == 9 {
+		goPGVer = "/v9"
+	}
+
 	return TemplatePackage{
 		Package: options.Package,
 
 		HasImports: imports.Len() > 0,
 		Imports:    imports.Elements(),
+
+		GoPGVer: goPGVer,
 
 		Entities: models,
 	}

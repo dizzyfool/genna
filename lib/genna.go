@@ -1,12 +1,12 @@
 package genna
 
 import (
+	"fmt"
 	"github.com/dizzyfool/genna/model"
 	"github.com/dizzyfool/genna/util"
 	"log"
 
 	"github.com/go-pg/pg/v9/orm"
-	"golang.org/x/xerrors"
 )
 
 // Genna is  struct should be embedded to custom generator when genna used as library
@@ -32,7 +32,7 @@ func (g *Genna) connect() error {
 
 	if g.DB == nil {
 		if g.DB, err = newDatabase(g.url, g.Logger); err != nil {
-			return xerrors.Errorf("unable to connect to DB: %w", err)
+			return fmt.Errorf("unable to connect to DB: %w", err)
 		}
 
 		g.Store = newStore(g.DB)
@@ -42,7 +42,7 @@ func (g *Genna) connect() error {
 }
 
 // Read reads database and gets entities with columns and relations
-func (g *Genna) Read(selected []string, followFK bool, useSQLNulls bool) ([]model.Entity, error) {
+func (g *Genna) Read(selected []string, followFK bool, useSQLNulls bool, goPGVer int) ([]model.Entity, error) {
 	if err := g.connect(); err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func (g *Genna) Read(selected []string, followFK bool, useSQLNulls bool) ([]mode
 	}
 
 	if len(tables) == 0 {
-		return nil, xerrors.New("no tables found")
+		return nil, fmt.Errorf("no tables found")
 	}
 
 	relations, err := g.Store.Relations(tables)
@@ -91,7 +91,7 @@ func (g *Genna) Read(selected []string, followFK bool, useSQLNulls bool) ([]mode
 
 	for _, c := range columns {
 		if i, ok := index[util.Join(c.Schema, c.Table)]; ok {
-			entities[i].AddColumn(c.Column(useSQLNulls))
+			entities[i].AddColumn(c.Column(useSQLNulls, goPGVer))
 		}
 	}
 
