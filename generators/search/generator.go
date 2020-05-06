@@ -13,6 +13,7 @@ const (
 	keepPK  = "keep-pk"
 	noAlias = "no-alias"
 	relaxed = "relaxed"
+	gopg    = "gopg"
 )
 
 // CreateCommand creates generator command
@@ -54,6 +55,8 @@ func (g *Search) AddFlags(command *cobra.Command) {
 	flags.BoolP(noAlias, "w", false, `do not set 'alias' tag to "t"`)
 
 	flags.BoolP(relaxed, "r", false, "use interface{} type in search filters\n")
+
+	flags.IntP(gopg, "g", 9, "specify go-pg version\n")
 }
 
 // ReadFlags read flags from command
@@ -80,6 +83,10 @@ func (g *Search) ReadFlags(command *cobra.Command) error {
 	}
 
 	if g.options.Relaxed, err = flags.GetBool(relaxed); err != nil {
+		return err
+	}
+
+	if g.options.GoPgVer, err = flags.GetInt(gopg); err != nil {
 		return err
 	}
 
