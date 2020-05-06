@@ -27,7 +27,11 @@ func (s *search) apply(query *orm.Query) {
 }
 
 func (s *search) where(query *orm.Query, table, field string, value interface{}) {
+	{{if eq .GoPGVer "/v9"}}
+	query.Where(condition, pg.Ident(table), pg.Ident(field), value)
+	{{else}}
 	query.Where(condition, pg.F(table), pg.F(field), value)
+	{{end}}
 }
 
 func (s *search) WithApply(a applier) {
