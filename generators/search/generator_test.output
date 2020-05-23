@@ -82,6 +82,8 @@ type UserSearch struct {
 	Activated *bool
 	Name      *string
 	CountryID *int
+	Avatar    *[]byte
+	AvatarAlt *[]byte
 }
 
 func (s *UserSearch) Apply(query *orm.Query) *orm.Query {
@@ -99,6 +101,12 @@ func (s *UserSearch) Apply(query *orm.Query) *orm.Query {
 	}
 	if s.CountryID != nil {
 		s.where(query, Tables.User.Alias, Columns.User.CountryID, s.CountryID)
+	}
+	if s.Avatar != nil {
+		s.where(query, Tables.User.Alias, Columns.User.Avatar, s.Avatar)
+	}
+	if s.AvatarAlt != nil {
+		s.where(query, Tables.User.Alias, Columns.User.AvatarAlt, s.AvatarAlt)
 	}
 
 	s.apply(query)

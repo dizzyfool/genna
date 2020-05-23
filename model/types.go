@@ -66,8 +66,8 @@ const (
 	TypeFloat64 = "float64"
 	// TypeString is a go type
 	TypeString = "string"
-	// TypeByte is a go type
-	TypeByte = "byte"
+	// TypeByteSlice is a go type
+	TypeByteSlice = "[]byte"
 	// TypeBool is a go type
 	TypeBool = "bool"
 	// TypeTime is a go type
@@ -87,14 +87,6 @@ const (
 	TypeInterface = "interface{}"
 )
 
-func fixIsArray(pgType string, isArray bool, dimensions int) (bool, int) {
-	if pgType == TypePGBytea {
-		return true, dimensions + 1
-	}
-
-	return isArray, dimensions
-}
-
 // GoType generates simple go type from pg type
 func GoType(pgType string) (string, error) {
 	switch pgType {
@@ -109,7 +101,7 @@ func GoType(pgType string) (string, error) {
 	case TypePGText, TypePGVarchar, TypePGUuid, TypePGBpchar, TypePGPoint:
 		return TypeString, nil
 	case TypePGBytea:
-		return TypeByte, nil
+		return TypeByteSlice, nil
 	case TypePGBool:
 		return TypeBool, nil
 	case TypePGTimestamp, TypePGTimestamptz, TypePGDate, TypePGTime, TypePGTimetz:
@@ -173,8 +165,8 @@ func GoNullable(pgType string, useSQLNull bool) (string, error) {
 	}
 
 	switch pgType {
-	case TypePGHstore, TypePGJSON, TypePGJSONB:
-		// hstore & json types without pointers
+	case TypePGHstore, TypePGJSON, TypePGJSONB, TypePGBytea:
+		// hstore & json & bytea types without pointers
 		return typ, nil
 	default:
 		return fmt.Sprintf("*%s", typ), nil

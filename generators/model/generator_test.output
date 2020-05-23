@@ -7,7 +7,7 @@ var Columns = struct {
 		ID, Name string
 	}
 	User struct {
-		ID, Email, Activated, Name, CountryID string
+		ID, Email, Activated, Name, CountryID, Avatar, AvatarAlt, ApiKeys string
 
 		Country string
 	}
@@ -22,7 +22,7 @@ var Columns = struct {
 		Name: "name",
 	},
 	User: struct {
-		ID, Email, Activated, Name, CountryID string
+		ID, Email, Activated, Name, CountryID, Avatar, AvatarAlt, ApiKeys string
 
 		Country string
 	}{
@@ -31,6 +31,9 @@ var Columns = struct {
 		Activated: "activated",
 		Name:      "name",
 		CountryID: "countryId",
+		Avatar:    "avatar",
+		AvatarAlt: "avatarAlt",
+		ApiKeys:   "apiKeys",
 
 		Country: "Country",
 	},
@@ -84,11 +87,14 @@ type Project struct {
 type User struct {
 	tableName struct{} `sql:"users,alias:t" pg:",discard_unknown_columns"`
 
-	ID        int     `sql:"userId,pk"`
-	Email     string  `sql:"email,notnull"`
-	Activated bool    `sql:"activated,notnull"`
-	Name      *string `sql:"name"`
-	CountryID *int    `sql:"countryId"`
+	ID        int      `sql:"userId,pk"`
+	Email     string   `sql:"email,notnull"`
+	Activated bool     `sql:"activated,notnull"`
+	Name      *string  `sql:"name"`
+	CountryID *int     `sql:"countryId"`
+	Avatar    []byte   `sql:"avatar,notnull"`
+	AvatarAlt []byte   `sql:"avatarAlt"`
+	ApiKeys   [][]byte `sql:"apiKeys,array"`
 
 	Country *GeoCountry `pg:"fk:countryId"`
 }

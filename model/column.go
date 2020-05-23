@@ -33,8 +33,6 @@ type Column struct {
 func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dims int, pk, fk bool, len int, values []string, goPGVer int) Column {
 	var err error
 
-	array, dims = fixIsArray(pgType, array, dims)
-
 	column := Column{
 		PGName:     pgName,
 		PGType:     pgType,

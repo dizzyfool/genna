@@ -18,6 +18,9 @@ create table "users"
     "activated" bool        not null default false,
     "name"      varchar(128),
     "countryId" integer,
+    "avatar"    bytea       not null,
+    "avatarAlt" bytea,
+    "apiKeys"   bytea[],
 
     primary key ("userId")
 );
