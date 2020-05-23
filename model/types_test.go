@@ -45,7 +45,7 @@ func Test_goType(t *testing.T) {
 		{
 			name:    "Should get byte",
 			pgTypes: []string{TypePGBytea},
-			want:    TypeByte,
+			want:    TypeByteSlice,
 		},
 		{
 			name:    "Should get bool",
@@ -482,62 +482,6 @@ func Test_goImport(t *testing.T) {
 				if got := GoImport(pgType, tt.args.nullable, tt.args.avoidPointers, tt.args.ver); got != tt.want {
 					t.Errorf("GoImport() = %v, want %v", got, tt.want)
 				}
-			}
-		})
-	}
-}
-
-func Test_fixIsArray(t *testing.T) {
-	type args struct {
-		pgType     string
-		isArray    bool
-		dimensions int
-	}
-	tests := []struct {
-		name  string
-		args  args
-		want  bool
-		want1 int
-	}{
-		{
-			name: "Should fix array for Bytea type",
-			args: args{
-				pgType:     TypePGBytea,
-				isArray:    false,
-				dimensions: 0,
-			},
-			want:  true,
-			want1: 1,
-		},
-		{
-			name: "Should fix array for Bytea array type",
-			args: args{
-				pgType:     TypePGBytea,
-				isArray:    true,
-				dimensions: 1,
-			},
-			want:  true,
-			want1: 2,
-		},
-		{
-			name: "Should not fix type",
-			args: args{
-				pgType:     TypeInt,
-				isArray:    false,
-				dimensions: 0,
-			},
-			want:  false,
-			want1: 0,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := fixIsArray(tt.args.pgType, tt.args.isArray, tt.args.dimensions)
-			if got != tt.want {
-				t.Errorf("fixIsArray() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("fixIsArray() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}

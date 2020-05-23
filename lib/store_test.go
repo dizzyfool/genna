@@ -330,8 +330,8 @@ func Test_store_Columns(t *testing.T) {
 			return
 		}
 
-		if ln := len(columns); ln != 7 {
-			t.Errorf("len(Store.Columns()) = %v, want %v", ln, 7)
+		if ln := len(columns); ln != 10 {
+			t.Errorf("len(Store.Columns()) = %v, want %v", ln, 10)
 			return
 		}
 	})
