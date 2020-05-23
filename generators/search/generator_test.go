@@ -34,7 +34,7 @@ func TestGenerator_Generate(t *testing.T) {
 	}
 
 	if string(generated) != string(check) {
-		t.Errorf("generated not mathed with check")
+		t.Errorf("generated does not match with check")
 		return
 	}
 }

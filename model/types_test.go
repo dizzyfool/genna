@@ -384,7 +384,7 @@ func Test_goImport(t *testing.T) {
 			name: "Should not generate import for unknown type",
 			args: args{
 				pgTypes: []string{"unknown"},
-				ver: 8,
+				ver:     8,
 			},
 			want: "",
 		},
@@ -392,7 +392,7 @@ func Test_goImport(t *testing.T) {
 			name: "Should generate time import for interval type",
 			args: args{
 				pgTypes: []string{TypePGInterval},
-				ver: 8,
+				ver:     8,
 			},
 			want: "time",
 		},
@@ -422,7 +422,7 @@ func Test_goImport(t *testing.T) {
 				pgTypes: []string{
 					TypePGInt2, TypePGInt4, TypePGInt8, TypePGNumeric, TypePGFloat4, TypePGFloat8, TypePGBool, TypePGText, TypePGVarchar, TypePGUuid, TypePGBpchar,
 				},
-				ver: 8,
+				ver:           8,
 				nullable:      true,
 				avoidPointers: true,
 			},
@@ -434,7 +434,7 @@ func Test_goImport(t *testing.T) {
 				pgTypes: []string{
 					TypePGInt2, TypePGInt4, TypePGInt8, TypePGNumeric, TypePGFloat4, TypePGFloat8, TypePGBool, TypePGText, TypePGVarchar, TypePGUuid, TypePGBpchar,
 				},
-				ver: 8,
+				ver:           8,
 				nullable:      true,
 				avoidPointers: false,
 			},
@@ -446,7 +446,7 @@ func Test_goImport(t *testing.T) {
 				pgTypes: []string{
 					TypePGTimestamp, TypePGTimestamptz, TypePGDate, TypePGTime, TypePGTimetz,
 				},
-				ver: 8,
+				ver:      8,
 				nullable: true,
 			},
 			want: "time",
@@ -457,7 +457,7 @@ func Test_goImport(t *testing.T) {
 				pgTypes: []string{
 					TypePGTimestamp, TypePGTimestamptz, TypePGDate, TypePGTime, TypePGTimetz,
 				},
-				ver: 8,
+				ver:           8,
 				nullable:      true,
 				avoidPointers: true,
 			},
@@ -469,7 +469,7 @@ func Test_goImport(t *testing.T) {
 				pgTypes: []string{
 					TypePGTimestamp, TypePGTimestamptz, TypePGDate, TypePGTime, TypePGTimetz,
 				},
-				ver: 9,
+				ver:           9,
 				nullable:      true,
 				avoidPointers: true,
 			},
