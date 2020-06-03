@@ -2,6 +2,7 @@ package validate
 
 import (
 	"fmt"
+	"html/template"
 	"strings"
 
 	"github.com/dizzyfool/genna/model"
@@ -106,7 +107,7 @@ type TemplateColumn struct {
 	model.Column
 
 	Check string
-	Enum  string
+	Enum  template.HTML
 
 	Import string
 }
@@ -124,7 +125,7 @@ func NewTemplateColumn(column model.Column, options Options) TemplateColumn {
 	}
 
 	if len(column.Values) > 0 {
-		tmpl.Enum = fmt.Sprintf(`"%s"`, strings.Join(column.Values, `", "`))
+		tmpl.Enum = template.HTML(fmt.Sprintf(`"%s"`, strings.Join(column.Values, `", "`)))
 	}
 
 	if tmpl.Check == PLen || tmpl.Check == Len {

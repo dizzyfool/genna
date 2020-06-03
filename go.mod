@@ -4,7 +4,6 @@ go 1.13
 
 require (
 	github.com/fatih/camelcase v1.0.0
-	github.com/go-pg/pg v8.0.6+incompatible
 	github.com/go-pg/pg/v9 v9.0.1
 	github.com/jinzhu/inflection v1.0.0
 	github.com/kr/pretty v0.2.0 // indirect
