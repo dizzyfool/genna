@@ -129,7 +129,7 @@ func ReadFlags(command *cobra.Command) (conn, output string, tables []string, fo
 		return
 	}
 
-	if gopgVer, err = flags.GetInt(FollowFKs); err != nil {
+	if gopgVer, err = flags.GetInt(GoPgVer); err != nil {
 		return
 	}
 

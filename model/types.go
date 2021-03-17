@@ -82,6 +82,8 @@ const (
 	TypeIP = "net.IP"
 	// TypeIPNet is a go type
 	TypeIPNet = "net.IPNet"
+	// TypeUuid
+	TypeUuid = "uuid.UUID"
 
 	// TypeInterface is a go type
 	TypeInterface = "interface{}"
@@ -98,7 +100,7 @@ func GoType(pgType string) (string, error) {
 		return TypeFloat32, nil
 	case TypePGNumeric, TypePGFloat8:
 		return TypeFloat64, nil
-	case TypePGText, TypePGVarchar, TypePGUuid, TypePGBpchar, TypePGPoint:
+	case TypePGText, TypePGVarchar, TypePGBpchar, TypePGPoint:
 		return TypeString, nil
 	case TypePGBytea:
 		return TypeByteSlice, nil
@@ -116,6 +118,8 @@ func GoType(pgType string) (string, error) {
 		return TypeIP, nil
 	case TypePGCidr:
 		return TypeIPNet, nil
+	case TypePGUuid:
+		return TypeUuid, nil
 	}
 
 	return "", fmt.Errorf("unsupported type: %s", pgType)
@@ -152,7 +156,7 @@ func GoNullable(pgType string, useSQLNull bool) (string, error) {
 			return "sql.NullFloat64", nil
 		case TypePGBool:
 			return "sql.NullBool", nil
-		case TypePGText, TypePGVarchar, TypePGUuid, TypePGBpchar, TypePGPoint:
+		case TypePGText, TypePGVarchar, TypePGBpchar, TypePGPoint:
 			return "sql.NullString", nil
 		case TypePGTimestamp, TypePGTimestamptz, TypePGDate, TypePGTime, TypePGTimetz:
 			return "pg.NullTime", nil
@@ -180,7 +184,7 @@ func GoImport(pgType string, nullable, useSQLNull bool, ver int) string {
 		case TypePGInt2, TypePGInt4, TypePGInt8,
 			TypePGNumeric, TypePGFloat4, TypePGFloat8,
 			TypePGBool,
-			TypePGText, TypePGVarchar, TypePGUuid, TypePGBpchar, TypePGPoint:
+			TypePGText, TypePGVarchar, TypePGBpchar, TypePGPoint:
 			return "database/sql"
 		case TypePGTimestamp, TypePGTimestamptz, TypePGDate, TypePGTime, TypePGTimetz:
 			if ver >= 9 {
@@ -188,6 +192,8 @@ func GoImport(pgType string, nullable, useSQLNull bool, ver int) string {
 			} else {
 				return "github.com/go-pg/pg"
 			}
+		case TypePGUuid:
+			return "github.com/google/uuid"
 		}
 	}
 
@@ -196,6 +202,8 @@ func GoImport(pgType string, nullable, useSQLNull bool, ver int) string {
 		return "net"
 	case TypePGTimestamp, TypePGTimestamptz, TypePGDate, TypePGTime, TypePGTimetz, TypePGInterval:
 		return "time"
+	case TypePGUuid:
+		return "github.com/google/uuid"
 	}
 
 	return ""
