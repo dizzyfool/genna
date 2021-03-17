@@ -192,8 +192,6 @@ func GoImport(pgType string, nullable, useSQLNull bool, ver int) string {
 			} else {
 				return "github.com/go-pg/pg"
 			}
-		case TypePGUuid:
-			return "github.com/google/uuid"
 		}
 	}
 
