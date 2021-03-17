@@ -20,7 +20,7 @@ Currently genna support 3 generators:
 - [model](generators/model/README.md), that generates basic go-pg model
 - [model-named](generators/named/README.md), same as basic but with named structs for columns and tables (author: [@Dionid](https://github.com/Dionid))
 - [search](generators/search/README.md), that generates search structs for basic model
-- [validate](generators/validate/README.md), that generates validate functions for basic model
+- [validation](generators/validate/README.md), that generates validate functions for basic model
 
 Examples located in each generator
  

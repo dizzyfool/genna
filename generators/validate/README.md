@@ -2,9 +2,9 @@
 
 **Basic model required, which can be generated with one of the model generators**
 
-Use `validate` sub-command to execute generator:
+Use `validation` sub-command to execute generator:
 
-`genna validate -h`
+`genna validation -h`
 
 First create your database and tables in it
 
