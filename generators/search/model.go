@@ -46,8 +46,8 @@ func NewTemplatePackage(entities []model.Entity, options Options) TemplatePackag
 	}
 
 	goPGVer := ""
-	if options.GoPgVer == 9 {
-		goPGVer = "/v9"
+	if options.GoPgVer >= 9 {
+		goPGVer = fmt.Sprintf("/v%d", options.GoPgVer)
 	}
 
 	return TemplatePackage{

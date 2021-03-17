@@ -81,8 +81,10 @@ func NewTemplateEntity(entity model.Entity, options Options) TemplateEntity {
 	}
 
 	if !options.NoDiscard {
-		// leading comma is required
-		tags.AddTag("pg", ",discard_unknown_columns")
+		if options.GoPgVer == 8 {
+			tags.AddTag("pg", "")
+		}
+		tags.AddTag("pg", "discard_unknown_columns")
 	}
 
 	return TemplateEntity{
@@ -141,10 +143,10 @@ func NewTemplateColumn(entity model.Entity, column model.Column, options Options
 
 	// nullable tag
 	if !column.Nullable && !column.IsPK {
-		if options.GoPgVer == 9 {
-			tags.AddTag(tagName, "use_zero")
-		} else {
+		if options.GoPgVer == 8 {
 			tags.AddTag(tagName, "notnull")
+		} else {
+			tags.AddTag(tagName, "use_zero")
 		}
 	}
 
@@ -222,8 +224,8 @@ func jsonType(mp map[string]string, schema, table, field string) (string, bool) 
 }
 
 func tagName(options Options) string {
-	if options.GoPgVer == 9 {
-		return "pg"
+	if options.GoPgVer == 8 {
+		return "sql"
 	}
-	return "sql"
+	return "pg"
 }

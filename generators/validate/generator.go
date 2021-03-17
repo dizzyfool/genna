@@ -54,7 +54,7 @@ func (g *Validate) AddFlags(command *cobra.Command) {
 func (g *Validate) ReadFlags(command *cobra.Command) error {
 	var err error
 
-	g.options.URL, g.options.Output, g.options.Tables, g.options.FollowFKs, err = base.ReadFlags(command)
+	g.options.URL, g.options.Output, g.options.Tables, g.options.FollowFKs, g.options.GoPgVer, err = base.ReadFlags(command)
 	if err != nil {
 		return err
 	}

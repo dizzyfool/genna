@@ -2,13 +2,17 @@
 //lint:file-ignore U1000 ignore unused code, it's generated
 package model
 
+import (
+	"time"
+)
+
 type ColumnsProject struct {
 	ID, Name string
 }
 
 type ColumnsUser struct {
-	ID, Email, Activated, Name, CountryID, Avatar, AvatarAlt, ApiKeys string
-	Country                                                           string
+	ID, Email, Activated, Name, CountryID, Avatar, AvatarAlt, ApiKeys, LoggedAt string
+	Country                                                                     string
 }
 
 type ColumnsGeoCountry struct {
@@ -35,6 +39,7 @@ var Columns = ColumnsSt{
 		Avatar:    "avatar",
 		AvatarAlt: "avatarAlt",
 		ApiKeys:   "apiKeys",
+		LoggedAt:  "loggedAt",
 
 		Country: "Country",
 	},
@@ -79,31 +84,32 @@ var Tables = TablesSt{
 }
 
 type Project struct {
-	tableName struct{} `sql:"projects,alias:t" pg:",discard_unknown_columns"`
+	tableName struct{} `pg:"projects,alias:t,discard_unknown_columns"`
 
-	ID   int    `sql:"projectId,pk"`
-	Name string `sql:"name,notnull"`
+	ID   int    `pg:"projectId,pk"`
+	Name string `pg:"name,use_zero"`
 }
 
 type User struct {
-	tableName struct{} `sql:"users,alias:t" pg:",discard_unknown_columns"`
+	tableName struct{} `pg:"users,alias:t,discard_unknown_columns"`
 
-	ID        int      `sql:"userId,pk"`
-	Email     string   `sql:"email,notnull"`
-	Activated bool     `sql:"activated,notnull"`
-	Name      *string  `sql:"name"`
-	CountryID *int     `sql:"countryId"`
-	Avatar    []byte   `sql:"avatar,notnull"`
-	AvatarAlt []byte   `sql:"avatarAlt"`
-	ApiKeys   [][]byte `sql:"apiKeys,array"`
+	ID        int        `pg:"userId,pk"`
+	Email     string     `pg:"email,use_zero"`
+	Activated bool       `pg:"activated,use_zero"`
+	Name      *string    `pg:"name"`
+	CountryID *int       `pg:"countryId"`
+	Avatar    []byte     `pg:"avatar,use_zero"`
+	AvatarAlt []byte     `pg:"avatarAlt"`
+	ApiKeys   [][]byte   `pg:"apiKeys,array"`
+	LoggedAt  *time.Time `pg:"loggedAt"`
 
 	Country *GeoCountry `pg:"fk:countryId"`
 }
 
 type GeoCountry struct {
-	tableName struct{} `sql:"geo.countries,alias:t" pg:",discard_unknown_columns"`
+	tableName struct{} `pg:"geo.countries,alias:t,discard_unknown_columns"`
 
-	ID     int    `sql:"countryId,pk"`
-	Code   string `sql:"code,notnull"`
-	Coords []int  `sql:"coords,array"`
+	ID     int    `pg:"countryId,pk"`
+	Code   string `pg:"code,use_zero"`
+	Coords []int  `pg:"coords,array"`
 }

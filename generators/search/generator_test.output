@@ -3,8 +3,10 @@
 package model
 
 import (
-	"github.com/go-pg/pg/v9"
-	"github.com/go-pg/pg/v9/orm"
+	"time"
+
+	"github.com/go-pg/pg/v10"
+	"github.com/go-pg/pg/v10/orm"
 )
 
 const condition = "?.? = ?"
@@ -23,7 +25,9 @@ func (s *search) apply(query *orm.Query) {
 }
 
 func (s *search) where(query *orm.Query, table, field string, value interface{}) {
-	query.Where(condition, pg.F(table), pg.F(field), value)
+
+	query.Where(condition, pg.Ident(table), pg.Ident(field), value)
+
 }
 
 func (s *search) WithApply(a applier) {
@@ -84,6 +88,7 @@ type UserSearch struct {
 	CountryID *int
 	Avatar    *[]byte
 	AvatarAlt *[]byte
+	LoggedAt  *time.Time
 }
 
 func (s *UserSearch) Apply(query *orm.Query) *orm.Query {
@@ -107,6 +112,9 @@ func (s *UserSearch) Apply(query *orm.Query) *orm.Query {
 	}
 	if s.AvatarAlt != nil {
 		s.where(query, Tables.User.Alias, Columns.User.AvatarAlt, s.AvatarAlt)
+	}
+	if s.LoggedAt != nil {
+		s.where(query, Tables.User.Alias, Columns.User.LoggedAt, s.LoggedAt)
 	}
 
 	s.apply(query)

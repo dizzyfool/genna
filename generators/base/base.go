@@ -3,6 +3,7 @@ package base
 import (
 	"bytes"
 	"fmt"
+	"github.com/pkg/errors"
 	"html/template"
 	"log"
 	"os"
@@ -26,6 +27,9 @@ const (
 
 	// FollowFKs is basic flag (-f) for generate foreign keys models for selected tables
 	FollowFKs = "follow-fk"
+
+	// Go-PG version to use
+	GoPgVer = "gopg"
 )
 
 // Gen is interface for all generators
@@ -65,6 +69,10 @@ func (o *Options) Def() {
 	if len(o.Tables) == 0 {
 		o.Tables = []string{util.Join(util.PublicSchema, "*")}
 	}
+
+	if o.GoPgVer == 0 {
+		o.GoPgVer = 10
+	}
 }
 
 // Generator is base generator used in other generators
@@ -96,11 +104,13 @@ func AddFlags(command *cobra.Command) {
 	flags.StringSliceP(Tables, "t", []string{"public.*"}, "table names for model generation separated by comma\nuse 'schema_name.*' to generate model for every table in model")
 	flags.BoolP(FollowFKs, "f", false, "generate models for foreign keys, even if it not listed in Tables")
 
+	flags.IntP(GoPgVer, "g", 10, "specify go-pg version (8, 9 and 10 are supported)\n")
+
 	return
 }
 
 // ReadFlags reads basic flags from command
-func ReadFlags(command *cobra.Command) (conn, output string, tables []string, followFKs bool, err error) {
+func ReadFlags(command *cobra.Command) (conn, output string, tables []string, followFKs bool, gopgVer int, err error) {
 	flags := command.Flags()
 
 	if conn, err = flags.GetString(Conn); err != nil {
@@ -116,6 +126,15 @@ func ReadFlags(command *cobra.Command) (conn, output string, tables []string, fo
 	}
 
 	if followFKs, err = flags.GetBool(FollowFKs); err != nil {
+		return
+	}
+
+	if gopgVer, err = flags.GetInt(FollowFKs); err != nil {
+		return
+	}
+
+	if gopgVer < 8 && gopgVer > 10 {
+		err = errors.Errorf("go-pg version %d not supported", gopgVer)
 		return
 	}
 

@@ -21,6 +21,7 @@ create table "users"
     "avatar"    bytea       not null,
     "avatarAlt" bytea,
     "apiKeys"   bytea[],
+    "loggedAt"  timestamp,
 
     primary key ("userId")
 );

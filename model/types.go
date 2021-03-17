@@ -183,8 +183,8 @@ func GoImport(pgType string, nullable, useSQLNull bool, ver int) string {
 			TypePGText, TypePGVarchar, TypePGUuid, TypePGBpchar, TypePGPoint:
 			return "database/sql"
 		case TypePGTimestamp, TypePGTimestamptz, TypePGDate, TypePGTime, TypePGTimetz:
-			if ver == 9 {
-				return "github.com/go-pg/pg/v9"
+			if ver >= 9 {
+				return fmt.Sprintf("github.com/go-pg/pg/v%d", ver)
 			} else {
 				return "github.com/go-pg/pg"
 			}
