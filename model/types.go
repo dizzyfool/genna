@@ -87,6 +87,55 @@ const (
 	TypeInterface = "interface{}"
 )
 
+type customType struct {
+	pgType string
+
+	goType   string
+	goImport string
+}
+
+type CustomTypeMapping map[string]customType
+
+func (c CustomTypeMapping) Add(pgType, goType, goImport string) {
+	c[pgType] = customType{
+		pgType:   pgType,
+		goType:   goType,
+		goImport: goImport,
+	}
+}
+
+func (c CustomTypeMapping) Imports() []string {
+	index := map[string]struct{}{}
+
+	var result []string
+	for _, customType := range c {
+		if _, ok := index[customType.goImport]; ok {
+			continue
+		}
+
+		result = append(result, customType.goImport)
+		index[customType.goImport] = struct{}{}
+	}
+
+	return result
+}
+
+func (c CustomTypeMapping) GoType(pgType string) (string, bool) {
+	if customType, ok := c[pgType]; ok {
+		return customType.goType, true
+	}
+
+	return "", false
+}
+
+func (c CustomTypeMapping) GoImport(pgType string) (string, bool) {
+	if customType, ok := c[pgType]; ok {
+		return customType.goImport, true
+	}
+
+	return "", false
+}
+
 // GoType generates simple go type from pg type
 func GoType(pgType string) (string, error) {
 	switch pgType {
@@ -142,7 +191,7 @@ func GoSlice(pgType string, dimensions int) (string, error) {
 }
 
 // GoNullable generates all go types from pg type with pointer
-func GoNullable(pgType string, useSQLNull bool) (string, error) {
+func GoNullable(pgType string, useSQLNull bool, customTypes CustomTypeMapping) (string, error) {
 	// avoiding pointers with sql.Null... types
 	if useSQLNull {
 		switch pgType {
@@ -157,6 +206,10 @@ func GoNullable(pgType string, useSQLNull bool) (string, error) {
 		case TypePGTimestamp, TypePGTimestamptz, TypePGDate, TypePGTime, TypePGTimetz:
 			return "pg.NullTime", nil
 		}
+	}
+
+	if typ, ok := customTypes.GoType(pgType); ok && typ != "" {
+		return fmt.Sprintf("*%s", typ), nil
 	}
 
 	typ, err := GoType(pgType)

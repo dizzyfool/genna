@@ -3,13 +3,10 @@ package validate
 import (
 	"github.com/dizzyfool/genna/generators/base"
 	"github.com/dizzyfool/genna/model"
-	"github.com/dizzyfool/genna/util"
-
 	"github.com/spf13/cobra"
 )
 
 const (
-	pkg    = "pkg"
 	keepPK = "keep-pk"
 )
 
@@ -45,8 +42,6 @@ func (g *Validate) AddFlags(command *cobra.Command) {
 	flags := command.Flags()
 	flags.SortFlags = false
 
-	flags.StringP(pkg, "p", util.DefaultPackage, "package for model files")
-
 	flags.BoolP(keepPK, "k", false, "keep primary key name as is (by default it should be converted to 'ID')")
 }
 
@@ -54,16 +49,12 @@ func (g *Validate) AddFlags(command *cobra.Command) {
 func (g *Validate) ReadFlags(command *cobra.Command) error {
 	var err error
 
-	g.options.URL, g.options.Output, g.options.Tables, g.options.FollowFKs, g.options.GoPgVer, err = base.ReadFlags(command)
+	g.options.URL, g.options.Output, g.options.Package, g.options.Tables, g.options.FollowFKs, g.options.GoPgVer, g.options.CustomTypes, err = base.ReadFlags(command)
 	if err != nil {
 		return err
 	}
 
 	flags := command.Flags()
-
-	if g.options.Package, err = flags.GetString(pkg); err != nil {
-		return err
-	}
 
 	if g.options.KeepPK, err = flags.GetBool(keepPK); err != nil {
 		return err
@@ -86,6 +77,7 @@ func (g *Validate) Generate() error {
 			Template,
 			g.Packer(),
 			g.options.GoPgVer,
+			g.options.CustomTypes,
 		)
 }
 

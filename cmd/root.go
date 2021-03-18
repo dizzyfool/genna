@@ -16,7 +16,7 @@ var root = &cobra.Command{
 	Short: "Genna is model generator for go-pg package",
 	Long: `This application is a tool to generate the needed files
 to quickly create a models for go-pg https://github.com/go-pg/pg/v9`,
-	Version: "0.1.0",
+	Version: "1.1.0",
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := cmd.Help(); err != nil {
 			panic("help not found")

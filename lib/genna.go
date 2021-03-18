@@ -42,7 +42,7 @@ func (g *Genna) connect() error {
 }
 
 // Read reads database and gets entities with columns and relations
-func (g *Genna) Read(selected []string, followFK bool, useSQLNulls bool, goPGVer int) ([]model.Entity, error) {
+func (g *Genna) Read(selected []string, followFK, useSQLNulls bool, goPGVer int, customTypes model.CustomTypeMapping) ([]model.Entity, error) {
 	if err := g.connect(); err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (g *Genna) Read(selected []string, followFK bool, useSQLNulls bool, goPGVer
 
 	for _, c := range columns {
 		if i, ok := index[util.Join(c.Schema, c.Table)]; ok {
-			entities[i].AddColumn(c.Column(useSQLNulls, goPGVer))
+			entities[i].AddColumn(c.Column(useSQLNulls, goPGVer, customTypes))
 		}
 	}
 

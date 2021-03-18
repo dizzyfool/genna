@@ -30,8 +30,11 @@ type Column struct {
 }
 
 // NewColumn creates Column from pg info
-func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dims int, pk, fk bool, len int, values []string, goPGVer int) Column {
-	var err error
+func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dims int, pk, fk bool, len int, values []string, goPGVer int, customTypes CustomTypeMapping) Column {
+	var (
+		err error
+		ok  bool
+	)
 
 	column := Column{
 		PGName:     pgName,
@@ -43,20 +46,24 @@ func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dim
 		IsFK:       fk,
 		MaxLen:     len,
 		Values:     values,
+		GoName:     util.ColumnName(pgName),
 	}
 
-	column.GoName = util.ColumnName(pgName)
+	if customTypes == nil {
+		customTypes = CustomTypeMapping{}
+	}
 
-	column.GoType, err = GoType(pgType)
-	if err != nil {
-		column.GoType = "interface{}"
+	if column.GoType, ok = customTypes.GoType(pgType); !ok || column.GoType == "" {
+		if column.GoType, err = GoType(pgType); err != nil {
+			column.GoType = "interface{}"
+		}
 	}
 
 	switch {
 	case column.IsArray:
 		column.Type, err = GoSlice(pgType, dims)
 	case column.Nullable:
-		column.Type, err = GoNullable(pgType, sqlNulls)
+		column.Type, err = GoNullable(pgType, sqlNulls, customTypes)
 	default:
 		column.Type = column.GoType
 	}
@@ -65,7 +72,9 @@ func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dim
 		column.Type = column.GoType
 	}
 
-	column.Import = GoImport(pgType, nullable, sqlNulls, goPGVer)
+	if column.Import, ok = customTypes.GoImport(pgType); !ok {
+		column.Import = GoImport(pgType, nullable, sqlNulls, goPGVer)
+	}
 
 	return column
 }

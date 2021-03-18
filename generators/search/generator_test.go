@@ -6,6 +6,8 @@ import (
 	"path"
 	"runtime"
 	"testing"
+
+	"github.com/dizzyfool/genna/model"
 )
 
 func TestGenerator_Generate(t *testing.T) {
@@ -15,6 +17,7 @@ func TestGenerator_Generate(t *testing.T) {
 	generator.options.URL = `postgres://genna:genna@localhost:5432/genna?sslmode=disable`
 	generator.options.Output = path.Join(os.TempDir(), "search_test.go")
 	generator.options.FollowFKs = true
+	generator.options.CustomTypes.Add(model.TypePGUuid, "uuid.UUID", "github.com/google/uuid")
 
 	if err := generator.Generate(); err != nil {
 		t.Errorf("generate error = %v", err)

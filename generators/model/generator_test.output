@@ -3,12 +3,13 @@
 package model
 
 import (
+	"github.com/google/uuid"
 	"time"
 )
 
 var Columns = struct {
 	Project struct {
-		ID, Name string
+		ID, Code, Name string
 	}
 	User struct {
 		ID, Email, Activated, Name, CountryID, Avatar, AvatarAlt, ApiKeys, LoggedAt string
@@ -20,9 +21,10 @@ var Columns = struct {
 	}
 }{
 	Project: struct {
-		ID, Name string
+		ID, Code, Name string
 	}{
 		ID:   "projectId",
+		Code: "code",
 		Name: "name",
 	},
 	User: struct {
@@ -85,8 +87,9 @@ var Tables = struct {
 type Project struct {
 	tableName struct{} `pg:"projects,alias:t,discard_unknown_columns"`
 
-	ID   int    `pg:"projectId,pk"`
-	Name string `pg:"name,use_zero"`
+	ID   uuid.UUID  `pg:"projectId,pk,type:uuid"`
+	Code *uuid.UUID `pg:"code,type:uuid"`
+	Name string     `pg:"name,use_zero"`
 }
 
 type User struct {

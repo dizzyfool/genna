@@ -3,6 +3,7 @@
 package model
 
 import (
+	"github.com/google/uuid"
 	"time"
 
 	"github.com/go-pg/pg/v10"
@@ -55,13 +56,17 @@ type Searcher interface {
 type ProjectSearch struct {
 	search
 
-	ID   *int
+	ID   *uuid.UUID
+	Code *uuid.UUID
 	Name *string
 }
 
 func (s *ProjectSearch) Apply(query *orm.Query) *orm.Query {
 	if s.ID != nil {
 		s.where(query, Tables.Project.Alias, Columns.Project.ID, s.ID)
+	}
+	if s.Code != nil {
+		s.where(query, Tables.Project.Alias, Columns.Project.Code, s.Code)
 	}
 	if s.Name != nil {
 		s.where(query, Tables.Project.Alias, Columns.Project.Name, s.Name)

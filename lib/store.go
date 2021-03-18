@@ -65,8 +65,8 @@ type column struct {
 	Values     []string `pg:"enum,array"`
 }
 
-func (c column) Column(useSQLNulls bool, goPGVer int) model.Column {
-	return model.NewColumn(c.Name, c.Type, c.IsNullable, useSQLNulls, c.IsArray, c.Dimensions, c.IsPK, c.IsFK, c.MaxLen, c.Values, goPGVer)
+func (c column) Column(useSQLNulls bool, goPGVer int, customTypes model.CustomTypeMapping) model.Column {
+	return model.NewColumn(c.Name, c.Type, c.IsNullable, useSQLNulls, c.IsArray, c.Dimensions, c.IsPK, c.IsFK, c.MaxLen, c.Values, goPGVer, customTypes)
 }
 
 // Store is database helper

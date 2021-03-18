@@ -3,9 +3,12 @@ drop schema if exists "geo" cascade;
 
 create schema "public";
 
+create extension if not exists "uuid-ossp";
+
 create table "projects"
 (
-    "projectId" serial not null,
+    "projectId" uuid   not null default uuid_generate_v4(),
+    "code"      uuid,
     "name"      text   not null,
 
     primary key ("projectId")

@@ -7,6 +7,8 @@ import (
 	"html/template"
 	"log"
 	"os"
+	"path"
+	"strings"
 
 	"github.com/dizzyfool/genna/lib"
 	"github.com/dizzyfool/genna/model"
@@ -30,6 +32,12 @@ const (
 
 	// Go-PG version to use
 	GoPgVer = "gopg"
+
+	// Package for model files
+	Pkg = "pkg"
+
+	// uuid type flag
+	uuidFlag = "uuid"
 )
 
 // Gen is interface for all generators
@@ -62,6 +70,9 @@ type Options struct {
 
 	// go-pg version
 	GoPgVer int
+
+	// Custom types goes here
+	CustomTypes model.CustomTypeMapping
 }
 
 // Def sets default options if empty
@@ -72,6 +83,10 @@ func (o *Options) Def() {
 
 	if o.GoPgVer == 0 {
 		o.GoPgVer = 10
+	}
+
+	if o.CustomTypes == nil {
+		o.CustomTypes = model.CustomTypeMapping{}
 	}
 }
 
@@ -101,16 +116,23 @@ func AddFlags(command *cobra.Command) {
 		panic(err)
 	}
 
+	flags.StringP(Pkg, "p", "", "package for model files. if not set last folder name in output path will be used")
+
 	flags.StringSliceP(Tables, "t", []string{"public.*"}, "table names for model generation separated by comma\nuse 'schema_name.*' to generate model for every table in model")
 	flags.BoolP(FollowFKs, "f", false, "generate models for foreign keys, even if it not listed in Tables")
 
-	flags.IntP(GoPgVer, "g", 10, "specify go-pg version (8, 9 and 10 are supported)\n")
+	flags.IntP(GoPgVer, "g", 10, "specify go-pg version (8, 9 and 10 are supported)")
+
+	flags.Bool(uuidFlag, false, "use github.com/google/uuid as type for uuid\n")
 
 	return
 }
 
 // ReadFlags reads basic flags from command
-func ReadFlags(command *cobra.Command) (conn, output string, tables []string, followFKs bool, gopgVer int, err error) {
+func ReadFlags(command *cobra.Command) (conn, output, pkg string, tables []string, followFKs bool, gopgVer int, customTypes model.CustomTypeMapping, err error) {
+	customTypes = model.CustomTypeMapping{}
+	uuid := false
+
 	flags := command.Flags()
 
 	if conn, err = flags.GetString(Conn); err != nil {
@@ -121,6 +143,14 @@ func ReadFlags(command *cobra.Command) (conn, output string, tables []string, fo
 		return
 	}
 
+	if pkg, err = flags.GetString(Pkg); err != nil {
+		return
+	}
+
+	if strings.Trim(pkg, " ") == "" {
+		pkg = path.Base(path.Dir(output))
+	}
+
 	if tables, err = flags.GetStringSlice(Tables); err != nil {
 		return
 	}
@@ -129,8 +159,16 @@ func ReadFlags(command *cobra.Command) (conn, output string, tables []string, fo
 		return
 	}
 
-	if gopgVer, err = flags.GetInt(FollowFKs); err != nil {
+	if gopgVer, err = flags.GetInt(GoPgVer); err != nil {
 		return
+	}
+
+	if uuid, err = flags.GetBool(uuidFlag); err != nil {
+		return
+	}
+
+	if uuid {
+		customTypes.Add(model.TypePGUuid, "uuid.UUID", "github.com/google/uuid")
 	}
 
 	if gopgVer < 8 && gopgVer > 10 {
@@ -142,8 +180,8 @@ func ReadFlags(command *cobra.Command) (conn, output string, tables []string, fo
 }
 
 // Generate runs whole generation process
-func (g Generator) Generate(tables []string, followFKs, useSQLNulls bool, output, tmpl string, packer Packer, goPGVer int) error {
-	entities, err := g.Read(tables, followFKs, useSQLNulls, goPGVer)
+func (g Generator) Generate(tables []string, followFKs, useSQLNulls bool, output, tmpl string, packer Packer, goPGVer int, customTypes model.CustomTypeMapping) error {
+	entities, err := g.Read(tables, followFKs, useSQLNulls, goPGVer, customTypes)
 	if err != nil {
 		return fmt.Errorf("read database error: %w", err)
 	}

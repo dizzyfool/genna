@@ -7,7 +7,7 @@ import (
 )
 
 type ColumnsProject struct {
-	ID, Name string
+	ID, Code, Name string
 }
 
 type ColumnsUser struct {
@@ -28,6 +28,7 @@ type ColumnsSt struct {
 var Columns = ColumnsSt{
 	Project: ColumnsProject{
 		ID:   "projectId",
+		Code: "code",
 		Name: "name",
 	},
 	User: ColumnsUser{
@@ -86,8 +87,9 @@ var Tables = TablesSt{
 type Project struct {
 	tableName struct{} `pg:"projects,alias:t,discard_unknown_columns"`
 
-	ID   int    `pg:"projectId,pk"`
-	Name string `pg:"name,use_zero"`
+	ID   string  `pg:"projectId,pk,type:uuid"`
+	Code *string `pg:"code,type:uuid"`
+	Name string  `pg:"name,use_zero"`
 }
 
 type User struct {
