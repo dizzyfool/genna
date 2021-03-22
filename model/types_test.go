@@ -346,7 +346,7 @@ func Test_goNullable(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GoNullable(tt.pgType, tt.avoidPointers)
+			got, err := GoNullable(tt.pgType, tt.avoidPointers, CustomTypeMapping{})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GoNullable() error = %v, wantErr %v", err, tt.wantErr)
 				return

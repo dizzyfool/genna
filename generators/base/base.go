@@ -3,7 +3,6 @@ package base
 import (
 	"bytes"
 	"fmt"
-	"github.com/pkg/errors"
 	"html/template"
 	"log"
 	"os"
@@ -38,6 +37,9 @@ const (
 
 	// uuid type flag
 	uuidFlag = "uuid"
+
+	// custom types flag
+	customTypesFlag = "custom-types"
 )
 
 // Gen is interface for all generators
@@ -119,18 +121,20 @@ func AddFlags(command *cobra.Command) {
 	flags.StringP(Pkg, "p", "", "package for model files. if not set last folder name in output path will be used")
 
 	flags.StringSliceP(Tables, "t", []string{"public.*"}, "table names for model generation separated by comma\nuse 'schema_name.*' to generate model for every table in model")
-	flags.BoolP(FollowFKs, "f", false, "generate models for foreign keys, even if it not listed in Tables")
+	flags.BoolP(FollowFKs, "f", false, "generate models for foreign keys, even if it not listed in Tables\n")
+
+	flags.Bool(uuidFlag, false, "use github.com/google/uuid as type for uuid")
+
+	flags.StringSlice(customTypesFlag, []string{}, "set custom types separated by comma\nformat: <postgresql_type>:<go_import>.<go_type>\nexamples: uuid:github.com/google/uuid.UUID,point:src/model.Point,bytea:string\n")
 
 	flags.IntP(GoPgVer, "g", 10, "specify go-pg version (8, 9 and 10 are supported)")
-
-	flags.Bool(uuidFlag, false, "use github.com/google/uuid as type for uuid\n")
 
 	return
 }
 
 // ReadFlags reads basic flags from command
 func ReadFlags(command *cobra.Command) (conn, output, pkg string, tables []string, followFKs bool, gopgVer int, customTypes model.CustomTypeMapping, err error) {
-	customTypes = model.CustomTypeMapping{}
+	var customTypesStrings []string
 	uuid := false
 
 	flags := command.Flags()
@@ -163,16 +167,24 @@ func ReadFlags(command *cobra.Command) (conn, output, pkg string, tables []strin
 		return
 	}
 
+	if customTypesStrings, err = flags.GetStringSlice(customTypesFlag); err != nil {
+		return
+	}
+
+	if customTypes, err = model.ParseCustomTypes(customTypesStrings); err != nil {
+		return
+	}
+
 	if uuid, err = flags.GetBool(uuidFlag); err != nil {
 		return
 	}
 
-	if uuid {
+	if uuid && !customTypes.Has(model.TypePGUuid) {
 		customTypes.Add(model.TypePGUuid, "uuid.UUID", "github.com/google/uuid")
 	}
 
 	if gopgVer < 8 && gopgVer > 10 {
-		err = errors.Errorf("go-pg version %d not supported", gopgVer)
+		err = fmt.Errorf("go-pg version %d not supported", gopgVer)
 		return
 	}
 
