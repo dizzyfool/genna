@@ -9,13 +9,20 @@ import (
 
 var reg = regexp.MustCompile(`/v\d+$`)
 
-type CustomTypeMapping map[string]customType
+type CustomType struct {
+	PGType string
+
+	GoType   string
+	GoImport string
+}
+
+type CustomTypeMapping map[string]CustomType
 
 func (c CustomTypeMapping) Add(pgType, goType, goImport string) {
-	c[pgType] = customType{
-		pgType:   pgType,
-		goType:   goType,
-		goImport: goImport,
+	c[pgType] = CustomType{
+		PGType:   pgType,
+		GoType:   goType,
+		GoImport: goImport,
 	}
 }
 
@@ -24,16 +31,16 @@ func (c CustomTypeMapping) Imports() []string {
 
 	var result []string
 	for _, customType := range c {
-		if _, ok := index[customType.goImport]; ok {
+		if _, ok := index[customType.GoImport]; ok {
 			continue
 		}
 
-		if customType.goImport == "" {
+		if customType.GoImport == "" {
 			continue
 		}
 
-		result = append(result, customType.goImport)
-		index[customType.goImport] = struct{}{}
+		result = append(result, customType.GoImport)
+		index[customType.GoImport] = struct{}{}
 	}
 
 	return result
@@ -45,16 +52,16 @@ func (c CustomTypeMapping) Has(pgType string) bool {
 }
 
 func (c CustomTypeMapping) GoType(pgType string) (string, bool) {
-	if customType, ok := c[pgType]; ok && customType.goType != "" {
-		return customType.goType, true
+	if customType, ok := c[pgType]; ok && customType.GoType != "" {
+		return customType.GoType, true
 	}
 
 	return "", false
 }
 
 func (c CustomTypeMapping) GoImport(pgType string) (string, bool) {
-	if customType, ok := c[pgType]; ok && customType.goImport != "" {
-		return customType.goImport, true
+	if customType, ok := c[pgType]; ok && customType.GoType != "" {
+		return customType.GoImport, true
 	}
 
 	return "", false

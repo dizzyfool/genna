@@ -87,13 +87,6 @@ const (
 	TypeInterface = "interface{}"
 )
 
-type customType struct {
-	pgType string
-
-	goType   string
-	goImport string
-}
-
 // GoType generates simple go type from pg type
 func GoType(pgType string) (string, error) {
 	switch pgType {
