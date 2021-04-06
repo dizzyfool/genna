@@ -36,7 +36,16 @@ func (a *Annotation) AddTag(name string, value string) *Annotation {
 func (a *Annotation) String() string {
 	result := make([]string, 0)
 	for _, tag := range a.tags {
-		result = append(result, fmt.Sprintf(`%s:"%s"`, tag.name, strings.Join(tag.values, ",")))
+		if len(tag.values) > 0 {
+			result = append(result, fmt.Sprintf(`%s:"%s" %s:"%s"`,
+				tag.name, strings.Join(tag.values, ","),
+				"json", tag.values[0],
+			))
+		} else {
+			result = append(result, fmt.Sprintf(`%s:"%s" %s:"%s"`,
+				tag.name, strings.Join(tag.values, ",")))
+		}
+
 	}
 
 	return strings.Join(result, " ")
