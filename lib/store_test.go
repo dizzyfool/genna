@@ -210,7 +210,7 @@ func Test_column_Column(t *testing.T) {
 				MaxLen:     0,
 				Values:     []string{},
 			},
-			want: model.NewColumn("userId", model.TypePGInt8, false, false, false, 0, true, false, 0, []string{}, 9),
+			want: model.NewColumn("userId", model.TypePGInt8, false, false, false, 0, true, false, 0, []string{}, 9, nil),
 		},
 	}
 	for _, tt := range tests {
@@ -229,7 +229,7 @@ func Test_column_Column(t *testing.T) {
 				MaxLen:     tt.fields.MaxLen,
 				Values:     tt.fields.Values,
 			}
-			if got := c.Column(false, 9); !reflect.DeepEqual(got, tt.want) {
+			if got := c.Column(false, 9, nil); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("column.Column() = %v, want %v", got, tt.want)
 			}
 		})
@@ -310,6 +310,27 @@ func Test_store_Relations(t *testing.T) {
 	})
 }
 
+func Test_store_Schemas(t *testing.T) {
+	store, err := prepareStore()
+	if err != nil {
+		t.Errorf("prepare Store error = %v", err)
+		return
+	}
+
+	t.Run("Should get all schemas from test DB", func(t *testing.T) {
+		tables, err := store.Schemas()
+		if err != nil {
+			t.Errorf("get tables error = %v", err)
+			return
+		}
+
+		if ln := len(tables); ln != 7 {
+			t.Errorf("len(Store.Schemas()) = %v, want %v", ln, 7)
+			return
+		}
+	})
+}
+
 func Test_store_Columns(t *testing.T) {
 	store, err := prepareStore()
 	if err != nil {
@@ -330,8 +351,8 @@ func Test_store_Columns(t *testing.T) {
 			return
 		}
 
-		if ln := len(columns); ln != 10 {
-			t.Errorf("len(Store.Columns()) = %v, want %v", ln, 10)
+		if ln := len(columns); ln != 12 {
+			t.Errorf("len(Store.Columns()) = %v, want %v", ln, 12)
 			return
 		}
 	})

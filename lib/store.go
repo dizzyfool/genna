@@ -79,6 +79,17 @@ func newStore(db orm.DB) *store {
 	return &store{db: db}
 }
 
+func (s *store) Schemas() ([]string, error) {
+	query := `select nspname from pg_catalog.pg_namespace`
+
+	var result []string
+	if _, err := s.db.Query(&result, query); err != nil {
+		return nil, fmt.Errorf("getting schemas info error: %w", err)
+	}
+
+	return result, nil
+}
+
 func (s *store) Tables(selected []string) ([]table, error) {
 	var schemas []string
 	var tables []interface{}

@@ -27,7 +27,7 @@ func New(url string, logger *log.Logger) Genna {
 	}
 }
 
-func (g *Genna) connect() error {
+func (g *Genna) Connect() error {
 	var err error
 
 	if g.DB == nil {
@@ -43,7 +43,7 @@ func (g *Genna) connect() error {
 
 // Read reads database and gets entities with columns and relations
 func (g *Genna) Read(selected []string, followFK, useSQLNulls bool, goPGVer int, customTypes model.CustomTypeMapping) ([]model.Entity, error) {
-	if err := g.connect(); err != nil {
+	if err := g.Connect(); err != nil {
 		return nil, err
 	}
 
