@@ -182,6 +182,10 @@ func NewTemplateRelation(relation model.Relation, options Options) TemplateRelat
 	comment := ""
 	tagName := tagName(options)
 	tags := util.NewAnnotation().AddTag("pg", "fk:"+strings.Join(relation.FKFields, ","))
+	if options.GoPgVer >= 10 {
+		tags.AddTag("pg", "rel:has-one")
+	}
+
 	if len(relation.FKFields) > 1 {
 		comment = "// unsupported"
 		tags.AddTag(tagName, "-")
