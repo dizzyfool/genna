@@ -75,7 +75,12 @@ func NewTemplateEntity(entity model.Entity, options Options) TemplateEntity {
 
 	tagName := tagName(options)
 	tags := util.NewAnnotation()
-	tags.AddTag(tagName, util.Quoted(entity.PGFullName, true))
+	if options.GoPgVer < 10 {
+		tags.AddTag(tagName, util.Quoted(entity.PGFullName, true))
+	} else {
+		tags.AddTag(tagName, entity.PGFullName)
+	}
+
 	if !options.NoAlias {
 		tags.AddTag(tagName, fmt.Sprintf("alias:%s", util.DefaultAlias))
 	}
