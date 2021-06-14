@@ -10,6 +10,7 @@ const (
 	keepPK  = "keep-pk"
 	noAlias = "no-alias"
 	relaxed = "relaxed"
+	jsonTag = "json-tag"
 )
 
 // CreateCommand creates generator command
@@ -71,6 +72,10 @@ func (g *Search) ReadFlags(command *cobra.Command) error {
 	}
 
 	if g.options.Relaxed, err = flags.GetBool(relaxed); err != nil {
+		return err
+	}
+
+	if g.options.AddJSONTag, err = flags.GetBool(jsonTag); err != nil {
 		return err
 	}
 

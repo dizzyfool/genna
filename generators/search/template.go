@@ -61,7 +61,7 @@ type {{.GoName}}Search struct {
 	search 
 
 	{{range .Columns}}
-	{{.GoName}} {{.Type}}{{end}}
+	{{.GoName}} {{.Type}}{{if .HasTags}} {{.Tag}}{{end}}{{end}}
 }
 
 func (s *{{.GoName}}Search) Apply(query *orm.Query) *orm.Query { {{range .Columns}}{{if .Relaxed}}

@@ -32,6 +32,10 @@ func (a *Annotation) AddTag(name string, value string) *Annotation {
 	return a
 }
 
+func (a *Annotation) Len() int {
+	return len(a.tags)
+}
+
 // String prints valid tag
 func (a *Annotation) String() string {
 	result := make([]string, 0)

@@ -166,6 +166,11 @@ func NewTemplateColumn(entity model.Entity, column model.Column, options Options
 		tags = util.NewAnnotation().AddTag(tagName, "-")
 	}
 
+	// add json tag
+	if options.AddJSONTag {
+		tags.AddTag("json", util.Underscore(column.PGName))
+	}
+
 	return TemplateColumn{
 		Column: column,
 
@@ -194,6 +199,11 @@ func NewTemplateRelation(relation model.Relation, options Options) TemplateRelat
 	if len(relation.FKFields) > 1 {
 		comment = "// unsupported"
 		tags.AddTag(tagName, "-")
+	}
+
+	// add json tag
+	if options.AddJSONTag {
+		tags.AddTag("json", util.Underscore(relation.GoName))
 	}
 
 	return TemplateRelation{

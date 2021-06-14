@@ -13,6 +13,7 @@ const (
 	noAlias    = "no-alias"
 	softDelete = "soft-delete"
 	json       = "json"
+	jsonTag    = "json-tag"
 )
 
 // CreateCommand creates generator command
@@ -54,6 +55,7 @@ func (g *Basic) AddFlags(command *cobra.Command) {
 	flags.BoolP(noDiscard, "d", false, "do not use 'discard_unknown_columns' tag\n")
 
 	flags.StringToStringP(json, "j", map[string]string{"*": "map[string]interface{}"}, "type for json columns\nuse format: table.column=type, separate by comma\nuse asterisk as wildcard in table name")
+	flags.Bool(jsonTag, false, "add json tag to annotations")
 }
 
 // ReadFlags read flags from command
@@ -86,6 +88,11 @@ func (g *Basic) ReadFlags(command *cobra.Command) error {
 	if g.options.JSONTypes, err = flags.GetStringToString(json); err != nil {
 		return err
 	}
+
+	if g.options.AddJSONTag, err = flags.GetBool(jsonTag); err != nil {
+		return err
+	}
+
 	// setting defaults
 	g.options.Def()
 

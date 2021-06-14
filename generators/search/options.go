@@ -23,6 +23,9 @@ type Options struct {
 
 	// Strict types in filters
 	Relaxed bool
+
+	// Add json tag to models
+	AddJSONTag bool
 }
 
 // Def fills default values of an options

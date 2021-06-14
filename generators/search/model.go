@@ -111,6 +111,9 @@ type TemplateColumn struct {
 
 	Relaxed bool
 
+	HasTags bool
+	Tag     template.HTML
+
 	UseCustomRender bool
 	CustomRender    template.HTML
 }
@@ -127,8 +130,16 @@ func NewTemplateColumn(_ model.Entity, column model.Column, options Options) Tem
 		column.Type = fmt.Sprintf("*%s", column.GoType)
 	}
 
+	// add json tag
+	tags := util.NewAnnotation()
+	if options.AddJSONTag {
+		tags.AddTag("json", util.Underscore(column.PGName))
+	}
+
 	return TemplateColumn{
 		Relaxed: options.Relaxed,
 		Column:  column,
+		HasTags: tags.Len() > 0,
+		Tag:     template.HTML(fmt.Sprintf("`%s`", tags.String())),
 	}
 }
