@@ -183,7 +183,7 @@ func ReadFlags(command *cobra.Command) (conn, output, pkg string, tables []strin
 		customTypes.Add(model.TypePGUuid, "uuid.UUID", "github.com/google/uuid")
 	}
 
-	if gopgVer < 8 && gopgVer > 10 {
+	if gopgVer < 8 || gopgVer > 10 {
 		err = fmt.Errorf("go-pg version %d not supported", gopgVer)
 		return
 	}
