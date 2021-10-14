@@ -96,7 +96,7 @@ func Underscore(s string) string {
 // Sanitize makes string suitable for golang var, const, field, type name
 func Sanitize(s string) string {
 	rgxp := regexp.MustCompile(`[^a-zA-Z\d\-_]`)
-	sanitized := strings.Replace(rgxp.ReplaceAllString(s, ""), "-", "_", -1)
+	sanitized := strings.ReplaceAll(rgxp.ReplaceAllString(s, ""), "-", "_")
 
 	if len(sanitized) != 0 && ((sanitized[0] >= '0' && sanitized[0] <= '9') || sanitized[0] == '_') {
 		sanitized = "T" + sanitized
@@ -118,7 +118,7 @@ func EntityName(s string) string {
 	for i := ln; i >= 0; i-- {
 		split := splitted[i]
 		singular := Singular(split)
-		if strings.ToLower(singular) != strings.ToLower(split) {
+		if !strings.EqualFold(singular, split) {
 			splitted[i] = strings.Title(singular)
 			break
 		}
