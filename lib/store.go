@@ -49,8 +49,6 @@ func (r relation) Target() table {
 }
 
 type column struct {
-	tableName struct{} `pg:",discard_unknown_columns"`
-
 	Schema     string   `pg:"schema_name"`
 	Table      string   `pg:"table_name"`
 	Name       string   `pg:"column_name"`
