@@ -134,6 +134,11 @@ func GoSlice(pgType string, dimensions int) (string, error) {
 		return "", err
 	}
 
+	// slice can not have 0 dimensions
+	if dimensions == 0 {
+		dimensions = 1
+	}
+
 	for i := 0; i < dimensions; i++ {
 		typ = fmt.Sprintf("[]%s", typ)
 	}
