@@ -50,6 +50,8 @@ func (g *Search) AddFlags(command *cobra.Command) {
 	flags.BoolP(noAlias, "w", false, `do not set 'alias' tag to "t"`)
 
 	flags.BoolP(relaxed, "r", false, "use interface{} type in search filters\n")
+
+	flags.Bool(jsonTag, false, "add json tag to annotations")
 }
 
 // ReadFlags read flags from command
