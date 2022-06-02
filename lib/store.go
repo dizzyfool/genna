@@ -8,8 +8,8 @@ import (
 	"github.com/dizzyfool/genna/model"
 	"github.com/dizzyfool/genna/util"
 
-	"github.com/go-pg/pg/v9"
-	"github.com/go-pg/pg/v9/orm"
+	"github.com/go-pg/pg/v10"
+	"github.com/go-pg/pg/v10/orm"
 )
 
 var formatter = orm.Formatter{}
@@ -55,12 +55,12 @@ type column struct {
 	Table      string   `pg:"table_name"`
 	Name       string   `pg:"column_name"`
 	IsNullable bool     `pg:"nullable"`
-	IsArray    bool     `pg:"array"`
+	IsArray    bool     `pg:"is_array"`
 	Dimensions int      `pg:"dims"`
 	Type       string   `pg:"type"`
 	Default    string   `pg:"def"`
-	IsPK       bool     `pg:"pk"`
-	IsFK       bool     `pg:"fk"`
+	IsPK       bool     `pg:"is_pk"`
+	IsFK       bool     `pg:"is_fk"`
 	MaxLen     int      `pg:"len"`
 	Values     []string `pg:"enum,array"`
 }
@@ -237,10 +237,10 @@ func (s store) Columns(tables []table) ([]column, error) {
 		                when i.constraint_types is null
 		                then false
 		                else 'PRIMARY KEY'=any (i.constraint_types)
-		                end                                    as pk,
-		                'FOREIGN KEY'=any (i.constraint_types) as fk,
+		                end                                    as is_pk,
+		                'FOREIGN KEY'=any (i.constraint_types) as is_fk,
 		                c.is_nullable = 'YES'                  as nullable,
-		                c.data_type = 'ARRAY'                  as array,
+		                c.data_type = 'ARRAY'                  as is_array,
 		                coalesce(a.array_dims, 0)              as dims,
 		                case
 		                when e.is_enum = true

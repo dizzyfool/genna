@@ -6,7 +6,7 @@ import (
 
 	"github.com/dizzyfool/genna/model"
 
-	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/v10"
 )
 
 func prepareStore() (*store, error) {
@@ -324,9 +324,18 @@ func Test_store_Schemas(t *testing.T) {
 			return
 		}
 
-		if ln := len(tables); ln != 7 {
-			t.Errorf("len(Store.Schemas()) = %v, want %v", ln, 7)
-			return
+		schemas := []string{"public", "geo", "information_schema", "pg_catalog"}
+		for _, sch := range schemas {
+			contains := false
+			for _, tbl := range tables {
+				if tbl == sch {
+					contains = true
+					break
+				}
+			}
+			if !contains {
+				t.Errorf("Store.Schemas() does not countain %v but it should", sch)
+			}
 		}
 	})
 }

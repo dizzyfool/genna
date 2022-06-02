@@ -2,11 +2,12 @@ package genna
 
 import (
 	"fmt"
-	"github.com/dizzyfool/genna/model"
-	"github.com/dizzyfool/genna/util"
 	"log"
 
-	"github.com/go-pg/pg/v9/orm"
+	"github.com/dizzyfool/genna/model"
+	"github.com/dizzyfool/genna/util"
+
+	"github.com/go-pg/pg/v10/orm"
 )
 
 // Genna is  struct should be embedded to custom generator when genna used as library
