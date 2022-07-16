@@ -19,7 +19,7 @@ func TestGenerator_Generate(t *testing.T) {
 	generator.options.FollowFKs = true
 	generator.options.CustomTypes.Add(model.TypePGUuid, "uuid.UUID", "github.com/google/uuid")
 	generator.options.GoPgVer = 10
-	//generator.options.AddJSONTag = true
+	// generator.options.AddJSONTag = true
 
 	if err := generator.Generate(); err != nil {
 		t.Errorf("generate error = %v", err)

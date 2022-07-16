@@ -49,6 +49,7 @@ func (r relation) Target() table {
 }
 
 type column struct {
+	// nolint this field is required by go-pg
 	tableName struct{} `pg:",discard_unknown_columns"`
 
 	Schema     string   `pg:"schema_name"`
