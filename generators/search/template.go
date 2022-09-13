@@ -7,31 +7,28 @@ package {{.Package}}
 import ({{if .HasImports}}{{range .Imports}}
 	"{{.}}"{{end}}
 	{{end}}
-	"github.com/go-pg/pg{{.GoPGVer}}"
-	"github.com/go-pg/pg{{.GoPGVer}}/orm"
+	"github.com/uptrace/bun"
 )
 
 const condition =  "?.? = ?"
 
 // base filters
-type applier func(query *orm.Query) (*orm.Query, error)
+type applier func(query bun.QueryBuilder) (bun.QueryBuilder, error)
 
 type search struct {
 	appliers[] applier
 }
 
-func (s *search) apply(query *orm.Query) {
+func (s *search) apply(query bun.QueryBuilder) {
 	for _, applier := range s.appliers {
-		query.Apply(applier)
+		applier(query)
 	}
 }
 
-func (s *search) where(query *orm.Query, table, field string, value interface{}) {
-	{{if eq .GoPGVer ""}}
-	query.Where(condition, pg.F(table), pg.F(field), value)
-	{{else}}
-	query.Where(condition, pg.Ident(table), pg.Ident(field), value)
-	{{end}}
+func (s *search) where(query bun.QueryBuilder, table, field string, value interface{}) {
+	
+	query.Where(condition, bun.Ident(table), bun.Ident(field), value)
+	
 }
 
 func (s *search) WithApply(a applier) {
@@ -42,14 +39,14 @@ func (s *search) WithApply(a applier) {
 }
 
 func (s *search) With(condition string, params ...interface{}) {
-	s.WithApply(func(query *orm.Query) (*orm.Query, error) {
+	s.WithApply(func(query bun.QueryBuilder) (bun.QueryBuilder, error) {
 		return query.Where(condition, params...), nil
 	})
 }
 
 // Searcher is interface for every generated filter
 type Searcher interface {
-	Apply(query *orm.Query) *orm.Query
+	Apply(query bun.QueryBuilder) bun.QueryBuilder
 	Q() applier
 
 	With(condition string, params ...interface{})
@@ -64,7 +61,7 @@ type {{.GoName}}Search struct {
 	{{.GoName}} {{.Type}}{{if .HasTags}} {{.Tag}}{{end}}{{end}}
 }
 
-func (s *{{.GoName}}Search) Apply(query *orm.Query) *orm.Query { {{range .Columns}}{{if .Relaxed}}
+func (s *{{.GoName}}Search) Apply(query bun.QueryBuilder) bun.QueryBuilder { {{range .Columns}}{{if .Relaxed}}
 	if !reflect.ValueOf(s.{{.GoName}}).IsNil(){ {{else}}
 	if s.{{.GoName}} != nil { {{end}}{{if .UseCustomRender}}
 		{{.CustomRender}}{{else}} 
@@ -77,7 +74,7 @@ func (s *{{.GoName}}Search) Apply(query *orm.Query) *orm.Query { {{range .Column
 }
 
 func (s *{{.GoName}}Search) Q() applier {
-	return func(query *orm.Query) (*orm.Query, error) {
+	return func(query bun.QueryBuilder) (bun.QueryBuilder, error) {
 		return s.Apply(query), nil
 	}
 }

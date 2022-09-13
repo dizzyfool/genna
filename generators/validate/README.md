@@ -4,11 +4,11 @@
 
 Use `validation` sub-command to execute generator:
 
-`genna validation -h`
+`bungen validation -h`
 
 First create your database and tables in it
 
-```sql
+```bun
 create table "projects"
 (
     "projectId" serial not null,
@@ -46,7 +46,7 @@ alter table "users"
 
 ### Run generator
 
-`genna validate -c postgres://user:password@localhost:5432/yourdb -o ~/output/model.go -t public.* -f`
+`bungen validation -c postgres://user:password@localhost:5432/yourdb -o ~/output/model.go -t public.* -f`
 
 You should get following functions on model package:
 
@@ -55,7 +55,7 @@ You should get following functions on model package:
 package model
 
 import (
-	"unicode/utf8"
+    "unicode/utf8"
 )
 
 const (
@@ -64,17 +64,18 @@ const (
 	ErrWrongValue = "value"
 )
 
+
 func (m User) Validate() (errors map[string]string, valid bool) {
 	errors = map[string]string{}
-
+	
 	if utf8.RuneCountInString(m.Email) > 64 {
 		errors[Columns.User.Email] = ErrMaxLength
 	}
-
+	
 	if m.Name != nil && utf8.RuneCountInString(*m.Name) > 128 {
 		errors[Columns.User.Name] = ErrMaxLength
 	}
-
+	
 	if m.CountryID != nil && *m.CountryID == 0 {
 		errors[Columns.User.CountryID] = ErrEmptyValue
 	}
@@ -91,6 +92,7 @@ func (m GeoCountry) Validate() (errors map[string]string, valid bool) {
 
 	return errors, len(errors) == 0
 }
+
 
 ```
 

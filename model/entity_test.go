@@ -3,7 +3,7 @@ package model
 import (
 	"testing"
 
-	"github.com/dizzyfool/genna/util"
+	"github.com/LdDl/bungen/util"
 )
 
 func TestTable_GoName(t *testing.T) {
@@ -74,10 +74,10 @@ func TestEntity_AddColumn(t *testing.T) {
 	entity := NewEntity(util.PublicSchema, "test", nil, nil)
 
 	t.Run("Should add column", func(t *testing.T) {
-		column1 := NewColumn("name", TypePGText, false, false, false, 0, false, false, 0, []string{}, 9, CustomTypeMapping{})
-		column2 := NewColumn("name_", TypePGText, false, false, false, 0, false, false, 0, []string{}, 9, CustomTypeMapping{})
-		column3 := NewColumn("timeout", TypePGInterval, false, false, false, 0, false, false, 0, []string{}, 9, CustomTypeMapping{})
-		column4 := NewColumn("duration", TypePGInterval, false, false, false, 0, false, false, 0, []string{}, 9, CustomTypeMapping{})
+		column1 := NewColumn("name", TypePGText, false, false, false, 0, false, false, 0, []string{}, CustomTypeMapping{})
+		column2 := NewColumn("name_", TypePGText, false, false, false, 0, false, false, 0, []string{}, CustomTypeMapping{})
+		column3 := NewColumn("timeout", TypePGInterval, false, false, false, 0, false, false, 0, []string{}, CustomTypeMapping{})
+		column4 := NewColumn("duration", TypePGInterval, false, false, false, 0, false, false, 0, []string{}, CustomTypeMapping{})
 
 		t.Run("Should add first column", func(t *testing.T) {
 			entity.AddColumn(column1)
@@ -113,15 +113,15 @@ func TestEntity_AddColumn(t *testing.T) {
 }
 
 func TestEntity_AddRelation(t *testing.T) {
-	column1 := NewColumn("test", TypePGText, false, false, false, 0, false, false, 0, []string{}, 9, CustomTypeMapping{})
-	relation1 := NewRelation([]string{"userId"}, util.PublicSchema, "users")
+	column1 := NewColumn("test", TypePGText, false, false, false, 0, false, false, 0, []string{}, CustomTypeMapping{})
+	relation1 := NewRelation([]string{"userId"}, util.PublicSchema, "users", []string{"userId"})
 
 	entity := NewEntity(util.PublicSchema, "test", []Column{column1}, []Relation{relation1})
 
 	t.Run("Should add column", func(t *testing.T) {
-		relation2 := NewRelation([]string{"locationId"}, util.PublicSchema, "locations")
-		relation3 := NewRelation([]string{"testId"}, util.PublicSchema, "tests")
-		relation4 := NewRelation([]string{"testId"}, util.PublicSchema, "tests_")
+		relation2 := NewRelation([]string{"locationId"}, util.PublicSchema, "locations", []string{"locationId"})
+		relation3 := NewRelation([]string{"testId"}, util.PublicSchema, "tests", []string{"testId"})
+		relation4 := NewRelation([]string{"testId"}, util.PublicSchema, "tests_", []string{"testId"})
 
 		t.Run("Should add second relation", func(t *testing.T) {
 			entity.AddRelation(relation2)
@@ -156,8 +156,8 @@ func TestEntity_HasMultiplePKs(t *testing.T) {
 	entity := NewEntity(util.PublicSchema, "test", nil, nil)
 
 	t.Run("Should add column", func(t *testing.T) {
-		column1 := NewColumn("userId", TypePGText, false, false, false, 0, true, false, 0, []string{}, 9, CustomTypeMapping{})
-		column2 := NewColumn("locationId", TypePGText, false, false, false, 0, true, false, 0, []string{}, 9, CustomTypeMapping{})
+		column1 := NewColumn("userId", TypePGText, false, false, false, 0, true, false, 0, []string{}, CustomTypeMapping{})
+		column2 := NewColumn("locationId", TypePGText, false, false, false, 0, true, false, 0, []string{}, CustomTypeMapping{})
 
 		t.Run("Should check for one key", func(t *testing.T) {
 			entity.AddColumn(column1)

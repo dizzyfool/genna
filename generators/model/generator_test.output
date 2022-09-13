@@ -85,33 +85,33 @@ var Tables = struct {
 }
 
 type Project struct {
-	tableName struct{} `pg:"projects,alias:t,discard_unknown_columns"`
+	bun.BaseModel `bun:"projects,alias:t"`
 
-	ID   uuid.UUID  `pg:"projectId,pk,type:uuid"`
-	Code *uuid.UUID `pg:"code,type:uuid"`
-	Name string     `pg:"name,use_zero"`
+	ID   uuid.UUID  `bun:"projectId,pk,type:uuid"`
+	Code *uuid.UUID `bun:"code,type:uuid"`
+	Name string     `bun:"name,nullzero"`
 }
 
 type User struct {
-	tableName struct{} `pg:"users,alias:t,discard_unknown_columns"`
+	bun.BaseModel `bun:"users,alias:t"`
 
-	ID        int        `pg:"userId,pk"`
-	Email     string     `pg:"email,use_zero"`
-	Activated bool       `pg:"activated,use_zero"`
-	Name      *string    `pg:"name"`
-	CountryID *int       `pg:"countryId"`
-	Avatar    []byte     `pg:"avatar,use_zero"`
-	AvatarAlt []byte     `pg:"avatarAlt"`
-	ApiKeys   [][]byte   `pg:"apiKeys,array"`
-	LoggedAt  *time.Time `pg:"loggedAt"`
+	ID        int        `bun:"userId,pk"`
+	Email     string     `bun:"email,nullzero"`
+	Activated bool       `bun:"activated,nullzero"`
+	Name      *string    `bun:"name"`
+	CountryID *int       `bun:"countryId"`
+	Avatar    []byte     `bun:"avatar,nullzero"`
+	AvatarAlt []byte     `bun:"avatarAlt"`
+	ApiKeys   [][]byte   `bun:"apiKeys,array"`
+	LoggedAt  *time.Time `bun:"loggedAt"`
 
-	Country *GeoCountry `pg:"fk:countryId,rel:has-one"`
+	Country *GeoCountry `bun:"join:countryId=countryId,rel:belongs-to"`
 }
 
 type GeoCountry struct {
-	tableName struct{} `pg:"geo.countries,alias:t,discard_unknown_columns"`
+	bun.BaseModel `bun:"geo.countries,alias:t"`
 
-	ID     int    `pg:"countryId,pk"`
-	Code   string `pg:"code,use_zero"`
-	Coords []int  `pg:"coords,array"`
+	ID     int    `bun:"countryId,pk"`
+	Code   string `bun:"code,nullzero"`
+	Coords []int  `bun:"coords,array"`
 }

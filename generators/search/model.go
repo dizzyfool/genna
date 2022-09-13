@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"html/template"
 
-	"github.com/dizzyfool/genna/model"
-	"github.com/dizzyfool/genna/util"
+	"github.com/LdDl/bungen/model"
+	"github.com/LdDl/bungen/util"
 )
 
 // TemplatePackage stores package info
@@ -14,8 +14,6 @@ type TemplatePackage struct {
 
 	HasImports bool
 	Imports    []string
-
-	GoPGVer string
 
 	Entities []TemplateEntity
 }
@@ -45,18 +43,11 @@ func NewTemplatePackage(entities []model.Entity, options Options) TemplatePackag
 		models = append(models, mdl)
 	}
 
-	goPGVer := ""
-	if options.GoPgVer >= 9 {
-		goPGVer = fmt.Sprintf("/v%d", options.GoPgVer)
-	}
-
 	return TemplatePackage{
 		Package: options.Package,
 
 		HasImports: imports.Len() > 0,
 		Imports:    imports.Elements(),
-
-		GoPGVer: goPGVer,
 
 		Entities: models,
 	}

@@ -1,13 +1,14 @@
-package genna
+package bungen
 
 import (
 	"context"
-	"fmt"
+	"database/sql"
 	"log"
 	"time"
 
-	"github.com/go-pg/pg/v10"
-	"github.com/go-pg/pg/v10/orm"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/driver/pgdriver"
 )
 
 // queryLogger helper struct for query logging
@@ -21,20 +22,17 @@ func newQueryLogger(logger log.Logger) queryLogger {
 }
 
 // BeforeQuery stores start time in custom data array
-func (ql queryLogger) BeforeQuery(ctx context.Context, event *pg.QueryEvent) (context.Context, error) {
+func (ql queryLogger) BeforeQuery(ctx context.Context, event *bun.QueryEvent) context.Context {
+
 	event.Stash = make(map[interface{}]interface{})
 	event.Stash["startedAt"] = time.Now()
 
-	return ctx, nil
+	return ctx
 }
 
 // AfterQuery calculates execution time and print it with formatted query
-func (ql queryLogger) AfterQuery(ctx context.Context, event *pg.QueryEvent) error {
-	query, err := event.FormattedQuery()
-	if err != nil {
-		ql.logger.Printf("formatted query error: %s", err)
-	}
-
+func (ql queryLogger) AfterQuery(ctx context.Context, event *bun.QueryEvent) {
+	query := event.Operation()
 	var since time.Duration
 	if event.Stash != nil {
 		if v, ok := event.Stash["startedAt"]; ok {
@@ -43,20 +41,14 @@ func (ql queryLogger) AfterQuery(ctx context.Context, event *pg.QueryEvent) erro
 			}
 		}
 	}
-
 	ql.logger.Printf("query: %s, duration: %d", query, since)
-	return nil
 }
 
 // newDatabase creates database connection
-func newDatabase(url string, logger *log.Logger) (orm.DB, error) {
-	options, err := pg.ParseURL(url)
-	if err != nil {
-		return nil, fmt.Errorf("parsing connection url error: %w", err)
-	}
-
-	client := pg.Connect(options)
-
+func newDatabase(dsn string, logger *log.Logger) (*bun.DB, error) {
+	pgdb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
+	// bun.WithDiscardUnknownColumns() instead of `discard_unknown_columns` tag
+	client := bun.NewDB(pgdb, pgdialect.New(), bun.WithDiscardUnknownColumns())
 	if logger != nil {
 		client.AddQueryHook(newQueryLogger(*logger))
 	}

@@ -3,11 +3,12 @@ package model
 import (
 	"strings"
 
-	"github.com/dizzyfool/genna/util"
+	"github.com/LdDl/bungen/util"
 )
 
 // Relation stores relation
 type Relation struct {
+	PKFields []string
 	FKFields []string
 	GoName   string
 
@@ -20,8 +21,8 @@ type Relation struct {
 	GoType string
 }
 
-// NewRelation creates relation from pg info
-func NewRelation(sourceColumns []string, targetSchema, targetTable string) Relation {
+// NewRelation creates relation from Postgres info
+func NewRelation(sourceColumns []string, targetSchema, targetTable string, targetColumns []string) Relation {
 	names := make([]string, len(sourceColumns))
 	for i, name := range sourceColumns {
 		names[i] = util.ReplaceSuffix(util.ColumnName(name), util.ID, "")
@@ -33,6 +34,7 @@ func NewRelation(sourceColumns []string, targetSchema, targetTable string) Relat
 	}
 
 	return Relation{
+		PKFields: targetColumns,
 		FKFields: sourceColumns,
 		GoName:   strings.Join(names, ""),
 

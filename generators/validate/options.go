@@ -3,8 +3,8 @@ package validate
 import (
 	"strings"
 
-	"github.com/dizzyfool/genna/generators/base"
-	"github.com/dizzyfool/genna/util"
+	"github.com/LdDl/bungen/generators/base"
+	"github.com/LdDl/bungen/util"
 )
 
 // Options for generator

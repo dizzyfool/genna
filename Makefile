@@ -4,5 +4,5 @@ lint:
 	@golangci-lint run ./...
 
 test:
-	psql postgres://genna:genna@localhost:5432/genna?sslmode=disable -f test_db.sql
+	psql postgres://some_user:some_password@localhost:5432/some_db?sslmode=disable -f test_db.sql
 	go test ./...

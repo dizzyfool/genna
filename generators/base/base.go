@@ -9,9 +9,9 @@ import (
 	"path"
 	"strings"
 
-	"github.com/dizzyfool/genna/lib"
-	"github.com/dizzyfool/genna/model"
-	"github.com/dizzyfool/genna/util"
+	bungen "github.com/LdDl/bungen/lib"
+	"github.com/LdDl/bungen/model"
+	"github.com/LdDl/bungen/util"
 
 	"github.com/spf13/cobra"
 )
@@ -28,9 +28,6 @@ const (
 
 	// FollowFKs is basic flag (-f) for generate foreign keys models for selected tables
 	FollowFKs = "follow-fk"
-
-	// Go-PG version to use
-	GoPgVer = "gopg"
 
 	// Package for model files
 	Pkg = "pkg"
@@ -70,9 +67,6 @@ type Options struct {
 	// will not generate fks if schema not listed
 	FollowFKs bool
 
-	// go-pg version
-	GoPgVer int
-
 	// Custom types goes here
 	CustomTypes model.CustomTypeMapping
 }
@@ -83,10 +77,6 @@ func (o *Options) Def() {
 		o.Tables = []string{util.Join(util.PublicSchema, "*")}
 	}
 
-	if o.GoPgVer == 0 {
-		o.GoPgVer = 10
-	}
-
 	if o.CustomTypes == nil {
 		o.CustomTypes = model.CustomTypeMapping{}
 	}
@@ -94,13 +84,13 @@ func (o *Options) Def() {
 
 // Generator is base generator used in other generators
 type Generator struct {
-	genna.Genna
+	bungen.Bungen
 }
 
 // NewGenerator creates generator
 func NewGenerator(url string) Generator {
 	return Generator{
-		Genna: genna.New(url, nil),
+		Bungen: bungen.New(url, nil),
 	}
 }
 
@@ -127,13 +117,11 @@ func AddFlags(command *cobra.Command) {
 
 	flags.StringSlice(customTypesFlag, []string{}, "set custom types separated by comma\nformat: <postgresql_type>:<go_import>.<go_type>\nexamples: uuid:github.com/google/uuid.UUID,point:src/model.Point,bytea:string\n")
 
-	flags.IntP(GoPgVer, "g", 10, "specify go-pg version (8, 9 and 10 are supported)")
-
 	return
 }
 
 // ReadFlags reads basic flags from command
-func ReadFlags(command *cobra.Command) (conn, output, pkg string, tables []string, followFKs bool, gopgVer int, customTypes model.CustomTypeMapping, err error) {
+func ReadFlags(command *cobra.Command) (conn, output, pkg string, tables []string, followFKs bool, customTypes model.CustomTypeMapping, err error) {
 	var customTypesStrings []string
 	uuid := false
 
@@ -163,10 +151,6 @@ func ReadFlags(command *cobra.Command) (conn, output, pkg string, tables []strin
 		return
 	}
 
-	if gopgVer, err = flags.GetInt(GoPgVer); err != nil {
-		return
-	}
-
 	if customTypesStrings, err = flags.GetStringSlice(customTypesFlag); err != nil {
 		return
 	}
@@ -174,7 +158,7 @@ func ReadFlags(command *cobra.Command) (conn, output, pkg string, tables []strin
 	if customTypes, err = model.ParseCustomTypes(customTypesStrings); err != nil {
 		return
 	}
-
+	fmt.Println("custom", customTypes)
 	if uuid, err = flags.GetBool(uuidFlag); err != nil {
 		return
 	}
@@ -183,21 +167,15 @@ func ReadFlags(command *cobra.Command) (conn, output, pkg string, tables []strin
 		customTypes.Add(model.TypePGUuid, "uuid.UUID", "github.com/google/uuid")
 	}
 
-	if gopgVer < 8 && gopgVer > 10 {
-		err = fmt.Errorf("go-pg version %d not supported", gopgVer)
-		return
-	}
-
 	return
 }
 
 // Generate runs whole generation process
-func (g Generator) Generate(tables []string, followFKs, useSQLNulls bool, output, tmpl string, packer Packer, goPGVer int, customTypes model.CustomTypeMapping) error {
-	entities, err := g.Read(tables, followFKs, useSQLNulls, goPGVer, customTypes)
+func (g Generator) Generate(tables []string, followFKs, useSQLNulls bool, output, tmpl string, packer Packer, customTypes model.CustomTypeMapping) error {
+	entities, err := g.Read(tables, followFKs, useSQLNulls, customTypes)
 	if err != nil {
 		return fmt.Errorf("read database error: %w", err)
 	}
-
 	return g.GenerateFromEntities(entities, output, tmpl, packer)
 }
 
