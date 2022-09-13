@@ -4,11 +4,11 @@ Author: [@Dionid](https://github.com/Dionid)
 
 Use `model-named` sub-command to execute generator:
 
-`genna model-named -h`
+`bungen model-named -h`
 
 First create your database and tables in it
 
-```sql
+```bun
 create table "projects"
 (
     "projectId" serial not null,
@@ -46,7 +46,7 @@ alter table "users"
 
 ### Run generator
 
-`genna model-named -c postgres://user:password@localhost:5432/yourdb -o ~/output/model.go -t public.* -f`
+`bungen model-named -c postgres://user:password@localhost:5432/yourdb -o ~/output/model.go -t public.* -f`
 
 You should get following models on model package:
 
@@ -128,30 +128,30 @@ var Tables = TablesSt{
 }
 
 type Project struct {
-	tableName struct{} `sql:"projects,alias:t" pg:",discard_unknown_columns"`
+	bun.BaseModel `bun:"projects,alias:t"`
 
-	ID   int    `sql:"projectId,pk"`
-	Name string `sql:"name,notnull"`
+	ID   int    `bun:"projectId,pk"`
+	Name string `bun:"name,nullzero"`
 }
 
 type User struct {
-	tableName struct{} `sql:"users,alias:t" pg:",discard_unknown_columns"`
+	bun.BaseModel `bun:"users,alias:t"`
 
-	ID        int     `sql:"userId,pk"`
-	Email     string  `sql:"email,notnull"`
-	Activated bool    `sql:"activated,notnull"`
-	Name      *string `sql:"name"`
-	CountryID *int    `sql:"countryId"`
+	ID        int     `bun:"userId,pk"`
+	Email     string  `bun:"email,nullzero"`
+	Activated bool    `bun:"activated,nullzero"`
+	Name      *string `bun:"name"`
+	CountryID *int    `bun:"countryId"`
 
-	Country *GeoCountry `pg:"fk:countryId"`
+	Country *GeoCountry `bun:"join:countryId=countryId,rel:belongs-to"`
 }
 
 type GeoCountry struct {
-	tableName struct{} `sql:"geo.countries,alias:t" pg:",discard_unknown_columns"`
+	bun.BaseModel `bun:"geo.countries,alias:t"`
 
-	ID     int    `sql:"countryId,pk"`
-	Code   string `sql:"code,notnull"`
-	Coords []int  `sql:"coords,array"`
+	ID     int    `bun:"countryId,pk"`
+	Code   string `bun:"code,nullzero"`
+	Coords []int  `bun:"coords,array"`
 }
 
 ```
@@ -165,15 +165,15 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/go-pg/pg/v9"
+	"github.com/uptrace/bun"
 )
 
 const AllColumns = "t.*"
 
 func TestModel(t *testing.T) {
 	// connecting to db
-	options, _ := pg.ParseURL("postgres://user:password@localhost:5432/yourdb")
-	db := pg.Connect(options)
+	pgdb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN("postgres://user:password@localhost:5432/yourdb")))
+	db := bun.NewDB(pgdb, pgdialect.New(), bun.WithDiscardUnknownColumns())
 
 	if _, err := db.Exec(`truncate table users; truncate table geo.countries cascade;`); err != nil {
 		panic(err)
@@ -192,14 +192,15 @@ func TestModel(t *testing.T) {
 	}
 
 	// inserting
-	if _, err := db.Model(&toInsert).Insert(); err != nil {
+	ctx := context.Background()
+	if _, err := db.NewInsert().Model(&toInsert).Column("code", "coords").Exec(ctx); err != nil {
 		panic(err)
 	}
 
 	// selecting
 	var toSelect []GeoCountry
-	
-	if err := db.Model(&toSelect).Select(); err != nil {
+	ctx = context.Background()
+	if err := db.NewSelect().Model(&toSelect).Scan(ctx); err != nil {
 		panic(err)
 	}
 
@@ -213,17 +214,20 @@ func TestModel(t *testing.T) {
 	}
 
 	// inserting
-	if _, err := db.Model(&newUser).Insert(); err != nil {
+	ctx = context.Background()
+	if _, err := db.NewInsert().Model(&newUser).Column("email", "activated", "countryId").Exec(ctx); err != nil {
 		panic(err)
 	}
 
 	// selecting inserted user
 	user := User{}
-	m := db.Model(&user).
-		Column(AllColumns, Columns.User.Country).
-		Where(`? = ?`, pg.F(Columns.User.Email), "test@gmail.com")
+	m := db.NewSelect().
+		Column(AllColumns).
+		Relation(Columns.User.Country).
+		Where(`? = ?`, bun.Ident(Columns.User.Email), "test@gmail.com")
 
-	if err := m.Select(); err != nil {
+	ctx = context.Background()
+	if err := m.Scan(ctx); err != nil {
 		panic(err)
 	}
 

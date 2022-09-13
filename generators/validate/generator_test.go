@@ -7,14 +7,14 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/dizzyfool/genna/model"
+	"github.com/LdDl/bungen/model"
 )
 
 func TestGenerator_Generate(t *testing.T) {
 	generator := New()
 
 	generator.options.Def()
-	generator.options.URL = `postgres://genna:genna@localhost:5432/genna?sslmode=disable`
+	generator.options.URL = `postgres://some_user:some_password@localhost:5432/some_db?sslmode=disable`
 	generator.options.Output = path.Join(os.TempDir(), "validate_test.go")
 	generator.options.FollowFKs = true
 	generator.options.CustomTypes.Add(model.TypePGUuid, "uuid.UUID", "github.com/google/uuid")

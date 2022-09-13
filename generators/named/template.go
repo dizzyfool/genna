@@ -40,7 +40,7 @@ var Tables = TablesSt { {{range .Entities}}
 }
 {{range $model := .Entities}}
 type {{.GoName}} struct {
-	tableName struct{} {{.Tag}}
+	bun.BaseModel {{.Tag}}
 	{{range .Columns}}
 	{{.GoName}} {{.Type}} {{.Tag}} {{.Comment}}{{end}}{{if .HasRelations}}
 	{{range .Relations}}

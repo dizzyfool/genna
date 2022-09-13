@@ -1,8 +1,8 @@
 package search
 
 import (
-	"github.com/dizzyfool/genna/generators/base"
-	"github.com/dizzyfool/genna/model"
+	"github.com/LdDl/bungen/generators/base"
+	"github.com/LdDl/bungen/model"
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +15,7 @@ const (
 
 // CreateCommand creates generator command
 func CreateCommand() *cobra.Command {
-	return base.CreateCommand("search", "Search generator for go-pg models", New())
+	return base.CreateCommand("search", "Search generator for bun[postgres] models", New())
 }
 
 // Search represents search generator
@@ -58,7 +58,7 @@ func (g *Search) AddFlags(command *cobra.Command) {
 func (g *Search) ReadFlags(command *cobra.Command) error {
 	var err error
 
-	g.options.URL, g.options.Output, g.options.Package, g.options.Tables, g.options.FollowFKs, g.options.GoPgVer, g.options.CustomTypes, err = base.ReadFlags(command)
+	g.options.URL, g.options.Output, g.options.Package, g.options.Tables, g.options.FollowFKs, g.options.CustomTypes, err = base.ReadFlags(command)
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,6 @@ func (g *Search) Generate() error {
 			g.options.Output,
 			Template,
 			g.Packer(),
-			g.options.GoPgVer,
 			g.options.CustomTypes,
 		)
 }
@@ -112,7 +111,6 @@ func (g *Search) Repack(packer base.Packer) error {
 			g.options.Output,
 			Template,
 			packer,
-			g.options.GoPgVer,
 			g.options.CustomTypes,
 		)
 }

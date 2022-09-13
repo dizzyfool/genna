@@ -6,28 +6,27 @@ import (
 	"github.com/google/uuid"
 	"time"
 
-	"github.com/go-pg/pg/v10"
-	"github.com/go-pg/pg/v10/orm"
+	"github.com/uptrace/bun"
 )
 
 const condition = "?.? = ?"
 
 // base filters
-type applier func(query *orm.Query) (*orm.Query, error)
+type applier func(query bun.QueryBuilder) (bun.QueryBuilder, error)
 
 type search struct {
 	appliers []applier
 }
 
-func (s *search) apply(query *orm.Query) {
+func (s *search) apply(query bun.QueryBuilder) {
 	for _, applier := range s.appliers {
-		query.Apply(applier)
+		applier(query)
 	}
 }
 
-func (s *search) where(query *orm.Query, table, field string, value interface{}) {
+func (s *search) where(query bun.QueryBuilder, table, field string, value interface{}) {
 
-	query.Where(condition, pg.Ident(table), pg.Ident(field), value)
+	query.Where(condition, bun.Ident(table), bun.Ident(field), value)
 
 }
 
@@ -39,14 +38,14 @@ func (s *search) WithApply(a applier) {
 }
 
 func (s *search) With(condition string, params ...interface{}) {
-	s.WithApply(func(query *orm.Query) (*orm.Query, error) {
+	s.WithApply(func(query bun.QueryBuilder) (bun.QueryBuilder, error) {
 		return query.Where(condition, params...), nil
 	})
 }
 
 // Searcher is interface for every generated filter
 type Searcher interface {
-	Apply(query *orm.Query) *orm.Query
+	Apply(query bun.QueryBuilder) bun.QueryBuilder
 	Q() applier
 
 	With(condition string, params ...interface{})
@@ -61,7 +60,7 @@ type ProjectSearch struct {
 	Name *string
 }
 
-func (s *ProjectSearch) Apply(query *orm.Query) *orm.Query {
+func (s *ProjectSearch) Apply(query bun.QueryBuilder) bun.QueryBuilder {
 	if s.ID != nil {
 		s.where(query, Tables.Project.Alias, Columns.Project.ID, s.ID)
 	}
@@ -78,7 +77,7 @@ func (s *ProjectSearch) Apply(query *orm.Query) *orm.Query {
 }
 
 func (s *ProjectSearch) Q() applier {
-	return func(query *orm.Query) (*orm.Query, error) {
+	return func(query bun.QueryBuilder) (bun.QueryBuilder, error) {
 		return s.Apply(query), nil
 	}
 }
@@ -96,7 +95,7 @@ type UserSearch struct {
 	LoggedAt  *time.Time
 }
 
-func (s *UserSearch) Apply(query *orm.Query) *orm.Query {
+func (s *UserSearch) Apply(query bun.QueryBuilder) bun.QueryBuilder {
 	if s.ID != nil {
 		s.where(query, Tables.User.Alias, Columns.User.ID, s.ID)
 	}
@@ -128,7 +127,7 @@ func (s *UserSearch) Apply(query *orm.Query) *orm.Query {
 }
 
 func (s *UserSearch) Q() applier {
-	return func(query *orm.Query) (*orm.Query, error) {
+	return func(query bun.QueryBuilder) (bun.QueryBuilder, error) {
 		return s.Apply(query), nil
 	}
 }
@@ -140,7 +139,7 @@ type GeoCountrySearch struct {
 	Code *string
 }
 
-func (s *GeoCountrySearch) Apply(query *orm.Query) *orm.Query {
+func (s *GeoCountrySearch) Apply(query bun.QueryBuilder) bun.QueryBuilder {
 	if s.ID != nil {
 		s.where(query, Tables.GeoCountry.Alias, Columns.GeoCountry.ID, s.ID)
 	}
@@ -154,7 +153,7 @@ func (s *GeoCountrySearch) Apply(query *orm.Query) *orm.Query {
 }
 
 func (s *GeoCountrySearch) Q() applier {
-	return func(query *orm.Query) (*orm.Query, error) {
+	return func(query bun.QueryBuilder) (bun.QueryBuilder, error) {
 		return s.Apply(query), nil
 	}
 }

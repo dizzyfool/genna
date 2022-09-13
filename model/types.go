@@ -87,7 +87,7 @@ const (
 	TypeInterface = "interface{}"
 )
 
-// GoType generates simple go type from pg type
+// GoType generates simple go type from Postgres type
 func GoType(pgType string) (string, error) {
 	switch pgType {
 	case TypePGInt2, TypePGInt4:
@@ -121,7 +121,7 @@ func GoType(pgType string) (string, error) {
 	return "", fmt.Errorf("unsupported type: %s", pgType)
 }
 
-// GoSlice generates go slice type from pg array
+// GoSlice generates go slice type from Postgres array
 func GoSlice(pgType string, dimensions int) (string, error) {
 	switch pgType {
 	case TypePGTimestamp, TypePGTimestamptz, TypePGDate, TypePGTime, TypePGTimetz,
@@ -146,7 +146,7 @@ func GoSlice(pgType string, dimensions int) (string, error) {
 	return typ, nil
 }
 
-// GoNullable generates all go types from pg type with pointer
+// GoNullable generates all go types from Postgres type with pointer
 func GoNullable(pgType string, useSQLNull bool, customTypes CustomTypeMapping) (string, error) {
 	// avoiding pointers with sql.Null... types
 	if useSQLNull {
@@ -160,7 +160,7 @@ func GoNullable(pgType string, useSQLNull bool, customTypes CustomTypeMapping) (
 		case TypePGText, TypePGVarchar, TypePGUuid, TypePGBpchar, TypePGPoint:
 			return "sql.NullString", nil
 		case TypePGTimestamp, TypePGTimestamptz, TypePGDate, TypePGTime, TypePGTimetz:
-			return "pg.NullTime", nil
+			return "bun.NullTime", nil
 		}
 	}
 
@@ -183,7 +183,7 @@ func GoNullable(pgType string, useSQLNull bool, customTypes CustomTypeMapping) (
 }
 
 // GoImport generates import from go type
-func GoImport(pgType string, nullable, useSQLNull bool, ver int) string {
+func GoImport(pgType string, nullable, useSQLNull bool) string {
 	if nullable && useSQLNull {
 		switch pgType {
 		case TypePGInt2, TypePGInt4, TypePGInt8,
@@ -192,11 +192,7 @@ func GoImport(pgType string, nullable, useSQLNull bool, ver int) string {
 			TypePGText, TypePGVarchar, TypePGUuid, TypePGBpchar, TypePGPoint:
 			return "database/sql"
 		case TypePGTimestamp, TypePGTimestamptz, TypePGDate, TypePGTime, TypePGTimetz:
-			if ver >= 9 {
-				return fmt.Sprintf("github.com/go-pg/pg/v%d", ver)
-			} else {
-				return "github.com/go-pg/pg"
-			}
+			return "github.com/uptrace/bun"
 		}
 	}
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/dizzyfool/genna/cmd"
+	"github.com/LdDl/bungen/cmd"
 )
 
 func main() {

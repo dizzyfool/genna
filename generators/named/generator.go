@@ -1,15 +1,15 @@
 package named
 
 import (
-	"github.com/dizzyfool/genna/generators/base"
-	"github.com/dizzyfool/genna/generators/model"
+	"github.com/LdDl/bungen/generators/base"
+	"github.com/LdDl/bungen/generators/model"
 
 	"github.com/spf13/cobra"
 )
 
 // CreateCommand creates generator command
 func CreateCommand() *cobra.Command {
-	return base.CreateCommand("model-named", "Basic go-pg model generator with named structures", New())
+	return base.CreateCommand("model-named", "Basic bun[postgres] model generator with named structures", New())
 }
 
 // Generator represents basic named generator
@@ -35,7 +35,6 @@ func (g *Generator) Generate() error {
 			options.Output,
 			Template,
 			g.Packer(),
-			options.GoPgVer,
 			options.CustomTypes,
 		)
 }

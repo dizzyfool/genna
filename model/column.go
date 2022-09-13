@@ -1,8 +1,13 @@
 package model
 
 import (
-	"github.com/dizzyfool/genna/util"
+	"github.com/LdDl/bungen/util"
 )
+
+type columnRelWrap struct {
+	*Relation
+	RelationPK string
+}
 
 // Column stores information about column
 type Column struct {
@@ -19,9 +24,10 @@ type Column struct {
 	IsArray    bool
 	Dimensions int
 
-	IsPK     bool
-	IsFK     bool
-	Relation *Relation
+	IsPK bool
+	IsFK bool
+	// Relation *Relation
+	Relation *columnRelWrap
 
 	Import string
 
@@ -29,8 +35,8 @@ type Column struct {
 	Values []string
 }
 
-// NewColumn creates Column from pg info
-func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dims int, pk, fk bool, len int, values []string, goPGVer int, customTypes CustomTypeMapping) Column {
+// NewColumn creates Column from Postgres info
+func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dims int, pk, fk bool, len int, values []string, customTypes CustomTypeMapping) Column {
 	var (
 		err error
 		ok  bool
@@ -73,13 +79,16 @@ func NewColumn(pgName string, pgType string, nullable, sqlNulls, array bool, dim
 	}
 
 	if column.Import, ok = customTypes.GoImport(pgType); !ok {
-		column.Import = GoImport(pgType, nullable, sqlNulls, goPGVer)
+		column.Import = GoImport(pgType, nullable, sqlNulls)
 	}
 
 	return column
 }
 
 // AddRelation adds relation to column. Should be used if FK
-func (c *Column) AddRelation(relation *Relation) {
-	c.Relation = relation
+func (c *Column) AddRelation(relation *Relation, relPK string) {
+	c.Relation = &columnRelWrap{
+		Relation:   relation,
+		RelationPK: relPK,
+	}
 }

@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/dizzyfool/genna/util"
+	"github.com/LdDl/bungen/util"
 )
 
 // Entity stores information about table
@@ -24,7 +24,7 @@ type Entity struct {
 	impIndex map[string]struct{}
 }
 
-// NewEntity creates new Entity from pg info
+// NewEntity creates new Entity from Postgres info
 func NewEntity(schema, pgName string, columns []Column, relations []Relation) Entity {
 	goName := util.EntityName(pgName)
 	if schema != util.PublicSchema {
@@ -93,10 +93,11 @@ func (e *Entity) AddRelation(relation Relation) {
 	e.Relations = append(e.Relations, relation)
 
 	// adding relation to column
-	for _, field := range relation.FKFields {
+	for idx, field := range relation.FKFields {
+		correspondingPK := relation.PKFields[idx]
 		for i, column := range e.Columns {
 			if column.PGName == field {
-				e.Columns[i].AddRelation(&relation)
+				e.Columns[i].AddRelation(&relation, correspondingPK)
 			}
 		}
 	}
@@ -116,4 +117,15 @@ func (e *Entity) HasMultiplePKs() bool {
 	}
 
 	return false
+}
+
+// GetPKs returns columns which are marked as primary keys
+func (e *Entity) GetPKs() []Column {
+	var res []Column
+	for _, col := range e.Columns {
+		if col.IsPK {
+			res = append(res, col)
+		}
+	}
+	return res
 }

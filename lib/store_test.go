@@ -1,12 +1,11 @@
-package genna
+package bungen
 
 import (
 	"reflect"
 	"testing"
 
-	"github.com/dizzyfool/genna/model"
-
-	"github.com/go-pg/pg/v10"
+	"github.com/LdDl/bungen/model"
+	"github.com/uptrace/bun"
 )
 
 func prepareStore() (*store, error) {
@@ -27,18 +26,18 @@ func Test_format(t *testing.T) {
 		want    string
 	}{
 		{
-			name:    "Should format pg.Multi",
+			name:    "Should format bun.In",
 			pattern: "(id, name) in (?)",
 			values: []interface{}{
 				[]string{"1", "test"},
 				[]string{"2", "test"},
 			},
-			want: "(id, name) in (('1','test'),('2','test'))",
+			want: "(id, name) in (('1', 'test'), ('2', 'test'))",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := format(tt.pattern, pg.InMulti(tt.values...)); got != tt.want {
+			if got := format(tt.pattern, bun.In(tt.values)); got != tt.want {
 				t.Errorf("format() = %v, want %v", got, tt.want)
 			}
 		})
@@ -103,7 +102,7 @@ func Test_relation_Relation(t *testing.T) {
 				TargetTable:   "locations",
 				TargetColumns: []string{"locationId"},
 			},
-			want: model.NewRelation([]string{"locationId"}, "geo", "locations"),
+			want: model.NewRelation([]string{"locationId"}, "geo", "locations", []string{"locationId"}),
 		},
 	}
 	for _, tt := range tests {
@@ -210,7 +209,7 @@ func Test_column_Column(t *testing.T) {
 				MaxLen:     0,
 				Values:     []string{},
 			},
-			want: model.NewColumn("userId", model.TypePGInt8, false, false, false, 0, true, false, 0, []string{}, 9, nil),
+			want: model.NewColumn("userId", model.TypePGInt8, false, false, false, 0, true, false, 0, []string{}, nil),
 		},
 	}
 	for _, tt := range tests {
@@ -229,7 +228,7 @@ func Test_column_Column(t *testing.T) {
 				MaxLen:     tt.fields.MaxLen,
 				Values:     tt.fields.Values,
 			}
-			if got := c.Column(false, 9, nil); !reflect.DeepEqual(got, tt.want) {
+			if got := c.Column(false, nil); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("column.Column() = %v, want %v", got, tt.want)
 			}
 		})

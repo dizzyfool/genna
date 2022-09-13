@@ -5,8 +5,8 @@ import (
 	"html/template"
 	"strings"
 
-	"github.com/dizzyfool/genna/model"
-	"github.com/dizzyfool/genna/util"
+	"github.com/LdDl/bungen/model"
+	"github.com/LdDl/bungen/util"
 )
 
 const (

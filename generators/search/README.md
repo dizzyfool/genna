@@ -4,11 +4,11 @@
 
 Use `search` sub-command to execute generator:
 
-`genna search -h`
+`bungen search -h`
 
 First create your database and tables in it
 
-```sql
+```bun
 create table "projects"
 (
     "projectId" serial not null,
@@ -46,7 +46,7 @@ alter table "users"
 
 ### Run generator
 
-`genna search -c postgres://user:password@localhost:5432/yourdb -o ~/output/model.go -t public.* -f`
+`bungen search -c postgres://user:password@localhost:5432/yourdb -o ~/output/model.go -t public.* -f`
 
 You should get following search structs on model package:
 
@@ -55,109 +55,142 @@ You should get following search structs on model package:
 package model
 
 import (
-	"github.com/go-pg/pg/v9"
-	"github.com/go-pg/pg/v9/orm"
+	"github.com/uptrace/bun"
 )
 
-// base filters
+const condition =  "?.? = ?"
 
-type applier func(query *orm.Query) (*orm.Query, error)
+// base filters
+type applier func(query bun.QueryBuilder) (bun.QueryBuilder, error)
 
 type search struct {
-	custom map[string][]interface{}
+	appliers[] applier
 }
 
-func (s *search) apply(table string, values map[string]interface{}, query *orm.Query) *orm.Query {
-	for field, value := range values {
-		if value != nil {
-			query.Where("?.? = ?", pg.F(table), pg.F(field), value)
-		}
+func (s *search) apply(query bun.QueryBuilder) {
+	for _, applier := range s.appliers {
+		applier(query)
 	}
-
-	if s.custom != nil {
-		for condition, params := range s.custom {
-			query.Where(condition, params...)
-		}
-	}
-
-	return query
 }
 
-func (s *search) with(condition string, params ...interface{}) {
-	if s.custom == nil {
-		s.custom = map[string][]interface{}{}
+func (s *search) where(query bun.QueryBuilder, table, field string, value interface{}) {
+	
+	query.Where(condition, bun.Ident(table), bun.Ident(field), value)
+	
+}
+
+func (s *search) WithApply(a applier) {
+	if s.appliers == nil {
+		s.appliers = []applier{}
 	}
-	s.custom[condition] = params
+	s.appliers = append(s.appliers, a)
+}
+
+func (s *search) With(condition string, params ...interface{}) {
+	s.WithApply(func(query bun.QueryBuilder) (bun.QueryBuilder, error) {
+		return query.Where(condition, params...), nil
+	})
 }
 
 // Searcher is interface for every generated filter
 type Searcher interface {
-	Apply(query *orm.Query) *orm.Query
+	Apply(query bun.QueryBuilder) bun.QueryBuilder
 	Q() applier
+
+	With(condition string, params ...interface{})
+	WithApply(a applier)
 }
 
-type ProjectSearch struct {
-	search
 
-	ID   *int
+type ProjectSearch struct {
+	search 
+
+	
+	ID *int
 	Name *string
 }
 
-func (s *ProjectSearch) Apply(query *orm.Query) *orm.Query {
-	return s.apply(Tables.Project.Alias, map[string]interface{}{
-		Columns.Project.ID:   s.ID,
-		Columns.Project.Name: s.Name,
-	}, query)
+func (s *ProjectSearch) Apply(query bun.QueryBuilder) bun.QueryBuilder { 
+	if s.ID != nil {  
+		s.where(query, Tables.Project.Alias, Columns.Project.ID, s.ID)
+	}
+	if s.Name != nil {  
+		s.where(query, Tables.Project.Alias, Columns.Project.Name, s.Name)
+	}
+
+	s.apply(query)
+	
+	return query
 }
 
 func (s *ProjectSearch) Q() applier {
-	return func(query *orm.Query) (*orm.Query, error) {
+	return func(query bun.QueryBuilder) (bun.QueryBuilder, error) {
 		return s.Apply(query), nil
 	}
 }
 
 type UserSearch struct {
-	search
+	search 
 
-	ID        *int
-	Email     *string
+	
+	ID *int
+	Email *string
 	Activated *bool
-	Name      *string
+	Name *string
 	CountryID *int
 }
 
-func (s *UserSearch) Apply(query *orm.Query) *orm.Query {
-	return s.apply(Tables.User.Alias, map[string]interface{}{
-		Columns.User.ID:        s.ID,
-		Columns.User.Email:     s.Email,
-		Columns.User.Activated: s.Activated,
-		Columns.User.Name:      s.Name,
-		Columns.User.CountryID: s.CountryID,
-	}, query)
+func (s *UserSearch) Apply(query bun.QueryBuilder) bun.QueryBuilder { 
+	if s.ID != nil {  
+		s.where(query, Tables.User.Alias, Columns.User.ID, s.ID)
+	}
+	if s.Email != nil {  
+		s.where(query, Tables.User.Alias, Columns.User.Email, s.Email)
+	}
+	if s.Activated != nil {  
+		s.where(query, Tables.User.Alias, Columns.User.Activated, s.Activated)
+	}
+	if s.Name != nil {  
+		s.where(query, Tables.User.Alias, Columns.User.Name, s.Name)
+	}
+	if s.CountryID != nil {  
+		s.where(query, Tables.User.Alias, Columns.User.CountryID, s.CountryID)
+	}
+
+	s.apply(query)
+	
+	return query
 }
 
 func (s *UserSearch) Q() applier {
-	return func(query *orm.Query) (*orm.Query, error) {
+	return func(query bun.QueryBuilder) (bun.QueryBuilder, error) {
 		return s.Apply(query), nil
 	}
 }
 
 type GeoCountrySearch struct {
-	search
+	search 
 
-	ID   *int
+	
+	ID *int
 	Code *string
 }
 
-func (s *GeoCountrySearch) Apply(query *orm.Query) *orm.Query {
-	return s.apply(Tables.GeoCountry.Alias, map[string]interface{}{
-		Columns.GeoCountry.ID:   s.ID,
-		Columns.GeoCountry.Code: s.Code,
-	}, query)
+func (s *GeoCountrySearch) Apply(query bun.QueryBuilder) bun.QueryBuilder { 
+	if s.ID != nil {  
+		s.where(query, Tables.GeoCountry.Alias, Columns.GeoCountry.ID, s.ID)
+	}
+	if s.Code != nil {  
+		s.where(query, Tables.GeoCountry.Alias, Columns.GeoCountry.Code, s.Code)
+	}
+
+	s.apply(query)
+	
+	return query
 }
 
 func (s *GeoCountrySearch) Q() applier {
-	return func(query *orm.Query) (*orm.Query, error) {
+	return func(query bun.QueryBuilder) (bun.QueryBuilder, error) {
 		return s.Apply(query), nil
 	}
 }
@@ -173,13 +206,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/go-pg/pg/v9"
+	"github.com/uptrace/bun"
 )
 
 func TestModel(t *testing.T) {
 	// connecting to db
-	options, _ := pg.ParseURL("postgres://user:password@localhost:5432/yourdb")
-	db := pg.Connect(options)
+	pgdb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN("postgres://user:password@localhost:5432/yourdb")))
+	db := bun.NewDB(pgdb, pgdialect.New(), bun.WithDiscardUnknownColumns())
 
 	if _, err := db.Exec(`truncate table users; truncate table geo.countries cascade;`); err != nil {
 		panic(err)
@@ -198,7 +231,8 @@ func TestModel(t *testing.T) {
 	}
 
 	// inserting
-	if _, err := db.Model(&toInsert).Insert(); err != nil {
+	ctx := context.Background()
+	if _, err := db.NewInsert().Model(&toInsert).Column("code", "coords").Exec(ctx); err != nil {
 		panic(err)
 	}
 
@@ -207,11 +241,13 @@ func TestModel(t *testing.T) {
     search := GeoCountrySearch{
         Code: &code,
     }
-    m = db.Model(&country).Apply(search.Q())
+    m := db.NewSelect().Model(&country)
+	m = search.Apply(m.QueryBuilder()).Unwrap().(*bun.SelectQuery)
 
-    if err := m.Select(); err != nil {
-        panic(err)
-    }
+    ctx = context.Background()
+	if err := m.Scan(ctx); err != nil {
+		panic(err)
+	}
 
 	fmt.Printf("%#v\n", country)
 }

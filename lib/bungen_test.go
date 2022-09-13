@@ -1,4 +1,4 @@
-package genna
+package bungen
 
 import (
 	"log"
@@ -8,18 +8,18 @@ import (
 
 func prepareReq() (url string, logger *log.Logger) {
 	logger = log.New(os.Stderr, "", log.LstdFlags)
-	url = `postgres://genna:genna@localhost:5432/genna?sslmode=disable`
+	url = `postgres://some_user:some_password@localhost:5432/some_db?sslmode=disable`
 
 	return
 }
 
-func TestGenna_Read(t *testing.T) {
-	genna := New(prepareReq())
+func TestBungen_Read(t *testing.T) {
+	bungenCLI := New(prepareReq())
 
 	t.Run("Should read DB", func(t *testing.T) {
-		entities, err := genna.Read([]string{"public.*"}, true, false, 9, nil)
+		entities, err := bungenCLI.Read([]string{"public.*"}, true, false, nil)
 		if err != nil {
-			t.Errorf("Genna.Read error %v", err)
+			t.Errorf("Bungen.Read error %v", err)
 			return
 		}
 

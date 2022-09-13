@@ -5,8 +5,8 @@ import (
 	"html/template"
 	"strings"
 
-	"github.com/dizzyfool/genna/model"
-	"github.com/dizzyfool/genna/util"
+	"github.com/LdDl/bungen/model"
+	"github.com/LdDl/bungen/util"
 )
 
 // TemplatePackage stores package info
@@ -68,28 +68,30 @@ func NewTemplateEntity(entity model.Entity, options Options) TemplateEntity {
 		columns[i] = NewTemplateColumn(entity, column, options)
 	}
 
-	relations := make([]TemplateRelation, len(entity.Relations))
-	for i, relation := range entity.Relations {
-		relations[i] = NewTemplateRelation(relation, options)
+	relations := make([]TemplateRelation, 0, len(entity.Relations))
+	for _, column := range entity.Columns {
+		if column.IsFK && column.Relation != nil && column.Relation.Relation != nil {
+			relations = append(relations, NewTemplateRelationWithJoin(*column.Relation.Relation, column.PGName, column.Relation.RelationPK, options))
+		}
 	}
+
+	// Old way: I'm not sure about this
+	// relations := make([]TemplateRelation, len(entity.Relations))
+	// for i, relation := range entity.Relations {
+	// relations[i] = NewTemplateRelation(relation, options)
+	// }
 
 	tagName := tagName(options)
 	tags := util.NewAnnotation()
-	if options.GoPgVer < 10 {
-		tags.AddTag(tagName, util.Quoted(entity.PGFullName, true))
-	} else {
-		tags.AddTag(tagName, entity.PGFullName)
-	}
+	tags.AddTag(tagName, entity.PGFullName)
 
 	if !options.NoAlias {
 		tags.AddTag(tagName, fmt.Sprintf("alias:%s", util.DefaultAlias))
 	}
 
 	if !options.NoDiscard {
-		if options.GoPgVer == 8 {
-			tags.AddTag("pg", "")
-		}
-		tags.AddTag("pg", "discard_unknown_columns")
+		// Tag below now working with bun (it's global now)
+		// tags.AddTag("bun", "discard_unknown_columns")
 	}
 
 	return TemplateEntity{
@@ -148,16 +150,12 @@ func NewTemplateColumn(entity model.Entity, column model.Column, options Options
 
 	// nullable tag
 	if !column.Nullable && !column.IsPK {
-		if options.GoPgVer == 8 {
-			tags.AddTag(tagName, "notnull")
-		} else {
-			tags.AddTag(tagName, "use_zero")
-		}
+		tags.AddTag(tagName, "nullzero")
 	}
 
 	// soft_delete tag
 	if options.SoftDelete == column.PGName && column.Nullable && column.GoType == model.TypeTime && !column.IsArray {
-		tags.AddTag("pg", ",soft_delete")
+		tags.AddTag("bun", ",soft_delete")
 	}
 
 	// ignore tag
@@ -191,10 +189,34 @@ type TemplateRelation struct {
 func NewTemplateRelation(relation model.Relation, options Options) TemplateRelation {
 	comment := ""
 	tagName := tagName(options)
-	tags := util.NewAnnotation().AddTag("pg", "fk:"+strings.Join(relation.FKFields, ","))
-	if options.GoPgVer >= 10 {
-		tags.AddTag("pg", "rel:has-one")
+	tags := util.NewAnnotation().AddTag("bun", "join:"+strings.Join(relation.FKFields, ","))
+	tags.AddTag("bun", "rel:belongs-to")
+
+	if len(relation.FKFields) > 1 {
+		comment = "// unsupported"
+		tags.AddTag(tagName, "-")
 	}
+
+	// add json tag
+	if options.AddJSONTag {
+		tags.AddTag("json", util.Underscore(relation.GoName))
+	}
+
+	return TemplateRelation{
+		Relation: relation,
+
+		Tag:     template.HTML(fmt.Sprintf("`%s`", tags.String())),
+		Comment: template.HTML(comment),
+	}
+}
+
+// NewTemplateRelationWithJoin creates relation for template with `join` tag component
+// relPK - primary key in foreign table
+func NewTemplateRelationWithJoin(relation model.Relation, relFK, relPK string, options Options) TemplateRelation {
+	comment := ""
+	tagName := tagName(options)
+	tags := util.NewAnnotation().AddTag("bun", fmt.Sprintf("join:%s=%s", relFK, relPK))
+	tags.AddTag("bun", "rel:belongs-to")
 
 	if len(relation.FKFields) > 1 {
 		comment = "// unsupported"
@@ -243,8 +265,5 @@ func jsonType(mp map[string]string, schema, table, field string) (string, bool) 
 }
 
 func tagName(options Options) string {
-	if options.GoPgVer == 8 {
-		return "sql"
-	}
-	return "pg"
+	return "bun"
 }

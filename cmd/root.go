@@ -3,20 +3,20 @@ package cmd
 import (
 	"os"
 
-	"github.com/dizzyfool/genna/generators/model"
-	"github.com/dizzyfool/genna/generators/named"
-	"github.com/dizzyfool/genna/generators/search"
-	"github.com/dizzyfool/genna/generators/validate"
+	"github.com/LdDl/bungen/generators/model"
+	"github.com/LdDl/bungen/generators/named"
+	"github.com/LdDl/bungen/generators/search"
+	"github.com/LdDl/bungen/generators/validate"
 
 	"github.com/spf13/cobra"
 )
 
 var root = &cobra.Command{
-	Use:   "genna",
-	Short: "Genna is model generator for go-pg package",
+	Use:   "bungen",
+	Short: "Bungen is model generator for Bun package [Postgres Driver]",
 	Long: `This application is a tool to generate the needed files
-to quickly create a models for go-pg https://github.com/go-pg/pg`,
-	Version: "1.2.0",
+to quickly create a models for Bun [Postgres driver] https://github.com/uptrace/bun`,
+	Version: "0.1.0",
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := cmd.Help(); err != nil {
 			panic("help not found")

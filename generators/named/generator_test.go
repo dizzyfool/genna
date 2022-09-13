@@ -13,7 +13,7 @@ func TestGenerator_Generate(t *testing.T) {
 	options := generator.Options()
 
 	options.Def()
-	options.URL = `postgres://genna:genna@localhost:5432/genna?sslmode=disable`
+	options.URL = `postgres://some_user:some_password@localhost:5432/some_db?sslmode=disable`
 	options.Output = path.Join(os.TempDir(), "model_test.go")
 	options.FollowFKs = true
 

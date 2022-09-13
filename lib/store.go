@@ -1,26 +1,27 @@
-package genna
+package bungen
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strings"
 
-	"github.com/dizzyfool/genna/model"
-	"github.com/dizzyfool/genna/util"
-
-	"github.com/go-pg/pg/v10"
-	"github.com/go-pg/pg/v10/orm"
+	"github.com/LdDl/bungen/model"
+	"github.com/LdDl/bungen/util"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/schema"
 )
 
-var formatter = orm.Formatter{}
+var formatter = schema.NewFormatter(pgdialect.New())
 
 func format(pattern string, values ...interface{}) string {
-	return string(formatter.FormatQuery([]byte{}, pattern, values...))
+	return formatter.FormatQuery(pattern, values...)
 }
 
 type table struct {
-	Schema string `pg:"table_schema"`
-	Name   string `pg:"table_name"`
+	Schema string `bun:"table_schema"`
+	Name   string `bun:"table_name"`
 }
 
 func (t table) Entity() model.Entity {
@@ -28,17 +29,17 @@ func (t table) Entity() model.Entity {
 }
 
 type relation struct {
-	Constraint    string   `pg:"constraint_name"`
-	SourceSchema  string   `pg:"schema_name"`
-	SourceTable   string   `pg:"table_name"`
-	SourceColumns []string `pg:"columns,array"`
-	TargetSchema  string   `pg:"target_schema"`
-	TargetTable   string   `pg:"target_table"`
-	TargetColumns []string `pg:"target_columns,array"`
+	Constraint    string   `bun:"constraint_name"`
+	SourceSchema  string   `bun:"schema_name"`
+	SourceTable   string   `bun:"table_name"`
+	SourceColumns []string `bun:"columns,array"`
+	TargetSchema  string   `bun:"target_schema"`
+	TargetTable   string   `bun:"target_table"`
+	TargetColumns []string `bun:"target_columns,array"`
 }
 
 func (r relation) Relation() model.Relation {
-	return model.NewRelation(r.SourceColumns, r.TargetSchema, r.TargetTable)
+	return model.NewRelation(r.SourceColumns, r.TargetSchema, r.TargetTable, r.TargetColumns)
 }
 
 func (r relation) Target() table {
@@ -49,41 +50,42 @@ func (r relation) Target() table {
 }
 
 type column struct {
-	tableName struct{} `pg:",discard_unknown_columns"`
+	bun.BaseModel
 
-	Schema     string   `pg:"schema_name"`
-	Table      string   `pg:"table_name"`
-	Name       string   `pg:"column_name"`
-	IsNullable bool     `pg:"nullable"`
-	IsArray    bool     `pg:"is_array"`
-	Dimensions int      `pg:"dims"`
-	Type       string   `pg:"type"`
-	Default    string   `pg:"def"`
-	IsPK       bool     `pg:"is_pk"`
-	IsFK       bool     `pg:"is_fk"`
-	MaxLen     int      `pg:"len"`
-	Values     []string `pg:"enum,array"`
+	Schema     string   `bun:"schema_name"`
+	Table      string   `bun:"table_name"`
+	Name       string   `bun:"column_name"`
+	IsNullable bool     `bun:"nullable"`
+	IsArray    bool     `bun:"is_array"`
+	Dimensions int      `bun:"dims"`
+	Type       string   `bun:"type"`
+	Default    string   `bun:"def"`
+	IsPK       bool     `bun:"is_pk"`
+	IsFK       bool     `bun:"is_fk"`
+	MaxLen     int      `bun:"len"`
+	Values     []string `bun:"enum,array"`
 }
 
-func (c column) Column(useSQLNulls bool, goPGVer int, customTypes model.CustomTypeMapping) model.Column {
-	return model.NewColumn(c.Name, c.Type, c.IsNullable, useSQLNulls, c.IsArray, c.Dimensions, c.IsPK, c.IsFK, c.MaxLen, c.Values, goPGVer, customTypes)
+func (c column) Column(useSQLNulls bool, customTypes model.CustomTypeMapping) model.Column {
+	return model.NewColumn(c.Name, c.Type, c.IsNullable, useSQLNulls, c.IsArray, c.Dimensions, c.IsPK, c.IsFK, c.MaxLen, c.Values, customTypes)
 }
 
 // Store is database helper
 type store struct {
-	db orm.DB
+	db *bun.DB
 }
 
 // NewStore creates Store
-func newStore(db orm.DB) *store {
+func newStore(db *bun.DB) *store {
 	return &store{db: db}
 }
 
 func (s *store) Schemas() ([]string, error) {
 	query := `select nspname from pg_catalog.pg_namespace`
-
 	var result []string
-	if _, err := s.db.Query(&result, query); err != nil {
+
+	err := s.db.NewRaw(query).Scan(context.Background(), &result)
+	if err != nil {
 		return nil, fmt.Errorf("getting schemas info error: %w", err)
 	}
 
@@ -105,10 +107,10 @@ func (s *store) Tables(selected []string) ([]table, error) {
 
 	var where []string
 	if len(schemas) > 0 {
-		where = append(where, format("(table_schema) in (?)", pg.In(schemas)))
+		where = append(where, format("(table_schema) in (?)", bun.In(schemas)))
 	}
 	if len(tables) > 0 {
-		where = append(where, format("(table_schema, table_name) in (?)", pg.InMulti(tables...)))
+		where = append(where, format("(table_schema, table_name) in (?)", bun.In(tables)))
 	}
 
 	query := `
@@ -123,10 +125,11 @@ func (s *store) Tables(selected []string) ([]table, error) {
             )`
 
 	var result []table
-	if _, err := s.db.Query(&result, query); err != nil {
+
+	err := s.db.NewRaw(query).Scan(context.Background(), &result)
+	if err != nil {
 		return nil, fmt.Errorf("getting tables info error: %w", err)
 	}
-
 	return result, nil
 }
 
@@ -175,7 +178,9 @@ func (s *store) Relations(tables []table) ([]relation, error) {
 	`
 
 	var relations []relation
-	if _, err := s.db.Query(&relations, query, pg.InMulti(ts...)); err != nil {
+
+	err := s.db.NewRaw(query, bun.In(ts)).Scan(context.Background(), &relations)
+	if err != nil {
 		return nil, fmt.Errorf("getting relations info error: %w", err)
 	}
 
@@ -187,7 +192,6 @@ func (s store) Columns(tables []table) ([]column, error) {
 	for i, t := range tables {
 		ts[i] = []string{t.Schema, t.Name}
 	}
-
 	query := `
 		with
 		    enums as (
@@ -261,7 +265,8 @@ func (s store) Columns(tables []table) ([]column, error) {
 	`
 
 	var columns []column
-	if _, err := s.db.Query(&columns, query, pg.InMulti(ts...)); err != nil {
+	err := s.db.NewRaw(query, bun.In(ts)).Scan(context.Background(), &columns)
+	if err != nil {
 		return nil, fmt.Errorf("getting columns info error: %w", err)
 	}
 
