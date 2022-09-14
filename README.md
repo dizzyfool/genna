@@ -31,5 +31,5 @@ Currently bungen support 3 generators:
 Examples located in each generator
  
 ## Thanks
-- I am thankful to [Genna](https://github.com/dizzyfool/genna#genna---cli-tool-for-generating-go-pg-models) and its creater [@dizzyfool](https://github.com/dizzyfool). Its [contributors](https://github.com/dizzyfool/genna/graphs/contributors) should me mentioned also. This CLI saved a lot of time for me in the past.
+- I am thankful to [Genna](https://github.com/dizzyfool/genna#genna---cli-tool-for-generating-go-pg-models) and its creator [@dizzyfool](https://github.com/dizzyfool). Its [contributors](https://github.com/dizzyfool/genna/graphs/contributors) should me mentioned also. This CLI saved a lot of time for me in the past.
 - Big shoutouts to [Bun](https://github.com/uptrace/bun#sql-first-golang-orm-for-postgresql-mysql-mssql-and-sqlite) creators for great ORM package for Golang

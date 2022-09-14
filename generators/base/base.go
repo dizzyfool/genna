@@ -158,7 +158,6 @@ func ReadFlags(command *cobra.Command) (conn, output, pkg string, tables []strin
 	if customTypes, err = model.ParseCustomTypes(customTypesStrings); err != nil {
 		return
 	}
-	fmt.Println("custom", customTypes)
 	if uuid, err = flags.GetBool(uuidFlag); err != nil {
 		return
 	}
