@@ -204,13 +204,13 @@ func Test_column_Column(t *testing.T) {
 				IsArray:    false,
 				Dimensions: 0,
 				Type:       model.TypePGInt8,
-				Default:    "",
+				Default:    "nextval('\"news_newsId_seq\"'::regclass)",
 				IsPK:       true,
 				IsFK:       false,
 				MaxLen:     0,
 				Values:     []string{},
 			},
-			want: model.NewColumn("userId", model.TypePGInt8, false, false, false, 0, true, false, 0, []string{}, 9, nil),
+			want: model.NewColumn("userId", model.TypePGInt8, "nextval('\"news_newsId_seq\"'::regclass)", false, false, false, 0, true, false, 0, []string{}, 9, nil),
 		},
 	}
 	for _, tt := range tests {

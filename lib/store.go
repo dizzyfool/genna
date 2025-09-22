@@ -66,7 +66,7 @@ type column struct {
 }
 
 func (c column) Column(useSQLNulls bool, goPGVer int, customTypes model.CustomTypeMapping) model.Column {
-	return model.NewColumn(c.Name, c.Type, c.IsNullable, useSQLNulls, c.IsArray, c.Dimensions, c.IsPK, c.IsFK, c.MaxLen, c.Values, goPGVer, customTypes)
+	return model.NewColumn(c.Name, c.Type, c.Default, c.IsNullable, useSQLNulls, c.IsArray, c.Dimensions, c.IsPK, c.IsFK, c.MaxLen, c.Values, goPGVer, customTypes)
 }
 
 // Store is database helper
