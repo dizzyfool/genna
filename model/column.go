@@ -14,8 +14,9 @@ type Column struct {
 	GoType string
 	PGType string
 
-	Default  string
-	Nullable bool
+	Default    string
+	HasDefault bool
+	Nullable   bool
 
 	IsArray    bool
 	Dimensions int
@@ -31,7 +32,7 @@ type Column struct {
 }
 
 // NewColumn creates Column from pg info
-func NewColumn(pgName string, pgType, defaultValue string, nullable, sqlNulls, array bool, dims int, pk, fk bool, len int, values []string, goPGVer int, customTypes CustomTypeMapping) Column {
+func NewColumn(pgName string, pgType, defaultValue string, hasDefault, nullable, sqlNulls, array bool, dims int, pk, fk bool, len int, values []string, goPGVer int, customTypes CustomTypeMapping) Column {
 	var (
 		err error
 		ok  bool
@@ -48,6 +49,7 @@ func NewColumn(pgName string, pgType, defaultValue string, nullable, sqlNulls, a
 		MaxLen:     len,
 		Values:     values,
 		Default:    defaultValue,
+		HasDefault: hasDefault,
 		GoName:     util.ColumnName(pgName),
 	}
 

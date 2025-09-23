@@ -59,6 +59,7 @@ type column struct {
 	Dimensions int      `pg:"dims"`
 	Type       string   `pg:"type"`
 	Default    string   `pg:"def"`
+	HasDefault bool     `pg:"has_def"`
 	IsPK       bool     `pg:"is_pk"`
 	IsFK       bool     `pg:"is_fk"`
 	MaxLen     int      `pg:"len"`
@@ -66,7 +67,7 @@ type column struct {
 }
 
 func (c column) Column(useSQLNulls bool, goPGVer int, customTypes model.CustomTypeMapping) model.Column {
-	return model.NewColumn(c.Name, c.Type, c.Default, c.IsNullable, useSQLNulls, c.IsArray, c.Dimensions, c.IsPK, c.IsFK, c.MaxLen, c.Values, goPGVer, customTypes)
+	return model.NewColumn(c.Name, c.Type, c.Default, c.HasDefault, c.IsNullable, useSQLNulls, c.IsArray, c.Dimensions, c.IsPK, c.IsFK, c.MaxLen, c.Values, goPGVer, customTypes)
 }
 
 // Store is database helper
@@ -246,10 +247,11 @@ func (s store) Columns(tables []table) ([]column, error) {
 		                when e.is_enum = true
 		                then 'varchar'
 		                else ltrim(c.udt_name, '_')
-		                end                         as type,
-		                c.column_default            as def,
-                        c.character_maximum_length  as len,
-						e.enum_values 				as enum
+		                end                         							as type,
+		                c.column_default            							as def,
+                		(c.column_default is not null or c.is_identity = 'YES') as has_def,
+                        c.character_maximum_length  							as len,
+						e.enum_values 											as enum
 		from information_schema.tables t
 		left join information_schema.columns c using (table_name, table_schema)
 		left join info i using (table_name, table_schema, column_name)

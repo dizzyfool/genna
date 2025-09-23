@@ -38,7 +38,7 @@ func TestColumn_GoName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := NewColumn(tt.pgName, TypePGText, "", false, false, false, 0, false, false, 0, []string{}, 9, CustomTypeMapping{})
+			c := NewColumn(tt.pgName, TypePGText, "", false, false, false, false, 0, false, false, 0, []string{}, 9, CustomTypeMapping{})
 			if c.GoName != tt.want {
 				t.Errorf("Column.Name = %v, want %v", c.GoName, tt.want)
 			}
@@ -53,6 +53,7 @@ func TestColumn_GoType(t *testing.T) {
 		dims         int
 		nullable     bool
 		sqlNulls     bool
+		hasDefault   bool
 		defaultValue string
 	}
 	tests := []struct {
@@ -124,7 +125,7 @@ func TestColumn_GoType(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := NewColumn("test", tt.fields.pgType, tt.fields.defaultValue, tt.fields.nullable, tt.fields.sqlNulls, tt.fields.array, tt.fields.dims, false, false, 0, []string{}, 9, CustomTypeMapping{})
+			c := NewColumn("test", tt.fields.pgType, tt.fields.defaultValue, tt.fields.hasDefault, tt.fields.nullable, tt.fields.sqlNulls, tt.fields.array, tt.fields.dims, false, false, 0, []string{}, 9, CustomTypeMapping{})
 			if got := c.Type; got != tt.want {
 				t.Errorf("Column.Type = %v, want %v", got, tt.want)
 			}

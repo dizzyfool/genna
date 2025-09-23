@@ -184,6 +184,7 @@ func Test_column_Column(t *testing.T) {
 		Dimensions int
 		Type       string
 		Default    string
+		HasDefault bool
 		IsPK       bool
 		IsFK       bool
 		MaxLen     int
@@ -205,12 +206,13 @@ func Test_column_Column(t *testing.T) {
 				Dimensions: 0,
 				Type:       model.TypePGInt8,
 				Default:    "nextval('\"news_newsId_seq\"'::regclass)",
+				HasDefault: true,
 				IsPK:       true,
 				IsFK:       false,
 				MaxLen:     0,
 				Values:     []string{},
 			},
-			want: model.NewColumn("userId", model.TypePGInt8, "nextval('\"news_newsId_seq\"'::regclass)", false, false, false, 0, true, false, 0, []string{}, 9, nil),
+			want: model.NewColumn("userId", model.TypePGInt8, "nextval('\"news_newsId_seq\"'::regclass)", true, false, false, false, 0, true, false, 0, []string{}, 9, nil),
 		},
 	}
 	for _, tt := range tests {
@@ -224,6 +226,7 @@ func Test_column_Column(t *testing.T) {
 				Dimensions: tt.fields.Dimensions,
 				Type:       tt.fields.Type,
 				Default:    tt.fields.Default,
+				HasDefault: tt.fields.HasDefault,
 				IsPK:       tt.fields.IsPK,
 				IsFK:       tt.fields.IsFK,
 				MaxLen:     tt.fields.MaxLen,
