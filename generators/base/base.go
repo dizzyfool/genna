@@ -9,7 +9,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/dizzyfool/genna/lib"
+	genna "github.com/dizzyfool/genna/lib"
 	"github.com/dizzyfool/genna/model"
 	"github.com/dizzyfool/genna/util"
 
@@ -128,8 +128,6 @@ func AddFlags(command *cobra.Command) {
 	flags.StringSlice(customTypesFlag, []string{}, "set custom types separated by comma\nformat: <postgresql_type>:<go_import>.<go_type>\nexamples: uuid:github.com/google/uuid.UUID,point:src/model.Point,bytea:string\n")
 
 	flags.IntP(GoPgVer, "g", 10, "specify go-pg version (8, 9 and 10 are supported)")
-
-	return
 }
 
 // ReadFlags reads basic flags from command
@@ -183,7 +181,7 @@ func ReadFlags(command *cobra.Command) (conn, output, pkg string, tables []strin
 		customTypes.Add(model.TypePGUuid, "uuid.UUID", "github.com/google/uuid")
 	}
 
-	if gopgVer < 8 && gopgVer > 10 {
+	if gopgVer < 8 || gopgVer > 10 {
 		err = fmt.Errorf("go-pg version %d not supported", gopgVer)
 		return
 	}

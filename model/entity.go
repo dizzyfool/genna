@@ -51,16 +51,12 @@ func NewEntity(schema, pgName string, columns []Column, relations []Relation) En
 		impIndex: map[string]struct{}{},
 	}
 
-	if columns != nil {
-		for _, col := range columns {
-			entity.AddColumn(col)
-		}
+	for _, col := range columns {
+		entity.AddColumn(col)
 	}
 
-	if relations != nil {
-		for _, rel := range relations {
-			entity.AddRelation(rel)
-		}
+	for _, rel := range relations {
+		entity.AddRelation(rel)
 	}
 
 	return entity

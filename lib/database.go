@@ -12,11 +12,11 @@ import (
 
 // queryLogger helper struct for query logging
 type queryLogger struct {
-	logger log.Logger
+	logger *log.Logger
 }
 
 // newQueryLogger creates new helper struct for query logging
-func newQueryLogger(logger log.Logger) queryLogger {
+func newQueryLogger(logger *log.Logger) queryLogger {
 	return queryLogger{logger: logger}
 }
 
@@ -58,7 +58,7 @@ func newDatabase(url string, logger *log.Logger) (orm.DB, error) {
 	client := pg.Connect(options)
 
 	if logger != nil {
-		client.AddQueryHook(newQueryLogger(*logger))
+		client.AddQueryHook(newQueryLogger(logger))
 	}
 
 	return client, nil
